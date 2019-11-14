@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">Positive-offline</string>
+
+    <string name="app_setup">KIOSK SETUP</string>
+    <string name="label_host_name">HOST NAME</string>
+    <string name="hint_host_name">http://192.168.1.100</string>
+    <string name="label_company">COMPANY</string>
+    <string name="hint_company">company</string>
+    <string name="label_code">CODE</string>
+    <string name="hint_code">CODE</string>
+    <string name="label_product_key">PRODUCT KEY</string>
+    <string name="button_label_confirm">CONFIRM</string>
+    <string name="hint_product_key">#####-#####-#####-#####-#####</string>
+    <string name="general_progress_text">Loading.. please wait</string>
+    <string name="error_message_fill_up_all_fields">Please fill up all fields</string>
+    <string name="text_header_error">Error</string>
+    <string name="error_message_invalid_url">Invalid url</string>
+    <string name="header_message">Message</string>
+    <string name="error_no_usernamepassword">Please provide your username and password</string>
+    <string name="error_message_data_not_sync">You still have unsynced data</string>
+
+    <string-array name="test">
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+        <item>1</item>
+    </string-array>
+</resources>

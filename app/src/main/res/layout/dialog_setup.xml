@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
+
+    <include layout="@layout/partial_header"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:id="@+id/header"/>
+
+    <TextView
+        android:id="@+id/tvHostName"
+        android:layout_margin="15dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/label_host_name"/>
+
+    <com.nerdvana.positiveoffline.view.HidingEditText
+        android:id="@+id/etHostName"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:padding="10dp"
+        android:background="@drawable/edittext_round"
+        app:layout_constraintTop_toBottomOf="@id/tvHostName"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_host_name"/>
+
+    <TextView
+        android:id="@+id/tvCompany"
+        android:layout_margin="15dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/etHostName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/label_company"/>
+
+    <com.nerdvana.positiveoffline.view.HidingEditText
+        android:id="@+id/etCompany"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:padding="10dp"
+        android:background="@drawable/edittext_round"
+        app:layout_constraintTop_toBottomOf="@id/tvCompany"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_company"/>
+
+    <TextView
+        android:id="@+id/tvCode"
+        android:layout_margin="15dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/etCompany"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/label_code"/>
+
+    <com.nerdvana.positiveoffline.view.HidingEditText
+        android:id="@+id/etCode"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:padding="10dp"
+        android:background="@drawable/edittext_round"
+        app:layout_constraintTop_toBottomOf="@id/tvCode"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_code"/>
+
+    <TextView
+        android:id="@+id/tvProductKey"
+        android:layout_margin="15dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/etCode"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/label_product_key"/>
+
+    <com.nerdvana.positiveoffline.view.HidingEditText
+        android:id="@+id/etProductKey"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:padding="10dp"
+        android:background="@drawable/edittext_round"
+        app:layout_constraintTop_toBottomOf="@id/tvProductKey"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_product_key"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnConfirm"
+        android:textColor="@color/colorWhite"
+        android:background="@drawable/button_selector"
+        android:layout_margin="15dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/etProductKey"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/button_label_confirm"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

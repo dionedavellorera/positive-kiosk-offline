@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    android:layout_margin="3dp"
+    app:cardCornerRadius="10dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/listCheckoutItems"
+            android:layout_above="@id/linSubtotal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <ImageView
+            android:alpha="0.1"
+            android:src="@drawable/pos_logo_watermark_edited"
+            android:layout_above="@id/linSubtotal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <LinearLayout
+            android:layout_above="@id/linDiscount"
+            android:id="@+id/linSubtotal"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:width="0dp"
+                android:layout_weight="0.5"
+                android:id="@+id/subTotalLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@color/colorWhite"
+                android:padding="5dp"
+                android:text="Sub total"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:gravity="center_vertical|right"
+                android:id="@+id/subTotalValue"
+                android:layout_weight="0.5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@color/colorWhite"
+                android:padding="5dp"
+                android:text="0.00"
+                android:textColor="@color/colorBlack"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_above="@id/linDeposit"
+            android:id="@+id/linDiscount"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:width="0dp"
+                android:layout_weight="0.5"
+                android:id="@+id/discountLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@color/colorWhite"
+                android:padding="5dp"
+                android:text="Discount"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:gravity="center_vertical|right"
+                android:id="@+id/discountValue"
+                android:layout_weight="0.5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@color/colorWhite"
+                android:padding="5dp"
+                android:text="0.00"
+                android:textColor="@color/colorBlack"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_above="@id/linTotal"
+            android:id="@+id/linDeposit"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:width="0dp"
+                android:layout_weight="0.5"
+                android:id="@+id/depositLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@color/colorWhite"
+                android:padding="5dp"
+                android:text="Deposit"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:gravity="center_vertical|right"
+                android:id="@+id/depositValue"
+                android:layout_weight="0.5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@color/colorWhite"
+                android:padding="5dp"
+                android:text="0.00"
+                android:textColor="@color/colorBlack"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linTotal"
+            android:orientation="horizontal"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:width="0dp"
+                android:layout_weight="0.5"
+                android:layout_gravity="bottom"
+                android:id="@+id/totalLabel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@color/colorLtGrey"
+                android:padding="5dp"
+                android:text="TOTAL"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:gravity="center_vertical|right"
+                android:id="@+id/totalValue"
+                android:layout_weight="0.5"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@color/colorLtGrey"
+                android:padding="5dp"
+                android:text="0.00"
+                android:textColor="@color/colorBlack"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>
