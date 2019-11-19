@@ -29,12 +29,11 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
         buttonsModelList.add(new ButtonsModel(9988,"RESUME TRANSACTION", "",2));
         buttonsModelList.add(new ButtonsModel(105,"PAYMENT", "",6));
         buttonsModelList.add(new ButtonsModel(126,"FOC", "",24)); // return later
-        buttonsModelList.add(new ButtonsModel(124,"CANCEL ORDER", "",23));
         buttonsModelList.add(new ButtonsModel(115,"DISCOUNT", "",7));
-        buttonsModelList.add(new ButtonsModel(102,"DEPOSIT", "",9));
-        buttonsModelList.add(new ButtonsModel(113,"POST VOID", "",12));
+//        buttonsModelList.add(new ButtonsModel(102,"DEPOSIT", "",9));
+        buttonsModelList.add(new ButtonsModel(113,"VOID TRANSACTION", "",12));
         buttonsModelList.add(new ButtonsModel(101,"ITEM VOID", "",13));
-        buttonsModelList.add(new ButtonsModel(118,"SAFEKEEPING", "",17));
+//        buttonsModelList.add(new ButtonsModel(118,"SAFEKEEPING", "",17));
         buttonsModelList.add(new ButtonsModel(116,"CANCEL", "",20));
         buttonsModelList.add(new ButtonsModel(129,"SETTINGS", "",24));
         buttonsModelList.add(new ButtonsModel(997,"LOGOUT", "",100));

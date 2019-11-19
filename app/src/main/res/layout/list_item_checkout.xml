@@ -1,29 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@color/colorWhite02"
+    android:id="@+id/rootView">
 
     <TextView
+        android:gravity="center_vertical"
         android:padding="5dp"
         android:id="@+id/listItemName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="0.5"
-        android:text="Dione"/>
+        android:text="Dione\ndioe"/>
 
     <TextView
+        android:gravity="center|center_vertical"
         android:padding="5dp"
         android:id="@+id/listItemQty"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_weight="0.2"
         android:text="Dione"/>
 
     <TextView
+        android:gravity="right|center_vertical"
         android:padding="5dp"
         android:id="@+id/listItemPrice"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_weight="0.3"
         android:text="Dione"/>
 

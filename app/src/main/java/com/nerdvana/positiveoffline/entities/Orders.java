@@ -8,8 +8,6 @@ import androidx.room.PrimaryKey;
 
 @Entity(tableName = "Orders")
 public class Orders {
-    //@ForeignKey(entity = Transactions.class, parentColumns = "id", childColumns = "transaction_id")
-
     @NonNull
     private int transaction_id;
     @NonNull
@@ -25,6 +23,8 @@ public class Orders {
     private Double original_amount;
     @NonNull
     private String name;
+    private Boolean is_void = false;
+    private Boolean is_editing = false;
 
     public Orders(int transaction_id, int core_id,
                   int qty, @NonNull Double amount,
@@ -36,6 +36,23 @@ public class Orders {
         this.amount = amount;
         this.original_amount = original_amount;
         this.name = name;
+    }
+
+
+    public Boolean getIs_editing() {
+        return is_editing;
+    }
+
+    public void setIs_editing(Boolean is_editing) {
+        this.is_editing = is_editing;
+    }
+
+    public Boolean getIs_void() {
+        return is_void;
+    }
+
+    public void setIs_void(Boolean is_void) {
+        this.is_void = is_void;
     }
 
     public int getTransaction_id() {

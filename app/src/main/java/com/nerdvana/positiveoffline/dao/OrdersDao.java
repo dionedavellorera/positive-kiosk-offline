@@ -20,12 +20,15 @@ public interface OrdersDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insert(List<Orders> dataSyncList);
 
-    @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id")
-    LiveData<List<Orders>> ldOrderList(String transaction_id);
+    @Query("SELECT * FROM Orders")
+    LiveData<List<Orders>> ldOrderList();
 
-    @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id")
+    @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id AND is_void = 0")
     List<Orders> orderList(String transaction_id);
 
+    @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id AND is_void = 0 AND is_editing = 1")
+    List<Orders> editingOrderList(String transaction_id);
+
     @Update()
-    void update(DataSync dataSync);
+    void update(Orders order);
 }

@@ -1,5 +1,7 @@
 package com.nerdvana.positiveoffline;
 
+import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
 import com.nerdvana.positiveoffline.apiresponses.TestResponse;
@@ -28,5 +30,13 @@ public interface IUsers {
     @POST("fetchProducts")
     @FormUrlEncoded
     Call<FetchProductsResponse> fetchProductsRequest(@FieldMap Map<String, String> params);
+
+    @POST("fetchPaymentType")
+    @FormUrlEncoded
+    Call<FetchPaymentTypeResponse> fetchPaymentTypeRequest(@FieldMap Map<String, String> params);
+
+    @POST("fetchCreditCard")
+    @FormUrlEncoded
+    Call<FetchCreditCardResponse> fetchCreditCardRequest(@FieldMap Map<String, String> params);
 
 }

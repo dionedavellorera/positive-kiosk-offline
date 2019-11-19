@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -18,6 +19,7 @@ import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Products;
+import com.nerdvana.positiveoffline.intf.OrdersContract;
 import com.nerdvana.positiveoffline.intf.ProductsContract;
 import com.squareup.picasso.Picasso;
 
@@ -27,12 +29,12 @@ import java.util.List;
 
 public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<Orders> checkoutList;
-    private ProductsContract productsContract;
+    private OrdersContract ordersContract;
     private Context context;
-    public CheckoutAdapter(List<Orders> checkoutList, ProductsContract productsContract, Context context) {
+    public CheckoutAdapter(List<Orders> checkoutList, OrdersContract ordersContract, Context context) {
         this.checkoutList = checkoutList;
         this.context = context;
-        this.productsContract = productsContract;
+        this.ordersContract = ordersContract;
 
     }
 
@@ -47,11 +49,13 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         private TextView listItemName;
         private TextView listItemQty;
         private TextView listItemPrice;
+        private LinearLayout rootView;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             listItemName = itemView.findViewById(R.id.listItemName);
             listItemQty = itemView.findViewById(R.id.listItemQty);
             listItemPrice = itemView.findViewById(R.id.listItemPrice);
+            rootView = itemView.findViewById(R.id.rootView);
         }
     }
 
@@ -59,12 +63,19 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int i) {
         final Orders productsModel = checkoutList.get(i);
-//        ((ProductsAdapter.ProductsViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                productsContract.productClicked(productsModel);
-//            }
-//        });
+        ((CheckoutAdapter.ViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ordersContract.clicked(productsModel);
+            }
+        });
+
+        if (productsModel.getIs_editing()) {
+            ((CheckoutAdapter.ViewHolder)holder).rootView.setBackgroundColor(context.getResources().getColor(R.color.colorGreen));
+        } else {
+            ((CheckoutAdapter.ViewHolder)holder).rootView.setBackgroundColor(context.getResources().getColor(R.color.colorWhite02));
+        }
+
         ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(productsModel.getName());
         ((CheckoutAdapter.ViewHolder)holder).listItemQty.setText(String.valueOf(productsModel.getQty()));
         ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setText(Utils.digitsWithComma(productsModel.getAmount()));

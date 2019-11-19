@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.adapter.ProductsAdapter;
 import com.nerdvana.positiveoffline.entities.Orders;
@@ -23,6 +24,7 @@ import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.intf.AsyncContract;
 import com.nerdvana.positiveoffline.intf.ProductsContract;
+import com.nerdvana.positiveoffline.model.ProductToCheckout;
 import com.nerdvana.positiveoffline.view.HidingEditText;
 import com.nerdvana.positiveoffline.viewmodel.ProductsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
@@ -61,7 +63,6 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
 
     private void fetchProducts() {
         try {
-            Log.d("MYLIST", String.valueOf(productsViewModel.getProductsList().size()));
             setProductAdapter(productsViewModel.getProductsList());
         } catch (ExecutionException e) {
             e.printStackTrace();
@@ -130,32 +131,33 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
 
     @Override
     public void productClicked(Products productsModel) {
-        List<Orders> orderList = new ArrayList<>();
-        products = productsModel;
-        try {
-            if (transactionsList().size() > 0) {
-                orderList.add(new Orders(
-                        transactionsList().get(0).getId(),
-                        productsModel.getCore_id(),
-                        1,
-                        productsModel.getAmount(),
-                        productsModel.getAmount(),
-                        productsModel.getProduct()
-                ));
-                transactionsViewModel.insertOrder(orderList);
-            } else {
-                final int min = 1;
-                final int max = 1000;
-                final int random = new Random().nextInt((max - min) + 1) + min;
-                List<Transactions> tr = new ArrayList<>();
-                tr.add(new Transactions(String.valueOf(random), 01));
-                transactionsViewModel.insert(tr);
-            }
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        BusProvider.getInstance().post(new ProductToCheckout(productsModel));
+//        List<Orders> orderList = new ArrayList<>();
+//        products = productsModel;
+//        try {
+//            if (transactionsList().size() > 0) {
+//                orderList.add(new Orders(
+//                        transactionsList().get(0).getId(),
+//                        productsModel.getCore_id(),
+//                        1,
+//                        productsModel.getAmount(),
+//                        productsModel.getAmount(),
+//                        productsModel.getProduct()
+//                ));
+//                transactionsViewModel.insertOrder(orderList);
+//            } else {
+//                final int min = 1;
+//                final int max = 1000;
+//                final int random = new Random().nextInt((max - min) + 1) + min;
+//                List<Transactions> tr = new ArrayList<>();
+//                tr.add(new Transactions(String.valueOf(random), 01));
+//                transactionsViewModel.insert(tr);
+//            }
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -170,16 +172,19 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
 
                 //add order to database
                 if (products != null) {
-                    List<Orders> orderList = new ArrayList<>();
-                    orderList.add(new Orders(
-                            transactions.get(0).getId(),
-                            products.getCore_id(),
-                            1,
-                            products.getAmount(),
-                            products.getAmount(),
-                            products.getProduct()
-                    ));
-                    transactionsViewModel.insertOrder(orderList);
+                    if (transactions.size() > 0) {
+                        List<Orders> orderList = new ArrayList<>();
+                        orderList.add(new Orders(
+                                transactions.get(0).getId(),
+                                products.getCore_id(),
+                                1,
+                                products.getAmount(),
+                                products.getAmount(),
+                                products.getProduct()
+                        ));
+                        transactionsViewModel.insertOrder(orderList);
+                    }
+
 
 
                 }

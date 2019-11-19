@@ -30,4 +30,20 @@
         <item>1</item>
         <item>1</item>
     </string-array>
+    <string name="title_activity_resume_transaction">ResumeTransactionActivity</string>
+    <string name="info_no_data">No Data</string>
+    <string name="label_username">Username</string>
+    <string name="label_password">Password</string>
+    <string name="hint_password">123456</string>
+    <string name="hint_username">abc123</string>
+    <string name="item_void_password_dialog">CONFIRM ITEM VOID</string>
+    <string name="label_quantity">Change Quantity</string>
+    <string name="hint_quantity">100</string>
+    <string name="dialog_header_change_qty">CHANGE QUANTITY</string>
+    <string name="error_zero_quantity">Cannot enter 0 quantity</string>
+    <string name="error_no_transaction">No transaction for payment</string>
+    <string name="error_no_items">No items for payment</string>
+    <string name="error_has_balance">Please settle your remaining balance</string>
+    <string name="transaction_completed">Transaction completed</string>
+    <string name="title_completed_transactions">Completed Transactions</string>
 </resources>

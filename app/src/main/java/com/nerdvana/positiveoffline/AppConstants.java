@@ -24,4 +24,5 @@ public class AppConstants {
     public static final String VERIFY_MACHINE = "verify_machine";
     public static final String ACTIVITY_LOGIN = "login";
     public static final String MAIN_ACTIVITY = "main_activity";
+    public static final String TRANS_ID = "trans_id";
 }

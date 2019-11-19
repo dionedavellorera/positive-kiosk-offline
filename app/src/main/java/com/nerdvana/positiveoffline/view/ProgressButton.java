@@ -50,6 +50,7 @@ public class ProgressButton extends CoordinatorLayout {
 
         TypedArray a = c.obtainStyledAttributes(set, R.styleable.ProgressButtonView);
         tv.setText(a.getString(R.styleable.ProgressButtonView_text));
+        tv.setTextColor(a.getColor(R.styleable.ProgressButtonView_textColor, getResources().getColor(R.color.colorWhite)));
         a.recycle();
         addView(v);
     }

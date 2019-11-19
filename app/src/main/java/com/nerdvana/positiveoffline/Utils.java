@@ -1,6 +1,7 @@
 package com.nerdvana.positiveoffline;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.room.util.StringUtil;
 
@@ -28,6 +29,7 @@ public class Utils {
                 }
             }
         }
+
         return finalList.size() > 0 ? TextUtils.join(" ", finalList) : "";
     }
 

@@ -23,6 +23,7 @@ import com.nerdvana.positiveoffline.apiresponses.TestResponse;
 import com.nerdvana.positiveoffline.apiresponses.VerifyMachineResponse;
 import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.view.HidingEditText;
+import com.nerdvana.positiveoffline.view.ProgressButton;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -31,7 +32,7 @@ import retrofit2.Response;
 public abstract class SetupDialog extends BaseDialog implements View.OnClickListener{
 
     //region views
-    private Button btnConfirm;
+    private ProgressButton btnConfirm;
     private ProgressDialog progressDialog;
     private HidingEditText etHostName;
     private HidingEditText etCompany;
@@ -101,7 +102,7 @@ public abstract class SetupDialog extends BaseDialog implements View.OnClickList
     }
 
     private void testConnection() {
-
+        btnConfirm.startLoading(btnConfirm);
         if (isAllFieldsOk()) {
 
             if (URLUtil.isValidUrl(String.format("%s/%s/%s/%s/",
@@ -144,9 +145,11 @@ public abstract class SetupDialog extends BaseDialog implements View.OnClickList
                     }
                 });
             } else {
+                btnConfirm.stopLoading(btnConfirm);
                 Helper.showDialogMessage(getContext(), getContext().getString(R.string.error_message_invalid_url), getContext().getString(R.string.text_header_error));
             }
         } else {
+            btnConfirm.stopLoading(btnConfirm);
             Helper.showDialogMessage(getContext(), getContext().getString(R.string.error_message_fill_up_all_fields), getContext().getString(R.string.text_header_error));
         }
 
@@ -181,6 +184,7 @@ public abstract class SetupDialog extends BaseDialog implements View.OnClickList
             @Override
             public void onResponse(Call<VerifyMachineResponse> call, Response<VerifyMachineResponse> response) {
                 progressDialog.dismiss();
+                btnConfirm.stopLoading(btnConfirm);
                 if (response.body().getStatus() == 1) { //success
                     SharedPreferenceManager.saveString(getContext(), "40", AppConstants.MAX_COLUMN_COUNT);
                     SharedPreferenceManager.saveString(getContext(), String.valueOf(response.body().getResult().get(0).getPrinter_path()), AppConstants.SELECTED_PORT);
@@ -205,6 +209,7 @@ public abstract class SetupDialog extends BaseDialog implements View.OnClickList
 
             @Override
             public void onFailure(Call<VerifyMachineResponse> call, Throwable t) {
+                btnConfirm.stopLoading(btnConfirm);
                 progressDialog.dismiss();
                 Helper.showDialogMessage(getContext(), t.getLocalizedMessage(), getContext().getString(R.string.text_header_error));
             }

@@ -84,4 +84,6 @@ public class Transactions {
     public Boolean getIs_completed() {
         return is_completed;
     }
+
+
 }

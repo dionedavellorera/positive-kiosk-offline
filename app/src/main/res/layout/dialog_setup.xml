@@ -113,7 +113,7 @@
         android:layout_height="wrap_content"
         android:hint="@string/hint_product_key"/>
 
-    <androidx.appcompat.widget.AppCompatButton
+    <com.nerdvana.positiveoffline.view.ProgressButton
         android:id="@+id/btnConfirm"
         android:textColor="@color/colorWhite"
         android:background="@drawable/button_selector"
@@ -124,6 +124,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/button_label_confirm"/>
+        app:text="@string/button_label_confirm"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

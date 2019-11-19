@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -17,9 +18,13 @@ import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.MainActivity;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.adapter.SyncDataAdapter;
+import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
 import com.nerdvana.positiveoffline.background.InserUserAsync;
+import com.nerdvana.positiveoffline.background.InsertCreditCardAsync;
+import com.nerdvana.positiveoffline.background.InsertPaymentTypeAsync;
 import com.nerdvana.positiveoffline.background.InsertProductAsync;
 import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.intf.SyncCallback;
@@ -50,6 +55,7 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sync);
         initViews();
+
         initUserViewModel();
         initDataSyncViewModel();
         initProductViewModel();
@@ -57,7 +63,27 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         initUserListener();
         initDataSyncListener();
         initProductListener();
+        initPaymentTypeListener();
+        initCreditCardListener();
 
+    }
+
+    private void initPaymentTypeListener() {
+        dataSyncViewModel.getPaymentTypeLiveData().observe(this, new Observer<FetchPaymentTypeResponse>() {
+            @Override
+            public void onChanged(FetchPaymentTypeResponse fetchPaymentTypeResponse) {
+                new InsertPaymentTypeAsync(fetchPaymentTypeResponse.getResult(), SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+            }
+        });
+    }
+
+    private void initCreditCardListener() {
+        dataSyncViewModel.getCreditCardLiveData().observe(this, new Observer<FetchCreditCardResponse>() {
+            @Override
+            public void onChanged(FetchCreditCardResponse fetchCreditCardResponse) {
+                new InsertCreditCardAsync(fetchCreditCardResponse.getResult(), SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+            }
+        });
     }
 
     private void initDataSyncListener() {
@@ -68,6 +94,8 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                     syncModelList = new ArrayList<>();
                     syncModelList.add(new DataSync("Users", false));
                     syncModelList.add(new DataSync("Products", false));
+                    syncModelList.add(new DataSync("Payment Types", false));
+                    syncModelList.add(new DataSync("Credit Cards", false));
                     dataSyncViewModel.insertData(syncModelList);
                 } else {
                     syncModelList = dataSyncList;
@@ -79,6 +107,14 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
 
                     if (!syncModelList.get(1).getSynced()) {
                         productsViewModel.fetchProductsRequest();
+                    }
+
+                    if (!syncModelList.get(2).getSynced()) {
+                        dataSyncViewModel.requestPaymentType();
+                    }
+
+                    if (!syncModelList.get(3).getSynced()) {
+                        dataSyncViewModel.requestCreditCards();
                     }
                 }
 
@@ -169,6 +205,14 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 syncModelList.get(1).setSynced(true);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(1));
                 break;
+            case "payment_type":
+                syncModelList.get(2).setSynced(true);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(2));
+                break;
+            case "credit_card":
+                syncModelList.get(3).setSynced(true);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(3));
+                break;
         }
     }
 
@@ -210,6 +254,14 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
             case "products":
                 syncModelList.get(1).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(1));
+                break;
+            case "payment_type":
+                syncModelList.get(2).setSynced(false);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(2));
+                break;
+            case "credit_card":
+                syncModelList.get(3).setSynced(false);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(3));
                 break;
         }
     }

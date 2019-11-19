@@ -10,6 +10,7 @@ import androidx.room.Update;
 
 import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.Transactions;
+import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 
 import java.util.List;
 
@@ -22,8 +23,17 @@ public interface TransactionsDao {
     @Query("SELECT * FROM Transactions WHERE is_saved = 0 AND is_completed = 0")
     LiveData<List<Transactions>> ldTransactionsList();
 
+    @Query("SELECT * FROM Transactions WHERE is_saved = 1 AND is_completed = 0")
+    LiveData<List<Transactions>> ldSavedTransactionsList();
+
+    @Query("SELECT * FROM Transactions WHERE is_completed = 1")
+    List<TransactionWithOrders> completedTransactionList();
+
     @Query("SELECT * FROM Transactions WHERE is_saved = 0 AND is_completed = 0")
     List<Transactions> transactionsList();
+
+    @Query("SELECT * FROM Transactions WHERE id = :transaction_id")
+    List<Transactions> loadedTransactionList(String transaction_id);
 
     @Update()
     void update(Transactions transaction);

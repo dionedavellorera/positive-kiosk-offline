@@ -116,14 +116,8 @@ public class ProductsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         ((ProductsViewHolder)holder).price.setText(Utils.digitsWithComma(productsModel.getAmount()));
 
         File direct = new File(Environment.getExternalStorageDirectory()
-                + "/POS_PRODUCTS/" + productsModel.getImage_file());
+                + "/POS/PRODUCTS/" + productsModel.getImage_file());
         Picasso.get().load(direct).into(((ProductsViewHolder)holder).imageUrl);
-
-//        if (productsModel.getImageUrls().length > 0) {
-//            ImageLoader.loadImage(productsModel.getImageUrls()[0], ((ProductsViewHolder)holder).imageUrl);
-//        } else {
-//            ImageLoader.loadImage("htttp://www.google.com/img.png", ((ProductsViewHolder)holder).imageUrl);
-//        }
 
     }
 

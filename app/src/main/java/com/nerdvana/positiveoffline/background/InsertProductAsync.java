@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.util.Log;
 
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
@@ -55,7 +56,7 @@ public class InsertProductAsync extends AsyncTask<Void, Void, Void> {
             Products product = new Products(
                     r.getCoreId(),
                     r.getProduct(),
-                    r.getProductInitial() != null ? r.getProductInitial() : Utils.getInitials(r.getProductInitial()),
+                    r.getProductInitial() != null ? r.getProductInitial() : Utils.getInitials(r.getProduct()),
                     r.getProductBarcode() != null ? r.getProductBarcode().toString() : "",
                     r.getTaxRate(),
                     r.getImageFile() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
@@ -67,7 +68,7 @@ public class InsertProductAsync extends AsyncTask<Void, Void, Void> {
 
             if (r.getImageFile() != null) {
                 File direct = new File(Environment.getExternalStorageDirectory()
-                        + "/POS_PRODUCTS");
+                        + "/POS/PRODUCTS");
 
                 if (!direct.exists()) {
                     direct.mkdirs();
@@ -84,7 +85,7 @@ public class InsertProductAsync extends AsyncTask<Void, Void, Void> {
                                 | DownloadManager.Request.NETWORK_MOBILE)
                         .setAllowedOverRoaming(false).setTitle(r.getProduct())
 //                        .setDescription(r.)
-                        .setDestinationInExternalPublicDir("/POS_PRODUCTS", String.valueOf(r.getCoreId()) + ".jpg");
+                        .setDestinationInExternalPublicDir("/POS/PRODUCTS", String.valueOf(r.getCoreId()) + ".jpg");
 
                 mgr.enqueue(request);
             }

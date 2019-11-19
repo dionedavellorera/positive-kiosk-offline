@@ -22,11 +22,11 @@ public interface DataSyncDao {
     @Query("SELECT * FROM DataSync")
     LiveData<List<DataSync>> syncList();
 
+
     @Query("SELECT * FROM DataSync WHERE isSynced = '0'")
     List<DataSync> unsyncList();
 
     @Update()
     void update(DataSync dataSync);
-
 
 }
