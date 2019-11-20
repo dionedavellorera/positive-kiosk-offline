@@ -33,6 +33,7 @@ import com.nerdvana.positiveoffline.intf.ProductsContract;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
 import com.nerdvana.positiveoffline.view.dialog.ChangeQtyDialog;
+import com.nerdvana.positiveoffline.view.dialog.InputDialog;
 import com.nerdvana.positiveoffline.view.dialog.PasswordDialog;
 import com.nerdvana.positiveoffline.view.dialog.PaymentDialog;
 import com.nerdvana.positiveoffline.view.resumetransaction.ResumeTransactionActivity;
@@ -184,7 +185,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     }
 
 
-    private void saveTransaction(Transactions transactions) {
+    private void saveTransaction(Transactions transactions, String name) {
         transactionId = "";
             Transactions tr = new Transactions(
                     transactions.getId(),
@@ -193,6 +194,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     transactions.getIs_void(),
                     transactions.getIs_completed(),
             true);
+            if (!TextUtils.isEmpty(name)) tr.setTrans_name(name);
             transactionsViewModel.update(tr);
     }
 
@@ -305,10 +307,26 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
             case 100://SAVE TRANSACTION
                 try {
                     if (transactionsList().size() > 0) {
-                        saveTransaction(transactionsList().get(0));
+                        InputDialog inputDialog = new InputDialog(getActivity()) {
+                            @Override
+                            public void confirm(String str) {
+
+                                try {
+                                    saveTransaction(transactionsList().get(0), str);
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        };
+                        inputDialog.show();
+
                     } else {
                         if (loadedTransactionsList(transactionId).size() > 0) {
-                            saveTransaction(loadedTransactionsList(transactionId).get(0));
+
+                            saveTransaction(loadedTransactionsList(transactionId).get(0), "");
+
                         }
                     }
                 } catch (ExecutionException e) {

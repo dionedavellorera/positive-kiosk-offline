@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.adapter;
 
 import android.content.Context;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,7 +60,7 @@ public class ResumeTransactionAdapter extends RecyclerView.Adapter<RecyclerView.
                     } else {
                         List<Transactions> filteredList = new ArrayList<>();
                         for (Transactions pm : transactionList) {
-                            if (pm.getControl_number().toLowerCase().contains(charSting.toLowerCase())) {
+                            if (pm.getTrans_name().toLowerCase().contains(charSting.toLowerCase())) {
                                 filteredList.add(pm);
                             }
                         }
@@ -97,8 +98,8 @@ public class ResumeTransactionAdapter extends RecyclerView.Adapter<RecyclerView.
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int i) {
         final Transactions model = transactionFilteredList.get(i);
-        ((ResumeTransactionAdapter.ViewHolder)holder).name.setText(model.getControl_number());
-        ((ViewHolder)holder).price.setText(model.getControl_number());
+        ((ResumeTransactionAdapter.ViewHolder)holder).name.setText(TextUtils.isEmpty(model.getTrans_name()) ? model.getControl_number() : model.getTrans_name());
+        ((ViewHolder)holder).price.setText(String.format("CTRL NO: %s", model.getControl_number()));
         ((ViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

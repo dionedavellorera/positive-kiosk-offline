@@ -46,4 +46,6 @@
     <string name="error_has_balance">Please settle your remaining balance</string>
     <string name="transaction_completed">Transaction completed</string>
     <string name="title_completed_transactions">Completed Transactions</string>
+    <string name="hint_name">Enter name</string>
+    <string name="search_title">Search here</string>
 </resources>

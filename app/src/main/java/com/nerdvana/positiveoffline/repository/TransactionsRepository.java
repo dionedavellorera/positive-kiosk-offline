@@ -157,6 +157,18 @@ public class TransactionsRepository {
         return future.get();
     }
 
+    public List<Transactions> loadedTransactionViaControlNumber(final String controlNumber) throws ExecutionException, InterruptedException {
+        Callable<List<Transactions>> callable = new Callable<List<Transactions>>() {
+            @Override
+            public List<Transactions> call() throws Exception {
+                return transactionsDao.loadedTransactionListViaControlNumber(controlNumber);
+            }
+        };
+
+        Future<List<Transactions>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
     public List<Transactions> loadedTransaction(final String transactionId) throws ExecutionException, InterruptedException {
         Callable<List<Transactions>> callable = new Callable<List<Transactions>>() {
             @Override

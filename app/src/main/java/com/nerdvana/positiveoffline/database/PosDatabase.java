@@ -24,7 +24,7 @@ import com.nerdvana.positiveoffline.entities.User;
                       Products.class, Transactions.class,
                         Orders.class, PaymentTypes.class,
                         Payments.class, CreditCards.class},
-          version = 18)
+          version = 19)
 
 public abstract class PosDatabase extends RoomDatabase {
     public abstract UserDao userDao();

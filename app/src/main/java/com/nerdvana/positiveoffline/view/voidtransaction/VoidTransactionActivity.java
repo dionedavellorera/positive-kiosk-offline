@@ -1,13 +1,23 @@
 package com.nerdvana.positiveoffline.view.voidtransaction;
 
+import android.app.SearchManager;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,13 +34,15 @@ import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import java.util.concurrent.ExecutionException;
 
 public class VoidTransactionActivity extends AppCompatActivity implements TransactionsContract {
-
+    private TransactionsAdapter transactionsAdapter;
     private TextView tvNoData;
     private RecyclerView rvTransactionList;
 
     private TransactionsViewModel transactionsViewModel;
 
     private Toolbar toolbar;
+    private EditText search;
+    private TextView title;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,34 +56,37 @@ public class VoidTransactionActivity extends AppCompatActivity implements Transa
         initTransactionViewModel();
         loadTransactions();
 
-        setTitle(getString(R.string.title_completed_transactions));
+        setTitle();
 
         setTransactionsAdapter();
+    }
+
+    private void setTitle() {
+        title.setText(getString(R.string.title_completed_transactions));
     }
 
     private void setTransactionsAdapter() {
 
 
         try {
-
-            for (TransactionWithOrders tr : transactionsViewModel.completedTransactions()) {
-                for (Orders order : tr.ordersList) {
-                    Log.d("MYORDERS", order.getName());
-                }
-
-            }
             if (transactionsViewModel.completedTransactions().size() > 0) {
                 showList();
             } else {
                 showNoData();
             }
-            TransactionsAdapter transactionsAdapter = new TransactionsAdapter(transactionsViewModel.completedTransactions(), this, this);
+            transactionsAdapter = new TransactionsAdapter(transactionsViewModel.completedTransactions(), this, this);
             rvTransactionList.setAdapter(transactionsAdapter);
-            rvTransactionList.setLayoutManager(new LinearLayoutManager(this));
+            rvTransactionList.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
             transactionsAdapter.notifyDataSetChanged();
+
+            Log.d("ERERERe-1", String.valueOf(transactionsViewModel.completedTransactions().size()));
         } catch (ExecutionException e) {
+
+            Log.d("ERERERe", e.getLocalizedMessage());
+
             e.printStackTrace();
         } catch (InterruptedException e) {
+            Log.d("ERERERe-1", e.getLocalizedMessage());
             e.printStackTrace();
         }
     }
@@ -85,9 +100,33 @@ public class VoidTransactionActivity extends AppCompatActivity implements Transa
     }
 
     private void initViews() {
+        title = findViewById(R.id.title);
+        search = findViewById(R.id.search);
+        initSearch();
         toolbar = findViewById(R.id.toolbar);
         tvNoData = findViewById(R.id.tvNoData);
         rvTransactionList = findViewById(R.id.rvTransactionList);
+    }
+
+    private void initSearch() {
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (transactionsAdapter != null) {
+                    transactionsAdapter.getFilter().filter(editable);
+                }
+            }
+        });
     }
 
     @Override
@@ -97,7 +136,32 @@ public class VoidTransactionActivity extends AppCompatActivity implements Transa
 
     @Override
     public void clicked(TransactionWithOrders transactionWithOrders) {
-        Toast.makeText(getApplicationContext(), "SHOW ORDER IN DIALOG RECEIPT STYLE", Toast.LENGTH_LONG).show();
+        try {
+            Transactions reference = transactionsViewModel.loadedTransactionListViaControlNumber(transactionWithOrders.transactions.getControl_number()).get(0);
+            Transactions tr = new Transactions(
+                    reference.getId(),
+                    reference.getControl_number(),
+                    reference.getUser_id(),
+                    true,
+                    reference.getIs_completed(),
+                    reference.getIs_saved());
+            transactionsViewModel.update(tr);
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    setTransactionsAdapter();
+                }
+            }, 500);
+
+            search.setText("");
+
+
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void showNoData() {
@@ -109,4 +173,5 @@ public class VoidTransactionActivity extends AppCompatActivity implements Transa
         tvNoData.setVisibility(View.GONE);
         rvTransactionList.setVisibility(View.VISIBLE);
     }
+
 }

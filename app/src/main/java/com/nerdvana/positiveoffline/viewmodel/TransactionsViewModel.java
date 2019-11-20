@@ -103,6 +103,10 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.loadedTransaction(transactionId);
     }
 
+    public List<Transactions> loadedTransactionListViaControlNumber(String controlNumber) throws ExecutionException, InterruptedException {
+        return transactionsRepository.loadedTransactionViaControlNumber(controlNumber);
+    }
+
 
 
 

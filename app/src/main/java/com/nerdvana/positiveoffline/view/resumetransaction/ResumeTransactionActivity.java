@@ -15,8 +15,11 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.nerdvana.positiveoffline.AppConstants;
@@ -34,7 +37,10 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
     private TextView tvNoData;
     private RecyclerView rvTransactionList;
     private Toolbar toolbar;
+    private TextView title;
+    private EditText search;
 
+    private ResumeTransactionAdapter resumeTransactionAdapter;
     private TransactionsViewModel transactionsViewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,9 +49,14 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
         initViews();
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        setTitle("Select transaction to resume");
         initTransViewModel();
         initTransViewModelListener();
+        setTitle();
+
+    }
+
+    private void setTitle() {
+        title.setText("Select transaction to resume");
     }
 
     private void initTransViewModelListener() {
@@ -69,9 +80,33 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
     }
 
     private void initViews() {
+        title = findViewById(R.id.title);
+        search = findViewById(R.id.search);
+        initSearchListener();
         toolbar = findViewById(R.id.toolbar);
         tvNoData = findViewById(R.id.tvNoData);
         rvTransactionList = findViewById(R.id.rvTransactionList);
+    }
+
+    private void initSearchListener() {
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (resumeTransactionAdapter != null) {
+                    resumeTransactionAdapter.getFilter().filter(editable);
+                }
+            }
+        });
     }
 
     @Override
@@ -88,7 +123,7 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
     }
 
     private void setTransactionAdapter(List<Transactions> transactionsList) {
-        ResumeTransactionAdapter resumeTransactionAdapter = new ResumeTransactionAdapter(transactionsList, this, this);
+        resumeTransactionAdapter = new ResumeTransactionAdapter(transactionsList, this, this);
         rvTransactionList.setAdapter(resumeTransactionAdapter);
         rvTransactionList.setLayoutManager(new GridLayoutManager(this, 5));
         resumeTransactionAdapter.notifyDataSetChanged();

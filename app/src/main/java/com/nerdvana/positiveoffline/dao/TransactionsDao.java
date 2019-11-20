@@ -26,7 +26,7 @@ public interface TransactionsDao {
     @Query("SELECT * FROM Transactions WHERE is_saved = 1 AND is_completed = 0")
     LiveData<List<Transactions>> ldSavedTransactionsList();
 
-    @Query("SELECT * FROM Transactions WHERE is_completed = 1")
+    @Query("SELECT * FROM Transactions WHERE is_completed = 1 AND is_void = 0")
     List<TransactionWithOrders> completedTransactionList();
 
     @Query("SELECT * FROM Transactions WHERE is_saved = 0 AND is_completed = 0")
@@ -34,6 +34,9 @@ public interface TransactionsDao {
 
     @Query("SELECT * FROM Transactions WHERE id = :transaction_id")
     List<Transactions> loadedTransactionList(String transaction_id);
+
+    @Query("SELECT * FROM Transactions WHERE control_number = :control_number")
+    List<Transactions> loadedTransactionListViaControlNumber(String control_number);
 
     @Update()
     void update(Transactions transaction);

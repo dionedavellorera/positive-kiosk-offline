@@ -19,6 +19,7 @@ public class Transactions {
     private Boolean is_completed = false;
     private Boolean is_saved = false;
 
+    private String trans_name;
 
     public Transactions(@NonNull String control_number,
                         int user_id) {
@@ -85,5 +86,11 @@ public class Transactions {
         return is_completed;
     }
 
+    public String getTrans_name() {
+        return trans_name;
+    }
 
+    public void setTrans_name(String trans_name) {
+        this.trans_name = trans_name;
+    }
 }
