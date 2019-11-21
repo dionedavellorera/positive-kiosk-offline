@@ -18,11 +18,13 @@ import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.MainActivity;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.adapter.SyncDataAdapter;
+import com.nerdvana.positiveoffline.apiresponses.FetchCashDenominationResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
 import com.nerdvana.positiveoffline.background.InserUserAsync;
+import com.nerdvana.positiveoffline.background.InsertCashDenominationAsync;
 import com.nerdvana.positiveoffline.background.InsertCreditCardAsync;
 import com.nerdvana.positiveoffline.background.InsertPaymentTypeAsync;
 import com.nerdvana.positiveoffline.background.InsertProductAsync;
@@ -61,10 +63,22 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         initProductViewModel();
 
         initUserListener();
+
         initDataSyncListener();
         initProductListener();
         initPaymentTypeListener();
         initCreditCardListener();
+        initCashDenoListener();
+
+    }
+
+    private void initCashDenoListener() {
+        dataSyncViewModel.getCashDenoLiveData().observe(this, new Observer<FetchCashDenominationResponse>() {
+            @Override
+            public void onChanged(FetchCashDenominationResponse fetchCashDenominationResponse) {
+                new InsertCashDenominationAsync(fetchCashDenominationResponse.getResultList(), SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+            }
+        });
 
     }
 
@@ -96,6 +110,7 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                     syncModelList.add(new DataSync("Products", false));
                     syncModelList.add(new DataSync("Payment Types", false));
                     syncModelList.add(new DataSync("Credit Cards", false));
+                    syncModelList.add(new DataSync("Cash Denomination", false));
                     dataSyncViewModel.insertData(syncModelList);
                 } else {
                     syncModelList = dataSyncList;
@@ -115,6 +130,10 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
 
                     if (!syncModelList.get(3).getSynced()) {
                         dataSyncViewModel.requestCreditCards();
+                    }
+
+                    if (!syncModelList.get(4).getSynced()) {
+                        dataSyncViewModel.requestCashDenomination();
                     }
                 }
 
@@ -213,6 +232,10 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 syncModelList.get(3).setSynced(true);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(3));
                 break;
+            case "cash_denomination":
+                syncModelList.get(4).setSynced(true);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(4));
+                break;
         }
     }
 
@@ -262,6 +285,10 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
             case "credit_card":
                 syncModelList.get(3).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(3));
+                break;
+            case "cash_denomination":
+                syncModelList.get(4).setSynced(false);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(4));
                 break;
         }
     }

@@ -17,6 +17,7 @@ import com.nerdvana.positiveoffline.intf.PasswordCheckContract;
 import com.nerdvana.positiveoffline.view.HidingEditText;
 import com.nerdvana.positiveoffline.view.ProgressButton;
 import com.nerdvana.positiveoffline.view.login.LoginActivity;
+import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 
 public abstract class PasswordDialog extends BaseDialog implements PasswordCheckContract, View.OnClickListener {
@@ -27,10 +28,12 @@ public abstract class PasswordDialog extends BaseDialog implements PasswordCheck
     private HidingEditText etPassword;
     private ProgressButton btnConfirm;
     private UserViewModel userViewModel;
-    public PasswordDialog(Context context, String header, UserViewModel userViewModel) {
+    private TransactionsViewModel transactionsViewModel;
+    public PasswordDialog(Context context, String header, UserViewModel userViewModel, TransactionsViewModel transactionsViewModel) {
         super(context);
         this.header = header;
         this.userViewModel = userViewModel;
+        this.transactionsViewModel = transactionsViewModel;
     }
 
     @Override
@@ -60,7 +63,8 @@ public abstract class PasswordDialog extends BaseDialog implements PasswordCheck
                     new CheckPasswordAsync(this,
                             etUsername.getText().toString(),
                             etPassword.getText().toString(),
-                            userViewModel).execute();
+                            userViewModel,
+                            transactionsViewModel).execute();
                 } else {
                     Helper.showDialogMessage(getContext(), "Please fill up username and password", "Information");
                 }

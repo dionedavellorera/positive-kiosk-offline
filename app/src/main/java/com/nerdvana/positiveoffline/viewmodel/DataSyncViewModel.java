@@ -8,9 +8,11 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.nerdvana.positiveoffline.apiresponses.FetchCashDenominationResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
+import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.entities.CreditCards;
 import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
@@ -48,6 +50,18 @@ public class DataSyncViewModel extends AndroidViewModel {
         mRepository.insert(list);
     }
 
+    public void requestCashDenomination() {
+        mRepository.fetchCashDenominationRequest();
+    }
+
+    public MutableLiveData<FetchCashDenominationResponse> getCashDenoLiveData() {
+        return mRepository.getFetchCashDenominationLiveData();
+    }
+
+    public List<CashDenomination> getCashDeno() throws ExecutionException, InterruptedException {
+        return mRepository.getCashDenoList();
+    }
+
 
     public void requestPaymentType() {
         mRepository.fetchPaymentTypeRequest();
@@ -80,6 +94,10 @@ public class DataSyncViewModel extends AndroidViewModel {
 
     public void insertCreditCard(List<CreditCards> list) {
         mRepository.insertCreditCard(list);
+    }
+
+    public void insertCashDenomination(List<CashDenomination> list) {
+        mRepository.insertCashDenomination(list);
     }
 
 }

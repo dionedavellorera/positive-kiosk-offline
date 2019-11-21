@@ -28,4 +28,5 @@ public interface UserDao {
 
     @Query("SELECT * FROM User WHERE is_logged_in = :isLoggedIn")
     List<User> searchLoggedInUser(Boolean isLoggedIn);
+
 }

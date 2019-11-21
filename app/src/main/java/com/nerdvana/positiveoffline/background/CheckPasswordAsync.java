@@ -6,9 +6,11 @@ import android.util.Log;
 
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.PasswordCheckContract;
+import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 
@@ -17,19 +19,22 @@ public class CheckPasswordAsync extends AsyncTask<Void, Void, String> {
     private String username;
     private String password;
     private UserViewModel userViewModel;
+    private TransactionsViewModel transactionsViewModel;
     private Boolean tickLoggedIn;
 
     public CheckPasswordAsync(PasswordCheckContract passwordCheckContract, String username,
-                              String password, UserViewModel userViewModel) {
+                              String password, UserViewModel userViewModel,
+                              TransactionsViewModel transactionsViewModel) {
         this.passwordCheckContract = passwordCheckContract;
         this.username = username;
         this.password = password;
         this.userViewModel = userViewModel;
+        this.transactionsViewModel = transactionsViewModel;
     }
 
     public CheckPasswordAsync(PasswordCheckContract passwordCheckContract, String username,
                               String password, UserViewModel userViewModel,
-                              boolean tickLoggedIn) {
+                              boolean tickLoggedIn, TransactionsViewModel transactionsViewModel) {
         this.passwordCheckContract = passwordCheckContract;
         this.username = username;
         this.password = password;
@@ -48,6 +53,20 @@ public class CheckPasswordAsync extends AsyncTask<Void, Void, String> {
         } else {
             if (!BCrypt.verifyer().verify(password.toCharArray(), user.get(0).getPassword()).verified) {
                 message = "Incorrect Credentials";
+            } else {
+                try {
+                    if (transactionsViewModel.unCutOffTransactions().size() > 0) {
+                        if (!transactionsViewModel.unCutOffTransactions().get(0).getIs_completed_by().equalsIgnoreCase(user.get(0).getUsername())) {
+                            message = String.format("Please cutoff %s id transaction/s first", transactionsViewModel.unCutOffTransactions().get(0).getIs_completed_by());
+                        }
+                    }
+                } catch (ExecutionException e) {
+                    message = e.getMessage();
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    message = e.getMessage();
+                    e.printStackTrace();
+                }
             }
         }
 

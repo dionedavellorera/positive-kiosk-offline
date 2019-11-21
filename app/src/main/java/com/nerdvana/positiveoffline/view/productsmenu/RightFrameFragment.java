@@ -53,7 +53,7 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
         initViews(view);
         initProductsViewModel();
         initTransactionViewModel();
-        initTransactionsViewModelListener();
+//        initTransactionsViewModelListener();
         return view;
     }
 

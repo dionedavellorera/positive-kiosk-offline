@@ -27,9 +27,11 @@ import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.adapter.TransactionsAdapter;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Transactions;
+import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.TransactionsContract;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
+import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 
 import java.util.concurrent.ExecutionException;
 
@@ -39,6 +41,8 @@ public class VoidTransactionActivity extends AppCompatActivity implements Transa
     private RecyclerView rvTransactionList;
 
     private TransactionsViewModel transactionsViewModel;
+    private UserViewModel userViewModel;
+
 
     private Toolbar toolbar;
     private EditText search;
@@ -54,11 +58,17 @@ public class VoidTransactionActivity extends AppCompatActivity implements Transa
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         initTransactionViewModel();
+        initUsersViewModel();
         loadTransactions();
 
         setTitle();
 
         setTransactionsAdapter();
+    }
+
+    private void initUsersViewModel() {
+        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+
     }
 
     private void setTitle() {
@@ -145,6 +155,10 @@ public class VoidTransactionActivity extends AppCompatActivity implements Transa
                     true,
                     reference.getIs_completed(),
                     reference.getIs_saved());
+            tr.setIs_void_by(getUser().getUsername());
+            tr.setIs_completed_by(reference.getIs_completed_by());
+            tr.setIs_cut_off_by(reference.getIs_cut_off_by());
+            tr.setIs_saved_by(reference.getIs_saved_by());
             transactionsViewModel.update(tr);
             final Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
@@ -172,6 +186,10 @@ public class VoidTransactionActivity extends AppCompatActivity implements Transa
     private void showList() {
         tvNoData.setVisibility(View.GONE);
         rvTransactionList.setVisibility(View.VISIBLE);
+    }
+
+    private User getUser() throws ExecutionException, InterruptedException {
+        return userViewModel.searchLoggedInUser().get(0);
     }
 
 }

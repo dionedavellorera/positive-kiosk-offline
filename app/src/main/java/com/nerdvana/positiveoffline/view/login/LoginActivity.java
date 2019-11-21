@@ -33,6 +33,7 @@ import com.nerdvana.positiveoffline.view.ProgressButton;
 import com.nerdvana.positiveoffline.view.dialog.SetupDialog;
 import com.nerdvana.positiveoffline.view.sync.SyncActivity;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
+import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 import com.squareup.picasso.Picasso;
 
@@ -52,6 +53,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private SetupDialog setupDialog;
     private UserViewModel userViewModel;
     private DataSyncViewModel dataSyncViewModel;
+    private TransactionsViewModel transactionsViewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,9 +61,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         initViews();
         initViewModel();
         initDataSyncViewModel();
+        initTransactionViewModel();
         if (!TextUtils.isEmpty(SharedPreferenceManager.getString(LoginActivity.this, AppConstants.API_BASE_URL))) {
             PosClient.changeApiBaseUrl(SharedPreferenceManager.getString(LoginActivity.this, AppConstants.API_BASE_URL));
         }
+    }
+
+    private void initTransactionViewModel() {
+        transactionsViewModel = new ViewModelProvider(this).get(TransactionsViewModel.class);
     }
 
     private void initDataSyncViewModel() {
@@ -91,7 +98,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     new CheckPasswordAsync(this,
                             username.getText().toString(),
                             password.getText().toString(),
-                            userViewModel).execute();
+                            userViewModel,
+                            transactionsViewModel).execute();
                 } else {
                     Helper.showDialogMessage(LoginActivity.this, getString(R.string.error_no_usernamepassword), getString(R.string.header_message));
                 }

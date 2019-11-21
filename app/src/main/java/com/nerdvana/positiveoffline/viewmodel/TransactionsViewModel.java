@@ -67,6 +67,14 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.getSavedTransactions();
     }
 
+    public List<Transactions> unCutOffTransactions() throws ExecutionException, InterruptedException {
+        return transactionsRepository.getUnCutOffTransactions();
+    }
+
+    public List<Transactions> unCutOffTransactions(String userId) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getUnCutOffTransactionsByUser(userId);
+    }
+
     public List<TransactionWithOrders> completedTransactions() throws ExecutionException, InterruptedException {
         return transactionsRepository.getCompletedTransactions();
     }

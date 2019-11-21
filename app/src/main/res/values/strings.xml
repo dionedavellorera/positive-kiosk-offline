@@ -48,4 +48,8 @@
     <string name="title_completed_transactions">Completed Transactions</string>
     <string name="hint_name">Enter name</string>
     <string name="search_title">Search here</string>
+    <string name="button_xreading">X READING</string>
+    <string name="button_reprint_z_reading">REPRINT Z READING</string>
+    <string name="button_reprint_x_reading">REPRINT X READING</string>
+    <string name="button_z_reading">Z READING</string>
 </resources>

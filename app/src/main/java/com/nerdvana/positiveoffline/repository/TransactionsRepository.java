@@ -49,6 +49,30 @@ public class TransactionsRepository {
         return transactionsDao.ldSavedTransactionsList();
     }
 
+    public List<Transactions> getUnCutOffTransactions() throws ExecutionException, InterruptedException {
+        Callable<List<Transactions>> callable = new Callable<List<Transactions>>() {
+            @Override
+            public List<Transactions> call() throws Exception {
+                return transactionsDao.unCutOffTransactions();
+            }
+        };
+
+        Future<List<Transactions>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public List<Transactions> getUnCutOffTransactionsByUser(final String userId) throws ExecutionException, InterruptedException {
+        Callable<List<Transactions>> callable = new Callable<List<Transactions>>() {
+            @Override
+            public List<Transactions> call() throws Exception {
+                return transactionsDao.unCutOffTransactionsByUser(userId);
+            }
+        };
+
+        Future<List<Transactions>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
     public List<TransactionWithOrders> getCompletedTransactions() throws ExecutionException, InterruptedException {
         Callable<List<TransactionWithOrders>> callable = new Callable<List<TransactionWithOrders>>() {
             @Override

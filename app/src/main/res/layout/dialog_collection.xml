@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include layout="@layout/partial_header"
+        android:id="@+id/header"
+        />
+
+    <ScrollView
+        android:layout_below="@id/header"
+        android:layout_above="@id/totalSafeKeep"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_margin="10dp"
+            android:orientation="vertical"
+            android:id="@+id/relContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </LinearLayout>
+    </ScrollView>
+
+    <TextView
+        android:text="PHP 0.00"
+        android:layout_marginRight="10dp"
+        android:layout_above="@id/save"
+        android:padding="5dp"
+        android:gravity="right"
+        android:id="@+id/totalSafeKeep"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:textColor="@color/colorWhite"
+        android:layout_margin="10dp"
+        android:background="@drawable/button_selector"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/save"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SAVE"/>
+
+</RelativeLayout>

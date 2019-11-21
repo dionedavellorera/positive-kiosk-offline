@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.view.checkoutmenu;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -28,11 +29,13 @@ import com.nerdvana.positiveoffline.adapter.CheckoutAdapter;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.Transactions;
+import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.OrdersContract;
 import com.nerdvana.positiveoffline.intf.ProductsContract;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
 import com.nerdvana.positiveoffline.view.dialog.ChangeQtyDialog;
+import com.nerdvana.positiveoffline.view.dialog.CutOffMenuDialog;
 import com.nerdvana.positiveoffline.view.dialog.InputDialog;
 import com.nerdvana.positiveoffline.view.dialog.PasswordDialog;
 import com.nerdvana.positiveoffline.view.dialog.PaymentDialog;
@@ -50,7 +53,18 @@ import java.util.concurrent.ExecutionException;
 
 public class LeftFrameFragment extends Fragment implements OrdersContract {
 
+    //regiondialogs
+    private PaymentDialog paymentDialog;
+    private PasswordDialog passwordDialog;
+    private ChangeQtyDialog changeQtyDialog;
+    private InputDialog inputDialog;
+    private CutOffMenuDialog cutOffMenuDialog;
+    //endregion
+
+
     private final int RESUME_TRANS_RETURN = 100;
+
+    private Products selectedProduct;
 
     private View view;
     private TextView subTotalValue;
@@ -117,6 +131,11 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     if (transactions.size() > 0) {
                         transactionId = String.valueOf(transactions.get(0).getId());
                         setOrderAdapter(transactionsViewModel.orderList(transactionId));
+
+                        if (selectedProduct != null) {
+                            insertSelectedOrder();
+                            selectedProduct = null;
+                        }
                     } else {
                         defaults();
                     }
@@ -213,33 +232,72 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 133://OPEN SHIFT CUT OFF DIALOG
+                if (cutOffMenuDialog == null) {
+                    cutOffMenuDialog = new CutOffMenuDialog(getActivity(), transactionsViewModel, userViewModel, dataSyncViewModel);
+                    cutOffMenuDialog.show();
+
+                    cutOffMenuDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialogInterface) {
+                            cutOffMenuDialog = null;
+                        }
+                    });
+
+                    cutOffMenuDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            cutOffMenuDialog = null;
+                        }
+                    });
+                }
+                break;
             case 113://VOID TRANSACTION
                 startActivity(new Intent(getContext(), VoidTransactionActivity.class));
                 break;
             case 105://PAYMENT
                 if (!TextUtils.isEmpty(transactionId)) {
                     if (transactionsViewModel.orderList(transactionId).size() > 0) {
-                        PaymentDialog paymentDialog = new PaymentDialog(getActivity(), dataSyncViewModel, transactionsViewModel, transactionId) {
-                            @Override
-                            public void completed() {
+                        if (paymentDialog == null) {
+                            paymentDialog = new PaymentDialog(getActivity(), dataSyncViewModel,
+                                    transactionsViewModel, transactionId,
+                                    userViewModel) {
+                                @Override
+                                public void completed() {
 
-                                Helper.showDialogMessage(getActivity(), getContext().getString(R.string.transaction_completed), getContext().getString(R.string.header_message));
+                                    Helper.showDialogMessage(getActivity(), getContext().getString(R.string.transaction_completed), getContext().getString(R.string.header_message));
 
-                                try {
-                                    if (transactionsList().size() > 0) {
-                                        transactionId = String.valueOf(transactionsList().get(0).getId());
-                                        setOrderAdapter(transactionsViewModel.orderList(transactionId));
-                                    } else {
-                                        defaults();
+                                    try {
+                                        if (transactionsList().size() > 0) {
+                                            transactionId = String.valueOf(transactionsList().get(0).getId());
+                                            setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                                        } else {
+                                            defaults();
+                                        }
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
                                     }
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
                                 }
-                            }
-                        };
-                        paymentDialog.show();
+                            };
+                            paymentDialog.show();
+
+                            paymentDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialogInterface) {
+                                    paymentDialog = null;
+                                }
+                            });
+
+                            paymentDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+                                    paymentDialog = null;
+                                }
+                            });
+                        }
+
                     } else {
                         Helper.showDialogMessage(getActivity(),
                                 getContext().getString(R.string.error_no_items),
@@ -255,51 +313,88 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                 break;
             case 101://ITEM VOID
                 if (getEditingOrderList().size() > 0) {
-                    PasswordDialog passwordDialog = new PasswordDialog(getActivity(), getContext().getString(R.string.item_void_password_dialog), userViewModel) {
-                        @Override
-                        public void success() {
+                    if (passwordDialog == null) {
+                        passwordDialog = new PasswordDialog(getActivity(),
+                                getContext().getString(R.string.item_void_password_dialog),
+                                userViewModel,
+                                transactionsViewModel) {
+                            @Override
+                            public void success() {
 
-                            try {
-                                for (Orders order : getEditingOrderList()) {
-                                    order.setIs_void(true);
-                                    order.setIs_editing(false);
-                                    transactionsViewModel.updateOrder(order);
+                                try {
+                                    for (Orders order : getEditingOrderList()) {
+                                        order.setIs_void(true);
+                                        order.setIs_editing(false);
+                                        transactionsViewModel.updateOrder(order);
+                                    }
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
                                 }
-                            } catch (ExecutionException e) {
-                                e.printStackTrace();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
+
+
                             }
+                        };
+                        passwordDialog.show();
 
+                        passwordDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
 
-                        }
-                    };
-                    passwordDialog.show();
+                        passwordDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+                    }
+
                 } else {
                     Helper.showDialogMessage(getActivity(), "No item to void", "Information");
                 }
                 break;
             case 99://CHANGE QUANTITY
                 if (getEditingOrderList().size() > 0) {
-                    ChangeQtyDialog changeQtyDialog = new ChangeQtyDialog(getActivity(), getEditingOrderList().get(0).getQty()) {
-                        @Override
-                        public void success(int newQty) {
-                            try {
-                                for (Orders order : getEditingOrderList()) {
-                                    order.setQty(newQty);
-                                    order.setIs_editing(false);
-                                    transactionsViewModel.updateOrder(order);
+                    if (changeQtyDialog == null) {
+                        changeQtyDialog = new ChangeQtyDialog(getActivity(), getEditingOrderList().get(0).getQty()) {
+                            @Override
+                            public void success(int newQty) {
+                                try {
+                                    for (Orders order : getEditingOrderList()) {
+                                        order.setQty(newQty);
+                                        order.setIs_editing(false);
+                                        transactionsViewModel.updateOrder(order);
+                                    }
+
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
                                 }
 
-                            } catch (ExecutionException e) {
-                                e.printStackTrace();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
                             }
+                        };
+                        changeQtyDialog.show();
 
-                        }
-                    };
-                    changeQtyDialog.show();
+                        changeQtyDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                changeQtyDialog = null;
+                            }
+                        });
+
+                        changeQtyDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                changeQtyDialog = null;
+                            }
+                        });
+                    }
+
                 } else {
                     Helper.showDialogMessage(getActivity(), "No item to change quantity", "Information");
                 }
@@ -307,20 +402,37 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
             case 100://SAVE TRANSACTION
                 try {
                     if (transactionsList().size() > 0) {
-                        InputDialog inputDialog = new InputDialog(getActivity()) {
-                            @Override
-                            public void confirm(String str) {
+                        if (inputDialog == null) {
+                            inputDialog = new InputDialog(getActivity()) {
+                                @Override
+                                public void confirm(String str) {
 
-                                try {
-                                    saveTransaction(transactionsList().get(0), str);
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
+                                    try {
+                                        saveTransaction(transactionsList().get(0), str);
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
-                            }
-                        };
-                        inputDialog.show();
+                            };
+                            inputDialog.show();
+
+                            inputDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialogInterface) {
+                                    inputDialog = null;
+                                }
+                            });
+
+                            inputDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+                                    inputDialog = null;
+                                }
+                            });
+                        }
+
 
                     } else {
                         if (loadedTransactionsList(transactionId).size() > 0) {
@@ -364,7 +476,6 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
             case RESUME_TRANS_RETURN:
                 if (resultCode == Activity.RESULT_OK) {
                     try {
-
                         transactionId = data.getExtras().getString(AppConstants.TRANS_ID);
                         setOrderAdapter(transactionsViewModel.orderList(transactionId));
                     } catch (ExecutionException e) {
@@ -384,35 +495,20 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
     @Subscribe
     public void productToCheckout(ProductToCheckout productsModel) {
-        List<Orders> orderList = new ArrayList<>();
+
         try {
+            selectedProduct = productsModel.getProducts();
             if (!TextUtils.isEmpty(transactionId)) {
-                orderList.add(new Orders(
-                        Integer.valueOf(transactionId),
-                        productsModel.getProducts().getCore_id(),
-                        1,
-                        productsModel.getProducts().getAmount(),
-                        productsModel.getProducts().getAmount(),
-                        productsModel.getProducts().getProduct()
-                ));
-                transactionsViewModel.insertOrder(orderList);
+                insertSelectedOrder();
             } else {
                 if (transactionsList().size() > 0) {
-                    orderList.add(new Orders(
-                            transactionsList().get(0).getId(),
-                            productsModel.getProducts().getCore_id(),
-                            1,
-                            productsModel.getProducts().getAmount(),
-                            productsModel.getProducts().getAmount(),
-                            productsModel.getProducts().getProduct()
-                    ));
-                    transactionsViewModel.insertOrder(orderList);
+                    insertSelectedOrder();
                 } else {
                     final int min = 1;
                     final int max = 1000;
                     final int random = new Random().nextInt((max - min) + 1) + min;
                     List<Transactions> tr = new ArrayList<>();
-                    tr.add(new Transactions(String.valueOf(random), 01));
+                    tr.add(new Transactions(String.valueOf(random), getUser().getUsername()));
                     transactionsViewModel.insert(tr);
                 }
             }
@@ -422,6 +518,19 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    private void insertSelectedOrder() {
+        List<Orders> orderList = new ArrayList<>();
+        orderList.add(new Orders(
+                Integer.valueOf(transactionId),
+                selectedProduct.getCore_id(),
+                1,
+                selectedProduct.getAmount(),
+                selectedProduct.getAmount(),
+                selectedProduct.getProduct()
+        ));
+        transactionsViewModel.insertOrder(orderList);
     }
 
     @Override
@@ -439,5 +548,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
         return transactionsViewModel.editingOrderList(transactionId);
     }
 
+    private User getUser() throws ExecutionException, InterruptedException {
+        return userViewModel.searchLoggedInUser().get(0);
+    }
 
 }

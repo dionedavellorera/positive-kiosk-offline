@@ -10,19 +10,23 @@ import androidx.lifecycle.MutableLiveData;
 import com.nerdvana.positiveoffline.IUsers;
 import com.nerdvana.positiveoffline.PosClient;
 import com.nerdvana.positiveoffline.apirequests.FetchCreditCardRequest;
+import com.nerdvana.positiveoffline.apirequests.FetchDenominationRequest;
 import com.nerdvana.positiveoffline.apirequests.FetchPaymentTypeRequest;
 import com.nerdvana.positiveoffline.apirequests.FetchProductsRequest;
 import com.nerdvana.positiveoffline.apirequests.FetchUserRequest;
+import com.nerdvana.positiveoffline.apiresponses.FetchCashDenominationResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
+import com.nerdvana.positiveoffline.dao.CashDenominationDao;
 import com.nerdvana.positiveoffline.dao.CreditCardsDao;
 import com.nerdvana.positiveoffline.dao.DataSyncDao;
 import com.nerdvana.positiveoffline.dao.PaymentTypeDao;
 import com.nerdvana.positiveoffline.dao.UserDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
+import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.entities.CreditCards;
 import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
@@ -45,21 +49,24 @@ public class DataSyncRepository {
     private DataSyncDao dataSyncDao;
     private PaymentTypeDao paymentTypeDao;
     private CreditCardsDao creditCardsDao;
+    private CashDenominationDao cashDenominationDao;
     private LiveData<List<DataSync>> allSyncList;
-
     private List<DataSync> syncList = new ArrayList<>();
 
     private MutableLiveData<FetchPaymentTypeResponse> fetchPaymentTypeLiveData;
     private MutableLiveData<FetchCreditCardResponse> fetchCreditCarDLiveData;
+    private MutableLiveData<FetchCashDenominationResponse> fetchCashDenominationLiveData;
     public DataSyncRepository(Application application) {
         PosDatabase posDatabase = DatabaseHelper.getDatabase(application);
         dataSyncDao = posDatabase.dataSyncDao();
         paymentTypeDao = posDatabase.paymentTypeDao();
         creditCardsDao = posDatabase.creditCardsDao();
+        cashDenominationDao = posDatabase.cashDenominationDao();
         allSyncList = dataSyncDao.syncList();
 
         fetchPaymentTypeLiveData = new MutableLiveData<>();
         fetchCreditCarDLiveData = new MutableLiveData<>();
+        fetchCashDenominationLiveData = new MutableLiveData<>();
     }
 
 
@@ -71,9 +78,26 @@ public class DataSyncRepository {
         return fetchCreditCarDLiveData;
     }
 
+    public MutableLiveData<FetchCashDenominationResponse> getFetchCashDenominationLiveData() {
+        return fetchCashDenominationLiveData;
+    }
+
     public LiveData<List<DataSync>> getAllSyncList() {
         return allSyncList;
     }
+
+    public List<CashDenomination> getCashDenoList() throws ExecutionException, InterruptedException {
+        Callable<List<CashDenomination>> callable = new Callable<List<CashDenomination>>() {
+            @Override
+            public List<CashDenomination> call() throws Exception {
+                return cashDenominationDao.cashDenoList();
+            }
+        };
+
+        Future<List<CashDenomination>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
 
     public List<CreditCards> getCreditCardList() throws ExecutionException, InterruptedException {
         Callable<List<CreditCards>> callable = new Callable<List<CreditCards>>() {
@@ -120,6 +144,10 @@ public class DataSyncRepository {
         new DataSyncRepository.insertCreditCardAsync(creditCardsDao).execute(creditCards);
     }
 
+    public void insertCashDenomination(List<CashDenomination> cashDenominationList) {
+        new DataSyncRepository.insertCashDenominationAsync(cashDenominationDao).execute(cashDenominationList);
+    }
+
     public void insert(List<DataSync> dataSync) {
         new DataSyncRepository.insertAsyncTask(dataSyncDao).execute(dataSync);
     }
@@ -142,6 +170,25 @@ public class DataSyncRepository {
             return mAsyncTaskDao.unsyncList();
         }
     }
+
+
+    private static class insertCashDenominationAsync extends AsyncTask<List<CashDenomination>, Void, Void> {
+
+        private CashDenominationDao mAsyncTaskDao;
+
+        insertCashDenominationAsync(CashDenominationDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final List<CashDenomination>... params) {
+            mAsyncTaskDao.insert(params[0]);
+            return null;
+        }
+    }
+
+
+
 
     private static class insertCreditCardAsync extends AsyncTask<List<CreditCards>, Void, Void> {
 
@@ -212,6 +259,23 @@ public class DataSyncRepository {
     }
 
 
+    public void fetchCashDenominationRequest() {
+        IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+        FetchDenominationRequest req = new FetchDenominationRequest();
+
+        Call<FetchCashDenominationResponse> call = iUsers.fetchDenominationRequest(req.getMapValue());
+        call.enqueue(new Callback<FetchCashDenominationResponse>() {
+            @Override
+            public void onResponse(Call<FetchCashDenominationResponse> call, Response<FetchCashDenominationResponse> response) {
+                fetchCashDenominationLiveData.postValue(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<FetchCashDenominationResponse> call, Throwable t) {
+
+            }
+        });
+    }
 
     public void fetchPaymentTypeRequest() {
         IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);

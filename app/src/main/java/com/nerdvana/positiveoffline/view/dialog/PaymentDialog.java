@@ -32,12 +32,14 @@ import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.Transactions;
+import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.PaymentTypeContract;
 import com.nerdvana.positiveoffline.intf.PaymentsContract;
 import com.nerdvana.positiveoffline.view.HidingEditText;
 import com.nerdvana.positiveoffline.view.ProgressButton;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
+import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,16 +77,23 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
     private DataSyncViewModel dataSyncViewModel;
     private TransactionsViewModel transactionsViewModel;
+    private UserViewModel userViewModel;
     private String transactionId;
     private PaymentTypes paymentTypes;
     private Context context;
+
+
+
+
     public PaymentDialog(Context context, DataSyncViewModel dataSyncViewModel,
-                         TransactionsViewModel transactionsViewModel, String transactionId) {
+                         TransactionsViewModel transactionsViewModel, String transactionId,
+                         UserViewModel userViewModel) {
         super(context);
         this.context = context;
         this.dataSyncViewModel = dataSyncViewModel;
         this.transactionsViewModel = transactionsViewModel;
         this.transactionId =transactionId;
+        this.userViewModel = userViewModel;
     }
 
     @Override
@@ -324,6 +333,10 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                 true,
                                 transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_saved()
                         );
+                        transactions.setIs_completed_by(getUser().getUsername());
+                        transactions.setIs_void_by(transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_void_by());
+                        transactions.setIs_cut_off_by(transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_cut_off_by());
+                        transactions.setIs_saved_by(transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_saved_by());
                         transactionsViewModel.update(transactions);
                         dismiss();
                         completed();
@@ -404,4 +417,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     }
 
     public abstract void completed();
+
+    private User getUser() throws ExecutionException, InterruptedException {
+        return userViewModel.searchLoggedInUser().get(0);
+    }
 }
