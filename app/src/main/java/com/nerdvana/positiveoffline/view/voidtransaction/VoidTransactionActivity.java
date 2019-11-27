@@ -148,18 +148,25 @@ public class VoidTransactionActivity extends AppCompatActivity implements Transa
     public void clicked(TransactionWithOrders transactionWithOrders) {
         try {
             Transactions reference = transactionsViewModel.loadedTransactionListViaControlNumber(transactionWithOrders.transactions.getControl_number()).get(0);
-            Transactions tr = new Transactions(
+            Transactions transactions = new Transactions(
                     reference.getId(),
                     reference.getControl_number(),
                     reference.getUser_id(),
                     true,
+                    getUser().getUsername(),
                     reference.getIs_completed(),
-                    reference.getIs_saved());
-            tr.setIs_void_by(getUser().getUsername());
-            tr.setIs_completed_by(reference.getIs_completed_by());
-            tr.setIs_cut_off_by(reference.getIs_cut_off_by());
-            tr.setIs_saved_by(reference.getIs_saved_by());
-            transactionsViewModel.update(tr);
+                    reference.getIs_completed_by(),
+                    reference.getIs_saved(),
+                    reference.getIs_saved_by(),
+                    reference.getIs_cut_off(),
+                    reference.getIs_cut_off_by(),
+                    reference.getTrans_name(),
+                    reference.getCreated_at(),
+                    reference.getReceipt_number()
+
+            );
+
+            transactionsViewModel.update(transactions);
             final Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override

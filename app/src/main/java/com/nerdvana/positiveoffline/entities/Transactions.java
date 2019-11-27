@@ -6,6 +6,8 @@ import androidx.room.ForeignKey;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import org.joda.time.DateTime;
+
 @Entity(tableName = "Transactions")
 public class Transactions {
     @NonNull
@@ -24,24 +26,61 @@ public class Transactions {
     private Boolean is_cut_off = false;
     private String is_cut_off_by = "";
     private String trans_name;
+    private String created_at;
+    private String receipt_number = "";
 
 
     public Transactions(@NonNull String control_number,
-                        String user_id) {
+                        String user_id, String created_at) {
         this.control_number = control_number;
         this.user_id = user_id;
+        this.created_at = created_at;
     }
 
     @Ignore
-    public Transactions(int id,@NonNull String control_number,
-                        String user_id, Boolean is_void,
-                        Boolean is_completed, Boolean is_saved) {
+    public Transactions(int id, @NonNull String control_number,
+                        @NonNull String user_id, Boolean is_void,
+                        String is_void_by, Boolean is_completed,
+                        String is_completed_by, Boolean is_saved,
+                        String is_saved_by, Boolean is_cut_off,
+                        String is_cut_off_by, String trans_name,
+                        String created_at, String receipt_number) {
         this.id = id;
         this.control_number = control_number;
         this.user_id = user_id;
         this.is_void = is_void;
+        this.is_void_by = is_void_by;
         this.is_completed = is_completed;
+        this.is_completed_by = is_completed_by;
         this.is_saved = is_saved;
+        this.is_saved_by = is_saved_by;
+        this.is_cut_off = is_cut_off;
+        this.is_cut_off_by = is_cut_off_by;
+        this.trans_name = trans_name;
+        this.created_at = created_at;
+        this.receipt_number = receipt_number;
+    }
+
+    //    @Ignore
+//    public Transactions(int id,@NonNull String control_number,
+//                        String user_id, Boolean is_void,
+//                        Boolean is_completed, Boolean is_saved) {
+//        this.id = id;
+//        this.control_number = control_number;
+//        this.user_id = user_id;
+//        this.is_void = is_void;
+//        this.is_completed = is_completed;
+//        this.is_saved = is_saved;
+//    }
+
+
+
+    public String getReceipt_number() {
+        return receipt_number;
+    }
+
+    public void setReceipt_number(String receipt_number) {
+        this.receipt_number = receipt_number;
     }
 
     public void setId(int id) {
@@ -139,5 +178,13 @@ public class Transactions {
 
     public void setIs_cut_off_by(String is_cut_off_by) {
         this.is_cut_off_by = is_cut_off_by;
+    }
+
+    public String getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(String created_at) {
+        this.created_at = created_at;
     }
 }

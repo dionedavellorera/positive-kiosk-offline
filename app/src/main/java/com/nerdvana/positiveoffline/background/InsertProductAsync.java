@@ -63,7 +63,8 @@ public class InsertProductAsync extends AsyncTask<Void, Void, Void> {
                     r.getAmount(),
                     r.getMarkUp(),
                     getBranchCategory(r),
-                    getBranchDepartment(r));
+                    getBranchDepartment(r),
+                    r.getBranchDepartments().size() > 0 ? r.getBranchDepartments().get(0).getDepartmentId() : 0);
 
 
             if (r.getImageFile() != null) {

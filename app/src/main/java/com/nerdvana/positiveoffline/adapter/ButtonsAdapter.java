@@ -100,7 +100,4 @@ public class ButtonsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return buttonsModelList.size();
     }
 
-
-
-
 }

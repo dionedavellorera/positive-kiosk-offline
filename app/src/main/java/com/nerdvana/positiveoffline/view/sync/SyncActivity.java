@@ -20,12 +20,14 @@ import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.adapter.SyncDataAdapter;
 import com.nerdvana.positiveoffline.apiresponses.FetchCashDenominationResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
 import com.nerdvana.positiveoffline.background.InserUserAsync;
 import com.nerdvana.positiveoffline.background.InsertCashDenominationAsync;
 import com.nerdvana.positiveoffline.background.InsertCreditCardAsync;
+import com.nerdvana.positiveoffline.background.InsertDiscountsAsync;
 import com.nerdvana.positiveoffline.background.InsertPaymentTypeAsync;
 import com.nerdvana.positiveoffline.background.InsertProductAsync;
 import com.nerdvana.positiveoffline.entities.DataSync;
@@ -69,7 +71,21 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         initPaymentTypeListener();
         initCreditCardListener();
         initCashDenoListener();
+        initDiscountListener();
 
+    }
+
+    private void initDiscountListener() {
+        dataSyncViewModel.getDiscountLiveData().observe(this, new Observer<FetchDiscountResponse>() {
+            @Override
+            public void onChanged(FetchDiscountResponse fetchDiscountResponse) {
+
+                Log.d("ENDASyNC", "Y12321321");
+
+
+                new InsertDiscountsAsync(fetchDiscountResponse.getResult(), SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+            }
+        });
     }
 
     private void initCashDenoListener() {
@@ -111,6 +127,7 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                     syncModelList.add(new DataSync("Payment Types", false));
                     syncModelList.add(new DataSync("Credit Cards", false));
                     syncModelList.add(new DataSync("Cash Denomination", false));
+                    syncModelList.add(new DataSync("Discount with settings", false));
                     dataSyncViewModel.insertData(syncModelList);
                 } else {
                     syncModelList = dataSyncList;
@@ -134,6 +151,10 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
 
                     if (!syncModelList.get(4).getSynced()) {
                         dataSyncViewModel.requestCashDenomination();
+                    }
+
+                    if (!syncModelList.get(5).getSynced()) {
+                        dataSyncViewModel.requestDiscounts();
                     }
                 }
 
@@ -236,6 +257,10 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 syncModelList.get(4).setSynced(true);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(4));
                 break;
+            case "discounts":
+                syncModelList.get(5).setSynced(true);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(5));
+                break;
         }
     }
 
@@ -270,7 +295,7 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void clicked(DataSync dataSync) {
         switch (dataSync.getTable().toLowerCase()) {
-            case "user":
+            case "users":
                 syncModelList.get(0).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(0));
                 break;
@@ -278,17 +303,21 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 syncModelList.get(1).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(1));
                 break;
-            case "payment_type":
+            case "payment types":
                 syncModelList.get(2).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(2));
                 break;
-            case "credit_card":
+            case "credit cards":
                 syncModelList.get(3).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(3));
                 break;
-            case "cash_denomination":
+            case "cash denomination":
                 syncModelList.get(4).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(4));
+                break;
+            case "discount with settings":
+                syncModelList.get(5).setSynced(false);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(5));
                 break;
         }
     }

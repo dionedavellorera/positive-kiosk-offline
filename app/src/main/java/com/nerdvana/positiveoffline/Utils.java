@@ -5,6 +5,8 @@ import android.util.Log;
 
 import androidx.room.util.StringUtil;
 
+import org.joda.time.DateTime;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,10 @@ public class Utils {
     public static String digitsWithComma(Double value) {
         DecimalFormat decimalFormat = new DecimalFormat("#,##0.00");
         return decimalFormat.format(value);
+    }
+
+    public static Double roundedOffTwoDecimal(Double value) {
+        return Double.valueOf(String.format("%.2f", value));
     }
 
     public static String getInitials(String value) {
@@ -31,6 +37,21 @@ public class Utils {
         }
 
         return finalList.size() > 0 ? TextUtils.join(" ", finalList) : "";
+    }
+
+    public static final String getDateTimeToday() {
+        DateTime dateTime = new DateTime();
+        return dateTime.toString("yyyy-MM-dd HH:mm:ss");
+    }
+
+    public static String getOrFormat(String value) {
+        String str = String.format("OR-%8s",value);
+        return str.replace(' ','0');
+    }
+
+    public static String getCtrlNumberFormat(String value) {
+        String str = String.format("CN-%8s",value);
+        return str.replace(' ','0');
     }
 
 }

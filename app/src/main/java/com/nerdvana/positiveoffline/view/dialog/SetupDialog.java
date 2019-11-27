@@ -132,6 +132,7 @@ public abstract class SetupDialog extends BaseDialog implements View.OnClickList
                             sendVerifyMachineRequest(etProductKey.getText().toString().toUpperCase());
 
                         } else {
+                            btnConfirm.stopLoading(btnConfirm);
                             progressDialog.dismiss();
                             Helper.showDialogMessage(getContext(), response.body().getMessage(), getContext().getString(R.string.text_header_error));
                         }

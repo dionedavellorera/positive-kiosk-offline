@@ -325,18 +325,36 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                     totalChange.setText(Utils.digitsWithComma(change));
 
                     if (tendered >= amountDue) {
+                        String receiptNumber = "";
+                        if (transactionsViewModel.lastOrNumber() == null) {
+                            receiptNumber = Utils.getOrFormat("1");
+                        } else {
+                            if (TextUtils.isEmpty(transactionsViewModel.lastOrNumber().getReceipt_number())) {
+                                receiptNumber = Utils.getOrFormat("1");
+                            } else {
+                                receiptNumber = Utils.getOrFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastOrNumber().getReceipt_number().split("-")[1].replaceAll("0", "")) + 1));
+                            }
+
+                        }
+
+
                         Transactions transactions = new Transactions(
                                 transactionsViewModel.loadedTransactionList(transactionId).get(0).getId(),
                                 transactionsViewModel.loadedTransactionList(transactionId).get(0).getControl_number(),
                                 transactionsViewModel.loadedTransactionList(transactionId).get(0).getUser_id(),
                                 transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_void(),
+                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_void_by(),
                                 true,
-                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_saved()
+                                getUser().getUsername(),
+                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_saved(),
+                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_saved_by(),
+                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_cut_off(),
+                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_cut_off_by(),
+                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getTrans_name(),
+                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getCreated_at(),
+                                receiptNumber
+
                         );
-                        transactions.setIs_completed_by(getUser().getUsername());
-                        transactions.setIs_void_by(transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_void_by());
-                        transactions.setIs_cut_off_by(transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_cut_off_by());
-                        transactions.setIs_saved_by(transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_saved_by());
                         transactionsViewModel.update(transactions);
                         dismiss();
                         completed();

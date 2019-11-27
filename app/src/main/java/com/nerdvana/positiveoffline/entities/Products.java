@@ -23,12 +23,14 @@ public class Products {
     private String category;
     private String department;
 
+    @NonNull
+    private int departmentId;
     public Products(int core_id,
                     @NonNull String product, @NonNull String product_initial,
                     String product_barcode, @NonNull Double tax_rate,
                     String image_file, Double amount,
                     Double mark_up, String category,
-                    String department) {
+                    String department, int departmentId) {
         this.core_id = core_id;
         this.product = product;
         this.product_initial = product_initial;
@@ -39,6 +41,57 @@ public class Products {
         this.mark_up = mark_up;
         this.category = category;
         this.department = department;
+        this.departmentId = departmentId;
+    }
+
+
+
+    public void setCore_id(int core_id) {
+        this.core_id = core_id;
+    }
+
+    public void setProduct(@NonNull String product) {
+        this.product = product;
+    }
+
+    public void setProduct_initial(@NonNull String product_initial) {
+        this.product_initial = product_initial;
+    }
+
+    public void setProduct_barcode(String product_barcode) {
+        this.product_barcode = product_barcode;
+    }
+
+    public void setTax_rate(@NonNull Double tax_rate) {
+        this.tax_rate = tax_rate;
+    }
+
+    public void setImage_file(String image_file) {
+        this.image_file = image_file;
+    }
+
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
+
+    public void setMark_up(Double mark_up) {
+        this.mark_up = mark_up;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public int getDepartmentId() {
+        return departmentId;
+    }
+
+    public void setDepartmentId(int departmentId) {
+        this.departmentId = departmentId;
     }
 
     public int getCore_id() {

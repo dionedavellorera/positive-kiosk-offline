@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.ProductsAdapter;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Products;
@@ -180,7 +181,12 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
                                 1,
                                 products.getAmount(),
                                 products.getAmount(),
-                                products.getProduct()
+                                products.getProduct(),
+                                products.getDepartmentId(),
+                                Utils.roundedOffTwoDecimal(products.getAmount() - (products.getAmount() / 1.12)),
+                                Utils.roundedOffTwoDecimal(products.getAmount() / 1.12),
+                                0.00,
+                                0.00
                         ));
                         transactionsViewModel.insertOrder(orderList);
                     }

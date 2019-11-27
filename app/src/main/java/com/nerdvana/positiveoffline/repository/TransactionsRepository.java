@@ -61,6 +61,30 @@ public class TransactionsRepository {
         return future.get();
     }
 
+    public Transactions getLastTransactionId() throws ExecutionException, InterruptedException {
+        Callable<Transactions> callable = new Callable<Transactions>() {
+            @Override
+            public Transactions call() throws Exception {
+                return transactionsDao.lastTransactionId();
+            }
+        };
+
+        Future<Transactions> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public Transactions getLastOrNumber() throws ExecutionException, InterruptedException {
+        Callable<Transactions> callable = new Callable<Transactions>() {
+            @Override
+            public Transactions call() throws Exception {
+                return transactionsDao.lastOrNumber();
+            }
+        };
+
+        Future<Transactions> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
     public List<Transactions> getUnCutOffTransactionsByUser(final String userId) throws ExecutionException, InterruptedException {
         Callable<List<Transactions>> callable = new Callable<List<Transactions>>() {
             @Override

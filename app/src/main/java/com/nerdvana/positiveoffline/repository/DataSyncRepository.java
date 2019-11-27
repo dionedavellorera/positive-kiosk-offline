@@ -11,17 +11,21 @@ import com.nerdvana.positiveoffline.IUsers;
 import com.nerdvana.positiveoffline.PosClient;
 import com.nerdvana.positiveoffline.apirequests.FetchCreditCardRequest;
 import com.nerdvana.positiveoffline.apirequests.FetchDenominationRequest;
+import com.nerdvana.positiveoffline.apirequests.FetchDiscountRequest;
 import com.nerdvana.positiveoffline.apirequests.FetchPaymentTypeRequest;
 import com.nerdvana.positiveoffline.apirequests.FetchProductsRequest;
 import com.nerdvana.positiveoffline.apirequests.FetchUserRequest;
 import com.nerdvana.positiveoffline.apiresponses.FetchCashDenominationResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
 import com.nerdvana.positiveoffline.dao.CashDenominationDao;
 import com.nerdvana.positiveoffline.dao.CreditCardsDao;
 import com.nerdvana.positiveoffline.dao.DataSyncDao;
+import com.nerdvana.positiveoffline.dao.DiscountSettingsDao;
+import com.nerdvana.positiveoffline.dao.DiscountsDao;
 import com.nerdvana.positiveoffline.dao.PaymentTypeDao;
 import com.nerdvana.positiveoffline.dao.UserDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
@@ -29,6 +33,8 @@ import com.nerdvana.positiveoffline.database.PosDatabase;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.entities.CreditCards;
 import com.nerdvana.positiveoffline.entities.DataSync;
+import com.nerdvana.positiveoffline.entities.DiscountSettings;
+import com.nerdvana.positiveoffline.entities.Discounts;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
 import com.nerdvana.positiveoffline.entities.User;
 
@@ -50,23 +56,30 @@ public class DataSyncRepository {
     private PaymentTypeDao paymentTypeDao;
     private CreditCardsDao creditCardsDao;
     private CashDenominationDao cashDenominationDao;
+    private DiscountsDao discountsDao;
+    private DiscountSettingsDao discountSettingsDao;
     private LiveData<List<DataSync>> allSyncList;
     private List<DataSync> syncList = new ArrayList<>();
 
     private MutableLiveData<FetchPaymentTypeResponse> fetchPaymentTypeLiveData;
     private MutableLiveData<FetchCreditCardResponse> fetchCreditCarDLiveData;
     private MutableLiveData<FetchCashDenominationResponse> fetchCashDenominationLiveData;
+    private MutableLiveData<FetchDiscountResponse> fetchDiscountLiveData;
+
     public DataSyncRepository(Application application) {
         PosDatabase posDatabase = DatabaseHelper.getDatabase(application);
         dataSyncDao = posDatabase.dataSyncDao();
         paymentTypeDao = posDatabase.paymentTypeDao();
         creditCardsDao = posDatabase.creditCardsDao();
         cashDenominationDao = posDatabase.cashDenominationDao();
+        discountsDao = posDatabase.discountsDao();
+        discountSettingsDao = posDatabase.discountSettingsDao();
         allSyncList = dataSyncDao.syncList();
 
         fetchPaymentTypeLiveData = new MutableLiveData<>();
         fetchCreditCarDLiveData = new MutableLiveData<>();
         fetchCashDenominationLiveData = new MutableLiveData<>();
+        fetchDiscountLiveData = new MutableLiveData<>();
     }
 
 
@@ -136,6 +149,10 @@ public class DataSyncRepository {
         return future.get();
     }
 
+    public MutableLiveData<FetchDiscountResponse> getFetchDiscountLiveData() {
+        return fetchDiscountLiveData;
+    }
+
     public void insertPaymentType(List<PaymentTypes> paymentTypes) {
         new DataSyncRepository.insertPaymentTypeAsyncTask(paymentTypeDao).execute(paymentTypes);
     }
@@ -146,6 +163,10 @@ public class DataSyncRepository {
 
     public void insertCashDenomination(List<CashDenomination> cashDenominationList) {
         new DataSyncRepository.insertCashDenominationAsync(cashDenominationDao).execute(cashDenominationList);
+    }
+
+    public void insertDiscountWithSettings(List<Discounts> discountsList, List<DiscountSettings> discountSettingsList) {
+        new DataSyncRepository.insertDiscountWithSettingAsync(discountsDao, discountSettingsDao, discountsList, discountSettingsList).execute();
     }
 
     public void insert(List<DataSync> dataSync) {
@@ -171,6 +192,29 @@ public class DataSyncRepository {
         }
     }
 
+    private static class insertDiscountWithSettingAsync extends AsyncTask<Void, Void, Void> {
+
+        private DiscountsDao discountsDao;
+        private DiscountSettingsDao discountSettingsDao;
+        private List<Discounts> discountList;
+        private List<DiscountSettings> settingsList;
+
+        insertDiscountWithSettingAsync(DiscountsDao discountsDao, DiscountSettingsDao discountSettingsDao,
+                                       List<Discounts> discountList, List<DiscountSettings> settingsList) {
+            this.discountsDao = discountsDao;
+            this.discountSettingsDao = discountSettingsDao;
+            this.discountList = discountList;
+            this.settingsList = settingsList;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            discountsDao.insert(discountList);
+            discountSettingsDao.insert(settingsList);
+            return null;
+        }
+    }
+
 
     private static class insertCashDenominationAsync extends AsyncTask<List<CashDenomination>, Void, Void> {
 
@@ -186,9 +230,6 @@ public class DataSyncRepository {
             return null;
         }
     }
-
-
-
 
     private static class insertCreditCardAsync extends AsyncTask<List<CreditCards>, Void, Void> {
 
@@ -256,6 +297,25 @@ public class DataSyncRepository {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
         }
+    }
+
+
+    public void fetchDiscounts() {
+        IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+        FetchDiscountRequest req = new FetchDiscountRequest();
+
+        Call<FetchDiscountResponse> call = iUsers.fetchDiscountRequest(req.getMapValue());
+        call.enqueue(new Callback<FetchDiscountResponse>() {
+            @Override
+            public void onResponse(Call<FetchDiscountResponse> call, Response<FetchDiscountResponse> response) {
+                fetchDiscountLiveData.postValue(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<FetchDiscountResponse> call, Throwable t) {
+
+            }
+        });
     }
 
 

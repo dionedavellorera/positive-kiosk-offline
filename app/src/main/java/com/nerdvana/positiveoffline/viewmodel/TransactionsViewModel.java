@@ -13,6 +13,7 @@ import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
+import com.nerdvana.positiveoffline.model.OrderWithDiscounts;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.repository.TransactionsRepository;
 
@@ -71,6 +72,14 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.getUnCutOffTransactions();
     }
 
+    public Transactions lastTransactionId() throws ExecutionException, InterruptedException {
+        return transactionsRepository.getLastTransactionId();
+    }
+
+    public Transactions lastOrNumber() throws ExecutionException, InterruptedException {
+        return transactionsRepository.getLastOrNumber();
+    }
+
     public List<Transactions> unCutOffTransactions(String userId) throws ExecutionException, InterruptedException {
         return transactionsRepository.getUnCutOffTransactionsByUser(userId);
     }
@@ -78,7 +87,6 @@ public class TransactionsViewModel extends AndroidViewModel {
     public List<TransactionWithOrders> completedTransactions() throws ExecutionException, InterruptedException {
         return transactionsRepository.getCompletedTransactions();
     }
-
 
     public LiveData<List<Orders>> ordersLiveData() {
         return transactionsRepository.getOrders();

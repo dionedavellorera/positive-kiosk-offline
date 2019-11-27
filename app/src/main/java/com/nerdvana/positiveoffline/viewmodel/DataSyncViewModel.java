@@ -10,11 +10,14 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.nerdvana.positiveoffline.apiresponses.FetchCashDenominationResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.entities.CreditCards;
 import com.nerdvana.positiveoffline.entities.DataSync;
+import com.nerdvana.positiveoffline.entities.DiscountSettings;
+import com.nerdvana.positiveoffline.entities.Discounts;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.repository.DataSyncRepository;
@@ -52,6 +55,15 @@ public class DataSyncViewModel extends AndroidViewModel {
 
     public void requestCashDenomination() {
         mRepository.fetchCashDenominationRequest();
+    }
+
+    public void requestDiscounts() {
+        mRepository.fetchDiscounts();
+    }
+
+
+    public MutableLiveData<FetchDiscountResponse> getDiscountLiveData() {
+        return mRepository.getFetchDiscountLiveData();
     }
 
     public MutableLiveData<FetchCashDenominationResponse> getCashDenoLiveData() {
@@ -98,6 +110,10 @@ public class DataSyncViewModel extends AndroidViewModel {
 
     public void insertCashDenomination(List<CashDenomination> list) {
         mRepository.insertCashDenomination(list);
+    }
+
+    public void insertDiscountWithSettings(List<Discounts> list, List<DiscountSettings> discountSettingsList) {
+        mRepository.insertDiscountWithSettings(list, discountSettingsList);
     }
 
 }

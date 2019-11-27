@@ -25,19 +25,72 @@ public class Orders {
     private String name;
     private Boolean is_void = false;
     private Boolean is_editing = false;
+    @NonNull
+    private int departmentId;
+
+    private Double vatAmount;
+    private Double vatable;
+    private Double vatExempt;
+    private Double discountAmount;
 
     public Orders(int transaction_id, int core_id,
                   int qty, @NonNull Double amount,
                   @NonNull Double original_amount,
-                  @NonNull String name) {
+                  @NonNull String name, int departmentId,
+                  Double vatAmount, Double vatable,
+                  Double vatExempt, Double discountAmount) {
         this.transaction_id = transaction_id;
         this.core_id = core_id;
         this.qty = qty;
         this.amount = amount;
         this.original_amount = original_amount;
         this.name = name;
+        this.departmentId = departmentId;
+        this.vatAmount = vatAmount;
+        this.vatable = vatable;
+        this.vatExempt = vatExempt;
+        this.discountAmount = discountAmount;
     }
 
+    public Double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(Double discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    public Double getVatAmount() {
+        return vatAmount;
+    }
+
+    public void setVatAmount(Double vatAmount) {
+        this.vatAmount = vatAmount;
+    }
+
+    public Double getVatable() {
+        return vatable;
+    }
+
+    public void setVatable(Double vatable) {
+        this.vatable = vatable;
+    }
+
+    public Double getVatExempt() {
+        return vatExempt;
+    }
+
+    public void setVatExempt(Double vatExempt) {
+        this.vatExempt = vatExempt;
+    }
+
+    public int getDepartmentId() {
+        return departmentId;
+    }
+
+    public void setDepartmentId(int departmentId) {
+        this.departmentId = departmentId;
+    }
 
     public Boolean getIs_editing() {
         return is_editing;

@@ -52,4 +52,11 @@
     <string name="button_reprint_z_reading">REPRINT Z READING</string>
     <string name="button_reprint_x_reading">REPRINT X READING</string>
     <string name="button_z_reading">Z READING</string>
+    <string name="header_discount_selection">SELECT DISCOUNT</string>
+    <string name="hint_card_number">12345</string>
+    <string name="label_osca_senior_pwd_number">OSCA/SENIOR/PWD NUMBER</string>
+    <string name="label_name">NAME</string>
+    <string name="label_address">ADDRESS</string>
+    <string name="hint_enter_address">Enter Address</string>
+    <string name="header_custom">Custom</string>
 </resources>

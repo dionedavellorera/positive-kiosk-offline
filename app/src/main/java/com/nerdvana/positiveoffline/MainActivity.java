@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider;
 import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 
 import com.nerdvana.positiveoffline.entities.User;
@@ -20,6 +21,10 @@ import com.nerdvana.positiveoffline.view.productsmenu.RightFrameFragment;
 import com.nerdvana.positiveoffline.view.sync.SyncActivity;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 import com.squareup.otto.Subscribe;
+
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 import java.util.concurrent.ExecutionException;
 
@@ -37,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
         openFragment(R.id.rightFrame, new RightFrameFragment());
 
         initUserViewModel();
+
+
+
     }
 
     private void initUserViewModel() {
