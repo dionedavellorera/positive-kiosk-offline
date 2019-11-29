@@ -29,6 +29,13 @@ public class Transactions {
     private String created_at;
     private String receipt_number = "";
 
+    private Double gross_sales = 0.00;
+    private Double net_sales = 0.00;
+    private Double vatable_sales = 0.00;
+    private Double vat_exempt_sales = 0.00;
+    private Double vat_amount = 0.00;
+    private Double discount_amount;
+
 
     public Transactions(@NonNull String control_number,
                         String user_id, String created_at) {
@@ -44,7 +51,10 @@ public class Transactions {
                         String is_completed_by, Boolean is_saved,
                         String is_saved_by, Boolean is_cut_off,
                         String is_cut_off_by, String trans_name,
-                        String created_at, String receipt_number) {
+                        String created_at, String receipt_number,
+                        Double gross_sales, Double net_sales,
+                        Double vatable_sales, Double vat_exempt_sales,
+                        Double vat_amount, Double discountAmount) {
         this.id = id;
         this.control_number = control_number;
         this.user_id = user_id;
@@ -59,21 +69,61 @@ public class Transactions {
         this.trans_name = trans_name;
         this.created_at = created_at;
         this.receipt_number = receipt_number;
+        this.gross_sales = gross_sales;
+        this.net_sales = net_sales;
+        this.vatable_sales = vatable_sales;
+        this.vat_exempt_sales = vat_exempt_sales;
+        this.vat_amount = vat_amount;
+        this.discount_amount = discountAmount;
     }
 
-    //    @Ignore
-//    public Transactions(int id,@NonNull String control_number,
-//                        String user_id, Boolean is_void,
-//                        Boolean is_completed, Boolean is_saved) {
-//        this.id = id;
-//        this.control_number = control_number;
-//        this.user_id = user_id;
-//        this.is_void = is_void;
-//        this.is_completed = is_completed;
-//        this.is_saved = is_saved;
-//    }
+    public Double getGross_sales() {
+        return gross_sales;
+    }
 
+    public void setGross_sales(Double gross_sales) {
+        this.gross_sales = gross_sales;
+    }
 
+    public Double getNet_sales() {
+        return net_sales;
+    }
+
+    public void setNet_sales(Double net_sales) {
+        this.net_sales = net_sales;
+    }
+
+    public Double getVatable_sales() {
+        return vatable_sales;
+    }
+
+    public void setVatable_sales(Double vatable_sales) {
+        this.vatable_sales = vatable_sales;
+    }
+
+    public Double getVat_exempt_sales() {
+        return vat_exempt_sales;
+    }
+
+    public void setVat_exempt_sales(Double vat_exempt_sales) {
+        this.vat_exempt_sales = vat_exempt_sales;
+    }
+
+    public Double getVat_amount() {
+        return vat_amount;
+    }
+
+    public void setVat_amount(Double vat_amount) {
+        this.vat_amount = vat_amount;
+    }
+
+    public Double getDiscount_amount() {
+        return discount_amount;
+    }
+
+    public void setDiscount_amount(Double discount_amount) {
+        this.discount_amount = discount_amount;
+    }
 
     public String getReceipt_number() {
         return receipt_number;

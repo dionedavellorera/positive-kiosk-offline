@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -80,6 +81,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private View view;
     private TextView subTotalValue;
     private TextView totalValue;
+    private TextView discountValue;
 
 
 
@@ -98,6 +100,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     }
 
     private void initViews(View view) {
+        discountValue = view.findViewById(R.id.discountValue);
         listCheckoutItems = view.findViewById(R.id.listCheckoutItems);
         subTotalValue = view.findViewById(R.id.subTotalValue);
         totalValue = view.findViewById(R.id.totalValue);
@@ -145,17 +148,21 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
             public void onChanged(List<Transactions> transactions) {
 
                 try {
-                    if (transactions.size() > 0) {
-                        transactionId = String.valueOf(transactions.get(0).getId());
+                    if (!TextUtils.isEmpty(transactionId)) {
                         setOrderAdapter(transactionsViewModel.orderList(transactionId));
-
-                        if (selectedProduct != null) {
-                            insertSelectedOrder();
-                            selectedProduct = null;
-                        }
                     } else {
-                        defaults();
+                        if (transactions.size() > 0) {
+                            transactionId = String.valueOf(transactions.get(0).getId());
+                            setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                            if (selectedProduct != null) {
+                                insertSelectedOrder();
+                                selectedProduct = null;
+                            }
+                        } else {
+                            defaults();
+                        }
                     }
+
 
                 } catch (ExecutionException e) {
                     e.printStackTrace();
@@ -189,6 +196,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
                 try {
                     setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                    transactionsViewModel.recomputeTransaction(transactionsViewModel.orderList(transactionId), transactionId);
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
@@ -206,16 +214,23 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
         listCheckoutItems.setAdapter(checkoutAdapter);
         listCheckoutItems.setLayoutManager(new LinearLayoutManager(getContext()));
         checkoutAdapter.notifyDataSetChanged();
+
+        selectedProduct = null;
+
+
     }
 
     private void computeTotal(List<Orders> orderList) {
         Double subTotal = 0.00;
         Double totalValue = 0.00;
+        Double discountAmount = 0.00;
         for (Orders order : orderList) {
             totalValue += order.getAmount() * order.getQty();
             subTotal += order.getOriginal_amount() * order.getQty();
+            discountAmount += order.getDiscountAmount();
         }
 
+        discountValue.setText(Utils.digitsWithComma(discountAmount));
         subTotalValue.setText(Utils.digitsWithComma(subTotal));
         this.totalValue.setText(Utils.digitsWithComma(totalValue));
     }
@@ -223,16 +238,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
     private void saveTransaction(Transactions transactions, String name) {
         transactionId = "";
-//            Transactions tr = new Transactions(
-//                    transactions.getId(),
-//                    transactions.getControl_number(),
-//                    transactions.getUser_id(),
-//                    transactions.getIs_void(),
-//                    transactions.getIs_completed(),
-//            true);
 
         Transactions tr = null;
         try {
+
             tr = new Transactions(
                     transactions.getId(),
                     transactions.getControl_number(),
@@ -247,7 +256,13 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     transactions.getIs_cut_off_by(),
                     name,
                     transactions.getCreated_at(),
-                    transactions.getReceipt_number()
+                    transactions.getReceipt_number(),
+                    transactions.getGross_sales() == null ? 0.00 : transactions.getGross_sales(),
+                    transactions.getNet_sales() == null ? 0.00 : transactions.getNet_sales(),
+                    transactions.getVatable_sales() == null ? 0.00 :transactions.getVatable_sales(),
+                    transactions.getVat_exempt_sales() == null ? 0.00 : transactions.getVat_exempt_sales(),
+                    transactions.getVatable_sales() == null ? 0.00 : transactions.getVatable_sales(),
+                    transactions.getDiscount_amount() == null ? 0.00 : transactions.getDiscount_amount()
 
             );
         } catch (ExecutionException e) {
@@ -264,24 +279,41 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
             case 115://OPEN DISCOUNT DIALOG
-                if (discountMenuDialog == null) {
-                    discountMenuDialog = new DiscountMenuDialog(getActivity(), discountViewModel,
-                            transactionsViewModel, transactionId);
-                    discountMenuDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialogInterface) {
-                            discountMenuDialog = null;
-                        }
-                    });
+                if (!TextUtils.isEmpty(transactionId)) {
+                    if (transactionsViewModel.orderList(transactionId).size() > 0) {
+                        if (discountMenuDialog == null) {
+                            discountMenuDialog = new DiscountMenuDialog(getActivity(), discountViewModel,
+                                    transactionsViewModel, transactionId);
+                            discountMenuDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+                                    discountMenuDialog = null;
+                                }
+                            });
 
-                    discountMenuDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialogInterface) {
-                            discountMenuDialog = null;
+                            discountMenuDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialogInterface) {
+                                    discountMenuDialog = null;
+                                }
+                            });
+                            discountMenuDialog.show();
                         }
-                    });
-                    discountMenuDialog.show();
+
+                    } else {
+                        Helper.showDialogMessage(getActivity(),
+                                getContext().getString(R.string.error_no_items_disc),
+                                getContext().getString(R.string.header_message));
+                    }
+
+                } else {
+                    Helper.showDialogMessage(getActivity(),
+                            getContext().getString(R.string.error_no_transaction_disc),
+                            getContext().getString(R.string.header_message));
                 }
+
+
+
                 break;
             case 133://OPEN SHIFT CUT OFF DIALOG
                 if (cutOffMenuDialog == null) {
@@ -416,16 +448,32 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                             public void success(int newQty) {
                                 try {
                                     for (Orders order : getEditingOrderList()) {
+
+                                        if (newQty > order.getQty()) {
+                                            order.setVatAmount(((newQty - order.getQty()) * order.getVatAmount()) + order.getVatAmount());
+                                            order.setVatable(((newQty - order.getQty()) * order.getVatable()) + order.getVatable());
+                                            order.setVatExempt(((newQty - order.getQty()) * order.getVatExempt()) + order.getVatExempt());
+                                            order.setDiscountAmount(((newQty - order.getQty()) * order.getDiscountAmount()) + order.getDiscountAmount());
+                                        } else if (newQty < order.getQty()) {
+                                            order.setVatAmount((order.getVatAmount() / order.getQty()) * newQty);
+                                            order.setVatable((order.getVatable() / order.getQty()) * newQty);
+                                            order.setVatExempt((order.getVatExempt() / order.getQty()) * newQty);
+                                            order.setDiscountAmount((order.getDiscountAmount() / order.getQty()) * newQty);
+                                        }
                                         order.setQty(newQty);
                                         order.setIs_editing(false);
                                         transactionsViewModel.updateOrder(order);
+
                                     }
+
+                                    transactionsViewModel.recomputeTransaction(transactionsViewModel.orderList(transactionId), transactionId);
 
                                 } catch (ExecutionException e) {
                                     e.printStackTrace();
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
+
 
                             }
                         };

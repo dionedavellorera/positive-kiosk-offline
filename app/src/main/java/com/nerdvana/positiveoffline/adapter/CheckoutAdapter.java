@@ -78,7 +78,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(productsModel.getName());
         ((CheckoutAdapter.ViewHolder)holder).listItemQty.setText(String.valueOf(productsModel.getQty()));
-        ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setText(Utils.digitsWithComma(productsModel.getAmount()));
+        ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setText(Utils.digitsWithComma(productsModel.getOriginal_amount() * productsModel.getQty()));
 
     }
 

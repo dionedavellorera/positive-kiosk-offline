@@ -15,11 +15,12 @@ public class DiscountSettings {
     private String room_type_id;
     private String room_rate_id;
     private double percentage;
+    private String discount_name;
 
     public DiscountSettings(int core_id, int discount_id,
                             String product_id, String department_id,
                             String room_type_id, String room_rate_id,
-                            double percentage) {
+                            double percentage, String discount_name) {
         this.core_id = core_id;
         this.discount_id = discount_id;
         this.product_id = product_id;
@@ -27,6 +28,15 @@ public class DiscountSettings {
         this.room_type_id = room_type_id;
         this.room_rate_id = room_rate_id;
         this.percentage = percentage;
+        this.discount_name = discount_name;
+    }
+
+    public String getDiscount_name() {
+        return discount_name;
+    }
+
+    public void setDiscount_name(String discount_name) {
+        this.discount_name = discount_name;
     }
 
     public int getCore_id() {

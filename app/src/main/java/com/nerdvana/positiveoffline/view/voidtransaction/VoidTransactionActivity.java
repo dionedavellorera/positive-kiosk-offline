@@ -162,9 +162,15 @@ public class VoidTransactionActivity extends AppCompatActivity implements Transa
                     reference.getIs_cut_off_by(),
                     reference.getTrans_name(),
                     reference.getCreated_at(),
-                    reference.getReceipt_number()
-
+                    reference.getReceipt_number(),
+                    reference.getGross_sales(),
+                    reference.getNet_sales(),
+                    reference.getVatable_sales(),
+                    reference.getVat_exempt_sales(),
+                    reference.getVat_amount(),
+                    reference.getDiscount_amount()
             );
+
 
             transactionsViewModel.update(transactions);
             final Handler handler = new Handler();

@@ -43,6 +43,10 @@
     <string name="error_zero_quantity">Cannot enter 0 quantity</string>
     <string name="error_no_transaction">No transaction for payment</string>
     <string name="error_no_items">No items for payment</string>
+
+    <string name="error_no_transaction_disc">No transaction for discount</string>
+    <string name="error_no_items_disc">No items for discount</string>
+
     <string name="error_has_balance">Please settle your remaining balance</string>
     <string name="transaction_completed">Transaction completed</string>
     <string name="title_completed_transactions">Completed Transactions</string>

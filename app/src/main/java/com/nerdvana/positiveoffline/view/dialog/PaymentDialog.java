@@ -152,11 +152,11 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             Double amountDue = 0.00;
             Double change = 0.00;
             for (Payments payments : transactionsViewModel.paymentList(transactionId)) {
-                tendered += payments.getAmount();
+                tendered += Utils.roundedOffTwoDecimal(payments.getAmount());
             }
 
             for (Orders order : transactionsViewModel.orderList(transactionId)) {
-                amountDue += order.getAmount() * order.getQty();
+                amountDue += Utils.roundedOffTwoDecimal(order.getAmount()) * order.getQty();
             }
 
             change = (tendered - amountDue < 1 ? 0.00 : tendered - amountDue);
@@ -165,8 +165,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             totalAmountDue.setText(Utils.digitsWithComma(tendered >= amountDue ? 0.00 : amountDue - tendered));
             totalChange.setText(Utils.digitsWithComma(change));
 
-            cashAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : amountDue - tendered));
-            creditCardAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : amountDue - tendered));
+            cashAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
+            creditCardAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
 
             if (tendered >= amountDue) {
                 pay.setBackgroundResource(R.drawable.button_selector);
@@ -321,10 +321,11 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                     change = (tendered - amountDue < 1 ? 0.00 : tendered - amountDue);
 
                     totalPayment.setText(Utils.digitsWithComma(tendered));
-                    totalAmountDue.setText(Utils.digitsWithComma(tendered >= amountDue ? 0.00 : amountDue - tendered));
+                    totalAmountDue.setText(Utils.digitsWithComma(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
                     totalChange.setText(Utils.digitsWithComma(change));
 
-                    if (tendered >= amountDue) {
+
+                    if (tendered >= Utils.roundedOffTwoDecimal(amountDue)) {
                         String receiptNumber = "";
                         if (transactionsViewModel.lastOrNumber() == null) {
                             receiptNumber = Utils.getOrFormat("1");
@@ -337,24 +338,31 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
                         }
 
-
+                        Transactions tmp = transactionsViewModel.loadedTransactionList(transactionId).get(0);
                         Transactions transactions = new Transactions(
-                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getId(),
-                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getControl_number(),
-                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getUser_id(),
-                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_void(),
-                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_void_by(),
+                                tmp.getId(),
+                                tmp.getControl_number(),
+                                tmp.getUser_id(),
+                                tmp.getIs_void(),
+                                tmp.getIs_void_by(),
                                 true,
                                 getUser().getUsername(),
-                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_saved(),
-                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_saved_by(),
-                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_cut_off(),
-                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getIs_cut_off_by(),
-                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getTrans_name(),
-                                transactionsViewModel.loadedTransactionList(transactionId).get(0).getCreated_at(),
-                                receiptNumber
+                                tmp.getIs_saved(),
+                                tmp.getIs_saved_by(),
+                                tmp.getIs_cut_off(),
+                                tmp.getIs_cut_off_by(),
+                                tmp.getTrans_name(),
+                                tmp.getCreated_at(),
+                                receiptNumber,
+                                tmp.getGross_sales(),
+                                tmp.getNet_sales(),
+                                tmp.getVatable_sales(),
+                                tmp.getVat_exempt_sales(),
+                                tmp.getVat_amount(),
+                                tmp.getDiscount_amount()
 
                         );
+
                         transactionsViewModel.update(transactions);
                         dismiss();
                         completed();

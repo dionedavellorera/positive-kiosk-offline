@@ -76,7 +76,8 @@ public class InsertDiscountsAsync extends AsyncTask<Void, Void, Void> {
                         ds.getDepartmentId() == null ? "" : ds.getDepartmentId().toString(),
                         ds.getRoomTypeId() == null ? "" : ds.getRoomTypeId().toLowerCase(),
                         ds.getRoomRateId() == null ? "" : ds.getRoomRateId(),
-                        ds.getPercentage()
+                        ds.getPercentage(),
+                        r.getDiscountCard()
                 );
                 discountSettingsList.add(discountSettings);
             }
