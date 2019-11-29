@@ -6,7 +6,10 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -16,19 +19,21 @@ import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.model.SafeKeepDataModel;
+import com.nerdvana.positiveoffline.viewmodel.CutOffViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class CollectionDialog extends BaseDialog {
+public abstract class CollectionDialog extends BaseDialog implements View.OnClickListener{
     private TextView totalSafeKeep;
     private List<SafeKeepDataModel> safeKeepDataModelList;
 
     private LinearLayout relContainer;
     private Double totalSafeKeepAmountDisp = 0.00;
     private DataSyncViewModel dataSyncViewModel;
+    private Button save;
     public CollectionDialog(Context context, DataSyncViewModel dataSyncViewModel) {
         super(context);
         this.dataSyncViewModel = dataSyncViewModel;
@@ -43,6 +48,8 @@ public class CollectionDialog extends BaseDialog {
     }
 
     private void initViews() {
+        save = findViewById(R.id.save);
+        save.setOnClickListener(this);
         relContainer = findViewById(R.id.relContainer);
         totalSafeKeep = findViewById(R.id.totalSafeKeep);
         safeKeepDataModelList = new ArrayList<>();
@@ -90,19 +97,13 @@ public class CollectionDialog extends BaseDialog {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
                 totalSafeKeepAmountDisp = 0.00;
-
                 for (SafeKeepDataModel skdm : safeKeepDataModelList) {
                     if (!TextUtils.isEmpty(skdm.getEditText().getText().toString())) {
                         totalSafeKeepAmountDisp += Double.valueOf(skdm.getValue()) * Double.valueOf(skdm.getEditText().getText().toString());
                     }
-
                 }
-
                 totalSafeKeep.setText(String.format("PHP %s", Utils.digitsWithComma(totalSafeKeepAmountDisp)));
-
-
             }
 
             @Override
@@ -111,12 +112,28 @@ public class CollectionDialog extends BaseDialog {
             }
         });
         linearLayout.addView(editText);
-
         safeKeepDataModelList.add(new SafeKeepDataModel(editText, actualAmount));
-//        safeKeepDataModelListDisplay.add(new SafeKeepDataModel(editText, actualAmount));
-
         relContainer.addView(linearLayout);
     }
 
 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.save:
+                Double totalCash = 0.00;
+                for (SafeKeepDataModel skdm : safeKeepDataModelList) {
+
+                    if (!TextUtils.isEmpty(skdm.getEditText().getText().toString())) {
+                        totalCash += Utils.roundedOffTwoDecimal(Double.valueOf(skdm.getValue()) * Integer.valueOf(skdm.getEditText().getText().toString()));
+                    }
+
+                }
+
+                cutOffSuccess(totalCash);
+                break;
+        }
+    }
+
+    public abstract void cutOffSuccess(Double totalCash);
 }

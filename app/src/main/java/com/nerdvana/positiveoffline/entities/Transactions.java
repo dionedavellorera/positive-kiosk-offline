@@ -36,6 +36,7 @@ public class Transactions {
     private Double vat_amount = 0.00;
     private Double discount_amount;
 
+    private long cut_off_id = 0;
 
     public Transactions(@NonNull String control_number,
                         String user_id, String created_at) {
@@ -236,5 +237,13 @@ public class Transactions {
 
     public void setCreated_at(String created_at) {
         this.created_at = created_at;
+    }
+
+    public long getCut_off_id() {
+        return cut_off_id;
+    }
+
+    public void setCut_off_id(long cut_off_id) {
+        this.cut_off_id = cut_off_id;
     }
 }

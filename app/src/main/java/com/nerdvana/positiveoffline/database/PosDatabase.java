@@ -5,9 +5,11 @@ import androidx.room.RoomDatabase;
 
 import com.nerdvana.positiveoffline.dao.CashDenominationDao;
 import com.nerdvana.positiveoffline.dao.CreditCardsDao;
+import com.nerdvana.positiveoffline.dao.CutOffDao;
 import com.nerdvana.positiveoffline.dao.DataSyncDao;
 import com.nerdvana.positiveoffline.dao.DiscountSettingsDao;
 import com.nerdvana.positiveoffline.dao.DiscountsDao;
+import com.nerdvana.positiveoffline.dao.EndOfDayDao;
 import com.nerdvana.positiveoffline.dao.OrderDiscountsDao;
 import com.nerdvana.positiveoffline.dao.OrdersDao;
 import com.nerdvana.positiveoffline.dao.PaymentTypeDao;
@@ -18,9 +20,11 @@ import com.nerdvana.positiveoffline.dao.TransactionsDao;
 import com.nerdvana.positiveoffline.dao.UserDao;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.entities.CreditCards;
+import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.DiscountSettings;
 import com.nerdvana.positiveoffline.entities.Discounts;
+import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.entities.OrderDiscounts;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
@@ -36,8 +40,9 @@ import com.nerdvana.positiveoffline.entities.User;
                         Payments.class, CreditCards.class,
                         CashDenomination.class, Discounts.class,
                         DiscountSettings.class, OrderDiscounts.class,
-                        PostedDiscounts.class},
-          version = 47)
+                        PostedDiscounts.class, CutOff.class,
+                        EndOfDay.class},
+          version = 53)
 
 public abstract class PosDatabase extends RoomDatabase {
     public abstract UserDao userDao();
@@ -53,4 +58,6 @@ public abstract class PosDatabase extends RoomDatabase {
     public abstract CashDenominationDao cashDenominationDao();
     public abstract DiscountsDao discountsDao();
     public abstract DiscountSettingsDao discountSettingsDao();
+    public abstract CutOffDao cutOffDao();
+    public abstract EndOfDayDao endOfDayDao();
 }

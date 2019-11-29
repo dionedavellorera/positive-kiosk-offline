@@ -45,6 +45,7 @@ import com.nerdvana.positiveoffline.view.dialog.PasswordDialog;
 import com.nerdvana.positiveoffline.view.dialog.PaymentDialog;
 import com.nerdvana.positiveoffline.view.resumetransaction.ResumeTransactionActivity;
 import com.nerdvana.positiveoffline.view.voidtransaction.VoidTransactionActivity;
+import com.nerdvana.positiveoffline.viewmodel.CutOffViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DiscountViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
@@ -72,6 +73,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private UserViewModel userViewModel;
     private DataSyncViewModel dataSyncViewModel;
     private DiscountViewModel discountViewModel;
+    private CutOffViewModel cutOffViewModel;
     //endregion
 
     private final int RESUME_TRANS_RETURN = 100;
@@ -115,6 +117,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
         initDiscountViewModel();
         initOrdersListener();
         initDataSyncViewModel();
+        initCutOffViewModel();
 
         try {
             if (transactionsList().size() > 0) {
@@ -128,6 +131,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
 
 
+    }
+
+    private void initCutOffViewModel() {
+        cutOffViewModel = new ViewModelProvider(this).get(CutOffViewModel.class);
     }
 
     private void initDiscountViewModel() {
@@ -317,7 +324,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                 break;
             case 133://OPEN SHIFT CUT OFF DIALOG
                 if (cutOffMenuDialog == null) {
-                    cutOffMenuDialog = new CutOffMenuDialog(getActivity(), transactionsViewModel, userViewModel, dataSyncViewModel);
+                    cutOffMenuDialog = new CutOffMenuDialog(getActivity(), transactionsViewModel, userViewModel, dataSyncViewModel, cutOffViewModel);
                     cutOffMenuDialog.show();
 
                     cutOffMenuDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -604,7 +611,6 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     insertSelectedOrder();
                 } else {
                     String controlNumber = "";
-
                     try {
                         if (transactionsViewModel.lastTransactionId() == null) {
                             controlNumber = Utils.getCtrlNumberFormat("1");
@@ -639,20 +645,23 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
     private void insertSelectedOrder() {
         List<Orders> orderList = new ArrayList<>();
-        orderList.add(new Orders(
-                Integer.valueOf(transactionId),
-                selectedProduct.getCore_id(),
-                1,
-                selectedProduct.getAmount(),
-                selectedProduct.getAmount(),
-                selectedProduct.getProduct(),
-                selectedProduct.getDepartmentId(),
-                Utils.roundedOffTwoDecimal(selectedProduct.getAmount() - (selectedProduct.getAmount() / 1.12)),
-                Utils.roundedOffTwoDecimal(selectedProduct.getAmount() / 1.12),
-                0.00,
-                0.00
-        ));
-        transactionsViewModel.insertOrder(orderList);
+        if (!TextUtils.isEmpty(transactionId)) {
+            orderList.add(new Orders(
+                    Integer.valueOf(transactionId),
+                    selectedProduct.getCore_id(),
+                    1,
+                    selectedProduct.getAmount(),
+                    selectedProduct.getAmount(),
+                    selectedProduct.getProduct(),
+                    selectedProduct.getDepartmentId(),
+                    Utils.roundedOffTwoDecimal(selectedProduct.getAmount() - (selectedProduct.getAmount() / 1.12)),
+                    Utils.roundedOffTwoDecimal(selectedProduct.getAmount() / 1.12),
+                    0.00,
+                    0.00
+            ));
+            transactionsViewModel.insertOrder(orderList);
+        }
+
     }
 
     @Override

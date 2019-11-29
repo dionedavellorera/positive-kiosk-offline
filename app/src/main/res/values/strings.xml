@@ -45,6 +45,9 @@
     <string name="error_no_items">No items for payment</string>
 
     <string name="error_no_transaction_disc">No transaction for discount</string>
+
+    <string name="error_no_transaction_cutoff">No transaction for cutoff</string>
+
     <string name="error_no_items_disc">No items for discount</string>
 
     <string name="error_has_balance">Please settle your remaining balance</string>
@@ -63,4 +66,5 @@
     <string name="label_address">ADDRESS</string>
     <string name="hint_enter_address">Enter Address</string>
     <string name="header_custom">Custom</string>
+    <string name="error_no_cut_off_to_end_of_day">No Cutoff to End of day</string>
 </resources>

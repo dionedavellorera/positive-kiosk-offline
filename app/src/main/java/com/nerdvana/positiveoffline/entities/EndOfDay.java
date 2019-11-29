@@ -4,8 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "CutOff")
-public class CutOff {
+@Entity(tableName = "EndOfDay")
+public class EndOfDay {
+
     @PrimaryKey(autoGenerate = true)
     @NonNull
     private int id;
@@ -18,14 +19,13 @@ public class CutOff {
     private Double vat_amount;
     private Double void_amount;
     private Double total_cash_amount;
-
-    private int z_read_id = 0;
     private String created_at;
-    public CutOff(int number_of_transactions, Double gross_sales,
-                  Double net_sales, Double vatable_sales,
-                  Double vat_exempt_sales, Double vat_amount,
-                  Double void_amount, Double total_cash_amount,
-                  int z_read_id, String created_at) {
+
+    public EndOfDay(int number_of_transactions, Double gross_sales,
+                    Double net_sales, Double vatable_sales,
+                    Double vat_exempt_sales, Double vat_amount,
+                    Double void_amount, Double total_cash_amount,
+                    String created_at) {
         this.number_of_transactions = number_of_transactions;
         this.gross_sales = gross_sales;
         this.net_sales = net_sales;
@@ -34,32 +34,7 @@ public class CutOff {
         this.vat_amount = vat_amount;
         this.void_amount = void_amount;
         this.total_cash_amount = total_cash_amount;
-        this.z_read_id = z_read_id;
         this.created_at = created_at;
-    }
-
-    public String getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(String created_at) {
-        this.created_at = created_at;
-    }
-
-    public int getZ_read_id() {
-        return z_read_id;
-    }
-
-    public void setZ_read_id(int z_read_id) {
-        this.z_read_id = z_read_id;
-    }
-
-    public Double getTotal_cash_amount() {
-        return total_cash_amount;
-    }
-
-    public void setTotal_cash_amount(Double total_cash_amount) {
-        this.total_cash_amount = total_cash_amount;
     }
 
     public int getId() {
@@ -124,5 +99,21 @@ public class CutOff {
 
     public void setVoid_amount(Double void_amount) {
         this.void_amount = void_amount;
+    }
+
+    public Double getTotal_cash_amount() {
+        return total_cash_amount;
+    }
+
+    public void setTotal_cash_amount(Double total_cash_amount) {
+        this.total_cash_amount = total_cash_amount;
+    }
+
+    public String getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(String created_at) {
+        this.created_at = created_at;
     }
 }
