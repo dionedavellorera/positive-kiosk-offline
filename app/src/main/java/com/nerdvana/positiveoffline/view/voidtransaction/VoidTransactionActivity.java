@@ -168,7 +168,8 @@ public class VoidTransactionActivity extends AppCompatActivity implements Transa
                     reference.getVatable_sales(),
                     reference.getVat_exempt_sales(),
                     reference.getVat_amount(),
-                    reference.getDiscount_amount()
+                    reference.getDiscount_amount(),
+                    reference.getChange()
             );
 
 

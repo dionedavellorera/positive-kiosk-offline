@@ -150,8 +150,8 @@ public class TransactionsViewModel extends AndroidViewModel {
                             selectedProduct.getOriginal_amount(),
                             selectedProduct.getName(),
                             selectedProduct.getDepartmentId(),
-                            Utils.roundedOffTwoDecimal(selectedProduct.getOriginal_amount() - (selectedProduct.getOriginal_amount() / 1.12)),
-                            Utils.roundedOffTwoDecimal(selectedProduct.getOriginal_amount() / 1.12),
+                            Utils.roundedOffTwoDecimal(selectedProduct.getOriginal_amount() * .12),
+                            Utils.roundedOffTwoDecimal( selectedProduct.getOriginal_amount()),
                             0.00,
                             0.00
                     );

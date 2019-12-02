@@ -23,6 +23,8 @@ public class Payments {
 
     private String other_data;
 
+    private int cut_off_id = 0;
+
     public Payments(int transaction_id, int core_id,
                     @NonNull Double amount, @NonNull String name) {
         this.transaction_id = transaction_id;
@@ -87,5 +89,14 @@ public class Payments {
 
     public void setOther_data(String other_data) {
         this.other_data = other_data;
+    }
+
+
+    public int getCut_off_id() {
+        return cut_off_id;
+    }
+
+    public void setCut_off_id(int cut_off_id) {
+        this.cut_off_id = cut_off_id;
     }
 }

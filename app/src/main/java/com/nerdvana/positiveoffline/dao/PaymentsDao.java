@@ -21,8 +21,12 @@ public interface PaymentsDao {
     @Query("SELECT * FROM Payments WHERE transaction_id = :transaction_id AND is_void = 0")
     List<Payments> paymentList(String transaction_id);
 
+    @Query("SELECT * FROM Payments WHERE cut_off_id = 0")
+    List<Payments> paymentsForCutOff();
+
     @Query("SELECT * FROM Payments WHERE transaction_id = :transaction_id AND is_void = 0")
     LiveData<List<Payments>> ldPaymentList(String transaction_id);
+
 
     @Update()
     void update(Payments payment);

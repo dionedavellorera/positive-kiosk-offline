@@ -5,11 +5,13 @@ import android.os.AsyncTask;
 
 import com.nerdvana.positiveoffline.dao.CutOffDao;
 import com.nerdvana.positiveoffline.dao.EndOfDayDao;
+import com.nerdvana.positiveoffline.dao.PaymentsDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
+import com.nerdvana.positiveoffline.entities.Payments;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -20,11 +22,13 @@ import java.util.concurrent.Future;
 public class CutOffRepository {
     private CutOffDao cutOffDao;
     private EndOfDayDao endOfDayDao;
+    private PaymentsDao paymentsDao;
 
     public CutOffRepository(Application application) {
         PosDatabase posDatabase = DatabaseHelper.getDatabase(application);
         cutOffDao = posDatabase.cutOffDao();
         endOfDayDao = posDatabase.endOfDayDao();
+        paymentsDao = posDatabase.paymentsDao();
 
     }
 
@@ -44,6 +48,25 @@ public class CutOffRepository {
         new CutOffRepository.updateEndOfDayAsyncTask(endOfDayDao).execute(endOfDay);
     }
 
+    public void update(Payments payments) throws ExecutionException, InterruptedException {
+        new CutOffRepository.updatePaymentAsyncTask(paymentsDao).execute(payments);
+    }
+
+
+    private static class updatePaymentAsyncTask extends AsyncTask<Payments, Void, Void> {
+
+        private PaymentsDao mAsyncTaskDao;
+
+        updatePaymentAsyncTask(PaymentsDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final Payments... params) {
+            mAsyncTaskDao.update(params[0]);
+            return null;
+        }
+    }
 
     private static class updateEndOfDayAsyncTask extends AsyncTask<EndOfDay, Void, Void> {
 
@@ -141,6 +164,17 @@ public class CutOffRepository {
         return future.get();
     }
 
+    public List<Payments> getAllPayments() throws ExecutionException, InterruptedException {
+        Callable<List<Payments>> callable = new Callable<List<Payments>>() {
+            @Override
+            public List<Payments> call() throws Exception {
+                return paymentsDao.paymentsForCutOff();
+            }
+        };
+
+        Future<List<Payments>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
 
 
 }

@@ -19,6 +19,9 @@ public class EndOfDay {
     private Double vat_amount;
     private Double void_amount;
     private Double total_cash_amount;
+    private Double total_cash_payments = 0.00;
+    private Double total_card_payments = 0.00;
+    private Double total_change = 0.00;
     private String created_at;
 
     public EndOfDay(int number_of_transactions, Double gross_sales,
@@ -35,6 +38,30 @@ public class EndOfDay {
         this.void_amount = void_amount;
         this.total_cash_amount = total_cash_amount;
         this.created_at = created_at;
+    }
+
+    public Double getTotal_change() {
+        return total_change;
+    }
+
+    public void setTotal_change(Double total_change) {
+        this.total_change = total_change;
+    }
+
+    public Double getTotal_cash_payments() {
+        return total_cash_payments;
+    }
+
+    public void setTotal_cash_payments(Double total_cash_payments) {
+        this.total_cash_payments = total_cash_payments;
+    }
+
+    public Double getTotal_card_payments() {
+        return total_card_payments;
+    }
+
+    public void setTotal_card_payments(Double total_card_payments) {
+        this.total_card_payments = total_card_payments;
     }
 
     public int getId() {

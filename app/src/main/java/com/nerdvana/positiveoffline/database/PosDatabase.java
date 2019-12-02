@@ -42,7 +42,7 @@ import com.nerdvana.positiveoffline.entities.User;
                         DiscountSettings.class, OrderDiscounts.class,
                         PostedDiscounts.class, CutOff.class,
                         EndOfDay.class},
-          version = 53)
+          version = 57)
 
 public abstract class PosDatabase extends RoomDatabase {
     public abstract UserDao userDao();

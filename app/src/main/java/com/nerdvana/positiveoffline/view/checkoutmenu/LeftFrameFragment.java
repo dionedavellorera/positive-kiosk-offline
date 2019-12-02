@@ -43,11 +43,13 @@ import com.nerdvana.positiveoffline.view.dialog.DiscountMenuDialog;
 import com.nerdvana.positiveoffline.view.dialog.InputDialog;
 import com.nerdvana.positiveoffline.view.dialog.PasswordDialog;
 import com.nerdvana.positiveoffline.view.dialog.PaymentDialog;
+import com.nerdvana.positiveoffline.view.dialog.SettingsDialog;
 import com.nerdvana.positiveoffline.view.resumetransaction.ResumeTransactionActivity;
 import com.nerdvana.positiveoffline.view.voidtransaction.VoidTransactionActivity;
 import com.nerdvana.positiveoffline.viewmodel.CutOffViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DiscountViewModel;
+import com.nerdvana.positiveoffline.viewmodel.SettingsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 import com.squareup.otto.Subscribe;
@@ -66,6 +68,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private ChangeQtyDialog changeQtyDialog;
     private InputDialog inputDialog;
     private CutOffMenuDialog cutOffMenuDialog;
+    private SettingsDialog settingsDialog;
     //endregion
 
     //regionview models
@@ -74,6 +77,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private DataSyncViewModel dataSyncViewModel;
     private DiscountViewModel discountViewModel;
     private CutOffViewModel cutOffViewModel;
+    private SettingsViewModel settingsViewModel;
     //endregion
 
     private final int RESUME_TRANS_RETURN = 100;
@@ -118,7 +122,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
         initOrdersListener();
         initDataSyncViewModel();
         initCutOffViewModel();
-
+        initSettingsViewModel();
         try {
             if (transactionsList().size() > 0) {
                 setOrderAdapter(transactionsViewModel.orderList(transactionId));
@@ -131,6 +135,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
 
 
+    }
+
+    private void initSettingsViewModel() {
+        settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
     }
 
     private void initCutOffViewModel() {
@@ -269,7 +277,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     transactions.getVatable_sales() == null ? 0.00 :transactions.getVatable_sales(),
                     transactions.getVat_exempt_sales() == null ? 0.00 : transactions.getVat_exempt_sales(),
                     transactions.getVatable_sales() == null ? 0.00 : transactions.getVatable_sales(),
-                    transactions.getDiscount_amount() == null ? 0.00 : transactions.getDiscount_amount()
+                    transactions.getDiscount_amount() == null ? 0.00 : transactions.getDiscount_amount(),
+                    0.00
 
             );
         } catch (ExecutionException e) {
@@ -285,6 +294,26 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 129://OPEN SETTINGS
+                if (settingsDialog == null) {
+                    settingsDialog = new SettingsDialog(getActivity(), settingsViewModel);
+                    settingsDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            settingsDialog = null;
+                        }
+                    });
+
+                    settingsDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialogInterface) {
+                            settingsDialog = null;
+                        }
+                    });
+
+                    settingsDialog.show();
+                }
+                break;
             case 115://OPEN DISCOUNT DIALOG
                 if (!TextUtils.isEmpty(transactionId)) {
                     if (transactionsViewModel.orderList(transactionId).size() > 0) {
@@ -654,8 +683,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     selectedProduct.getAmount(),
                     selectedProduct.getProduct(),
                     selectedProduct.getDepartmentId(),
-                    Utils.roundedOffTwoDecimal(selectedProduct.getAmount() - (selectedProduct.getAmount() / 1.12)),
-                    Utils.roundedOffTwoDecimal(selectedProduct.getAmount() / 1.12),
+                    Utils.roundedOffTwoDecimal(selectedProduct.getAmount() * .12),
+                    Utils.roundedOffTwoDecimal(selectedProduct.getAmount()),
                     0.00,
                     0.00
             ));

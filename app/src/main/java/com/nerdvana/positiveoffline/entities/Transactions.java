@@ -35,7 +35,7 @@ public class Transactions {
     private Double vat_exempt_sales = 0.00;
     private Double vat_amount = 0.00;
     private Double discount_amount;
-
+    private Double change = 0.00;
     private long cut_off_id = 0;
 
     public Transactions(@NonNull String control_number,
@@ -55,7 +55,8 @@ public class Transactions {
                         String created_at, String receipt_number,
                         Double gross_sales, Double net_sales,
                         Double vatable_sales, Double vat_exempt_sales,
-                        Double vat_amount, Double discountAmount) {
+                        Double vat_amount, Double discountAmount,
+                        Double change) {
         this.id = id;
         this.control_number = control_number;
         this.user_id = user_id;
@@ -76,6 +77,15 @@ public class Transactions {
         this.vat_exempt_sales = vat_exempt_sales;
         this.vat_amount = vat_amount;
         this.discount_amount = discountAmount;
+        this.change = change;
+    }
+
+    public Double getChange() {
+        return change;
+    }
+
+    public void setChange(Double change) {
+        this.change = change;
     }
 
     public Double getGross_sales() {
