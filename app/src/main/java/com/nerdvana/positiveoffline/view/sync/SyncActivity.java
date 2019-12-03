@@ -29,6 +29,8 @@ import com.nerdvana.positiveoffline.background.InsertCashDenominationAsync;
 import com.nerdvana.positiveoffline.background.InsertCreditCardAsync;
 import com.nerdvana.positiveoffline.background.InsertDiscountsAsync;
 import com.nerdvana.positiveoffline.background.InsertPaymentTypeAsync;
+import com.nerdvana.positiveoffline.background.InsertPrinterLanguageAsync;
+import com.nerdvana.positiveoffline.background.InsertPrinterSeriesAsync;
 import com.nerdvana.positiveoffline.background.InsertProductAsync;
 import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.intf.SyncCallback;
@@ -128,6 +130,8 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                     syncModelList.add(new DataSync("Credit Cards", false));
                     syncModelList.add(new DataSync("Cash Denomination", false));
                     syncModelList.add(new DataSync("Discount with settings", false));
+                    syncModelList.add(new DataSync("Printer Series", false));
+                    syncModelList.add(new DataSync("Printer Language", false));
                     dataSyncViewModel.insertData(syncModelList);
                 } else {
                     syncModelList = dataSyncList;
@@ -155,6 +159,14 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
 
                     if (!syncModelList.get(5).getSynced()) {
                         dataSyncViewModel.requestDiscounts();
+                    }
+
+                    if (!syncModelList.get(6).getSynced()) {
+                        new InsertPrinterSeriesAsync(SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+                    }
+
+                    if (!syncModelList.get(7).getSynced()) {
+                        new InsertPrinterLanguageAsync(SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
                     }
                 }
 
@@ -261,6 +273,14 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 syncModelList.get(5).setSynced(true);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(5));
                 break;
+            case "printer_series":
+                syncModelList.get(6).setSynced(true);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(6));
+                break;
+            case "printer_language":
+                syncModelList.get(7).setSynced(true);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(7));
+                break;
         }
     }
 
@@ -318,6 +338,14 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
             case "discount with settings":
                 syncModelList.get(5).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(5));
+                break;
+            case "printer series":
+                syncModelList.get(6).setSynced(false);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(6));
+                break;
+            case "printer language":
+                syncModelList.get(7).setSynced(false);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(7));
                 break;
         }
     }

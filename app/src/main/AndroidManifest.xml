@@ -16,6 +16,15 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".view.settings.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.nerdvana.positiveoffline.MainActivity" />
+        </activity>
+        <activity
             android:name=".view.resumetransaction.ResumeTransactionActivity"
             android:label="@string/title_activity_resume_transaction"
             android:parentActivityName=".MainActivity"
@@ -46,15 +55,6 @@
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateHidden|adjustPan" />
-        <activity
-            android:name=".view.voidtransaction.VoidTransactionActivity"
-            android:screenOrientation="landscape"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="stateHidden|adjustPan">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.nerdvana.positiveoffline.MainActivity" />
-        </activity>
     </application>
 
 </manifest>

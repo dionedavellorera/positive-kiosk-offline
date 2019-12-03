@@ -27,6 +27,8 @@ import com.nerdvana.positiveoffline.dao.DataSyncDao;
 import com.nerdvana.positiveoffline.dao.DiscountSettingsDao;
 import com.nerdvana.positiveoffline.dao.DiscountsDao;
 import com.nerdvana.positiveoffline.dao.PaymentTypeDao;
+import com.nerdvana.positiveoffline.dao.PrinterLanguageDao;
+import com.nerdvana.positiveoffline.dao.PrinterSeriesDao;
 import com.nerdvana.positiveoffline.dao.UserDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
@@ -36,6 +38,8 @@ import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.DiscountSettings;
 import com.nerdvana.positiveoffline.entities.Discounts;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
+import com.nerdvana.positiveoffline.entities.PrinterLanguage;
+import com.nerdvana.positiveoffline.entities.PrinterSeries;
 import com.nerdvana.positiveoffline.entities.User;
 
 import java.lang.ref.WeakReference;
@@ -58,6 +62,8 @@ public class DataSyncRepository {
     private CashDenominationDao cashDenominationDao;
     private DiscountsDao discountsDao;
     private DiscountSettingsDao discountSettingsDao;
+    private PrinterSeriesDao printerSeriesDao;
+    private PrinterLanguageDao printerLanguageDao;
     private LiveData<List<DataSync>> allSyncList;
     private List<DataSync> syncList = new ArrayList<>();
 
@@ -74,6 +80,8 @@ public class DataSyncRepository {
         cashDenominationDao = posDatabase.cashDenominationDao();
         discountsDao = posDatabase.discountsDao();
         discountSettingsDao = posDatabase.discountSettingsDao();
+        printerSeriesDao = posDatabase.printerSeriesDao();
+        printerLanguageDao = posDatabase.printerLanguageDao();
         allSyncList = dataSyncDao.syncList();
 
         fetchPaymentTypeLiveData = new MutableLiveData<>();
@@ -149,8 +157,42 @@ public class DataSyncRepository {
         return future.get();
     }
 
+    public List<PrinterSeries> getPrinterSeriesList() throws ExecutionException, InterruptedException {
+        Callable<List<PrinterSeries>> callable = new Callable<List<PrinterSeries>>() {
+            @Override
+            public List<PrinterSeries> call() throws Exception {
+                return printerSeriesDao.printerSeriesList();
+            }
+        };
+
+        Future<List<PrinterSeries>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public List<PrinterLanguage> getPrinterLanguageList() throws ExecutionException, InterruptedException {
+        Callable<List<PrinterLanguage>> callable = new Callable<List<PrinterLanguage>>() {
+            @Override
+            public List<PrinterLanguage> call() throws Exception {
+                return printerLanguageDao.printerLanguageList();
+            }
+        };
+
+        Future<List<PrinterLanguage>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
+
     public MutableLiveData<FetchDiscountResponse> getFetchDiscountLiveData() {
         return fetchDiscountLiveData;
+    }
+
+    public void insertPrinterSeries(List<PrinterSeries> printerSeries) {
+        new DataSyncRepository.insertPrinterSeriesAsync(printerSeriesDao).execute(printerSeries);
+    }
+
+    public void insertPrinterLanguage(List<PrinterLanguage> printerLanguages) {
+        new DataSyncRepository.insertPrinterLanguageAsync(printerLanguageDao).execute(printerLanguages);
     }
 
     public void insertPaymentType(List<PaymentTypes> paymentTypes) {
@@ -211,6 +253,36 @@ public class DataSyncRepository {
         protected Void doInBackground(Void... voids) {
             discountsDao.insert(discountList);
             discountSettingsDao.insert(settingsList);
+            return null;
+        }
+    }
+
+    private static class insertPrinterLanguageAsync extends AsyncTask<List<PrinterLanguage>, Void, Void> {
+
+        private PrinterLanguageDao mAsyncTaskDao;
+
+        insertPrinterLanguageAsync(PrinterLanguageDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final List<PrinterLanguage>... params) {
+            mAsyncTaskDao.insert(params[0]);
+            return null;
+        }
+    }
+
+    private static class insertPrinterSeriesAsync extends AsyncTask<List<PrinterSeries>, Void, Void> {
+
+        private PrinterSeriesDao mAsyncTaskDao;
+
+        insertPrinterSeriesAsync(PrinterSeriesDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final List<PrinterSeries>... params) {
+            mAsyncTaskDao.insert(params[0]);
             return null;
         }
     }

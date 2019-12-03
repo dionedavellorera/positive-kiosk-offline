@@ -141,6 +141,7 @@ public abstract class SetupDialog extends BaseDialog implements View.OnClickList
 
                     @Override
                     public void onFailure(Call<TestResponse> call, Throwable t) {
+                        btnConfirm.stopLoading(btnConfirm);
                         Helper.showDialogMessage(getContext(), t.getMessage(), getContext().getString(R.string.text_header_error));
                         progressDialog.dismiss();
                     }

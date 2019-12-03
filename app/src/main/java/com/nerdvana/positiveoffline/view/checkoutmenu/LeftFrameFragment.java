@@ -1,13 +1,10 @@
 package com.nerdvana.positiveoffline.view.checkoutmenu;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,8 +18,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.facebook.stetho.common.StringUtil;
-import com.facebook.stetho.common.Util;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.Helper;
@@ -34,7 +29,6 @@ import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.OrdersContract;
-import com.nerdvana.positiveoffline.intf.ProductsContract;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
 import com.nerdvana.positiveoffline.view.dialog.ChangeQtyDialog;
@@ -43,9 +37,9 @@ import com.nerdvana.positiveoffline.view.dialog.DiscountMenuDialog;
 import com.nerdvana.positiveoffline.view.dialog.InputDialog;
 import com.nerdvana.positiveoffline.view.dialog.PasswordDialog;
 import com.nerdvana.positiveoffline.view.dialog.PaymentDialog;
-import com.nerdvana.positiveoffline.view.dialog.SettingsDialog;
+import com.nerdvana.positiveoffline.view.dialog.TransactionDialog;
 import com.nerdvana.positiveoffline.view.resumetransaction.ResumeTransactionActivity;
-import com.nerdvana.positiveoffline.view.voidtransaction.VoidTransactionActivity;
+import com.nerdvana.positiveoffline.view.settings.SettingsActivity;
 import com.nerdvana.positiveoffline.viewmodel.CutOffViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DiscountViewModel;
@@ -56,7 +50,6 @@ import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 public class LeftFrameFragment extends Fragment implements OrdersContract {
@@ -68,7 +61,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private ChangeQtyDialog changeQtyDialog;
     private InputDialog inputDialog;
     private CutOffMenuDialog cutOffMenuDialog;
-    private SettingsDialog settingsDialog;
+    private TransactionDialog transactionDialog;
     //endregion
 
     //regionview models
@@ -294,25 +287,31 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
-            case 129://OPEN SETTINGS
-                if (settingsDialog == null) {
-                    settingsDialog = new SettingsDialog(getActivity(), settingsViewModel);
-                    settingsDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialogInterface) {
-                            settingsDialog = null;
-                        }
-                    });
-
-                    settingsDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            case 996://OPEN VIEW RECEIPT
+                if (transactionDialog == null) {
+                    transactionDialog = new TransactionDialog(getActivity(),
+                            getContext().getString(R.string.title_reprint_transactions),
+                            transactionsViewModel,
+                            userViewModel,
+                            false);
+                    transactionDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                         @Override
                         public void onCancel(DialogInterface dialogInterface) {
-                            settingsDialog = null;
+                            transactionDialog = null;
+                        }
+                    });
+                    transactionDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            transactionDialog = null;
                         }
                     });
 
-                    settingsDialog.show();
+                    transactionDialog.show();
                 }
+                break;
+            case 129://OPEN SETTINGS
+                startActivity(new Intent(getContext(), SettingsActivity.class));
                 break;
             case 115://OPEN DISCOUNT DIALOG
                 if (!TextUtils.isEmpty(transactionId)) {
@@ -372,7 +371,28 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                 }
                 break;
             case 113://VOID TRANSACTION
-                startActivity(new Intent(getContext(), VoidTransactionActivity.class));
+                if (transactionDialog == null) {
+                    transactionDialog = new TransactionDialog(getActivity(),
+                            getContext().getString(R.string.title_completed_transactions),
+                            transactionsViewModel,
+                            userViewModel,
+                            true);
+                    transactionDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialogInterface) {
+                            transactionDialog = null;
+                        }
+                    });
+                    transactionDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            transactionDialog = null;
+                        }
+                    });
+
+                    transactionDialog.show();
+                }
+//                startActivity(new Intent(getContext(), TransactionActivity.class));
                 break;
             case 105://PAYMENT
                 if (!TextUtils.isEmpty(transactionId)) {

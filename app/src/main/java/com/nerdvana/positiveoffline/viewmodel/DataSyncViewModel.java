@@ -19,6 +19,8 @@ import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.DiscountSettings;
 import com.nerdvana.positiveoffline.entities.Discounts;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
+import com.nerdvana.positiveoffline.entities.PrinterLanguage;
+import com.nerdvana.positiveoffline.entities.PrinterSeries;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.repository.DataSyncRepository;
 
@@ -66,6 +68,14 @@ public class DataSyncViewModel extends AndroidViewModel {
         return mRepository.getFetchDiscountLiveData();
     }
 
+    public List<PrinterSeries> getPrinterSeries() throws ExecutionException, InterruptedException {
+        return mRepository.getPrinterSeriesList();
+    }
+
+    public List<PrinterLanguage> getPrinterLanguage() throws ExecutionException, InterruptedException {
+        return mRepository.getPrinterLanguageList();
+    }
+
     public MutableLiveData<FetchCashDenominationResponse> getCashDenoLiveData() {
         return mRepository.getFetchCashDenominationLiveData();
     }
@@ -106,6 +116,14 @@ public class DataSyncViewModel extends AndroidViewModel {
 
     public void insertCreditCard(List<CreditCards> list) {
         mRepository.insertCreditCard(list);
+    }
+
+    public void insertPrinterSeries(List<PrinterSeries> list) {
+        mRepository.insertPrinterSeries(list);
+    }
+
+    public void insertPrinterLanguage(List<PrinterLanguage> list) {
+        mRepository.insertPrinterLanguage(list);
     }
 
     public void insertCashDenomination(List<CashDenomination> list) {

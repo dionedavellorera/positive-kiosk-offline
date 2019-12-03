@@ -33,11 +33,17 @@ public class TransactionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     private List<TransactionWithOrders> transactionsFilteredList;
     private Context context;
     private TransactionsContract transactionsContract;
-    public TransactionsAdapter(List<TransactionWithOrders> transactionsList, Context context, TransactionsContract transactionsContract) {
+    private Boolean forVoid;
+    public TransactionsAdapter(
+            List<TransactionWithOrders> transactionsList,
+            Context context,
+            TransactionsContract transactionsContract,
+            Boolean forVoid) {
         this.transactionsList = transactionsList;
         this.context = context;
         this.transactionsContract = transactionsContract;
         transactionsFilteredList = transactionsList;
+        this.forVoid = forVoid;
     }
 
     @NonNull
@@ -59,7 +65,7 @@ public class TransactionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                     } else {
                         List<TransactionWithOrders> filteredList = new ArrayList<>();
                         for (TransactionWithOrders pm : transactionsList) {
-                            if (pm.transactions.getControl_number().toLowerCase().contains(charSting.toLowerCase())) {
+                            if (pm.transactions.getReceipt_number().toLowerCase().contains(charSting.toLowerCase())) {
                                 filteredList.add(pm);
                             }
                         }
@@ -105,7 +111,7 @@ public class TransactionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         ((ViewHolder)holder).linOrders.removeAllViews();
         final TransactionWithOrders model = transactionsFilteredList.get(holder.getAdapterPosition());
         ((ViewHolder)holder).controlNumberValue.setText(model.transactions.getControl_number());
-        ((ViewHolder)holder).receiptNumberValue.setText(model.transactions.getControl_number());
+        ((ViewHolder)holder).receiptNumberValue.setText(model.transactions.getReceipt_number());
 
 
         LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 0.5f);
@@ -149,6 +155,16 @@ public class TransactionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 transactionsContract.clicked(model);
             }
         });
+
+        if (!forVoid) {
+
+            ((TransactionsAdapter.ViewHolder)holder).btnVoidTransaction.setText("REPRINT");
+
+        } else {
+
+            ((TransactionsAdapter.ViewHolder)holder).btnVoidTransaction.setText("VOID");
+
+        }
 
     }
 
