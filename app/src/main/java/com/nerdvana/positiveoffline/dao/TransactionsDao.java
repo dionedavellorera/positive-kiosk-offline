@@ -10,6 +10,7 @@ import androidx.room.Update;
 
 import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.Transactions;
+import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 
 import java.util.List;
@@ -49,6 +50,9 @@ public interface TransactionsDao {
 
     @Query("SELECT * FROM Transactions WHERE control_number = :control_number")
     List<Transactions> loadedTransactionListViaControlNumber(String control_number);
+
+    @Query("SELECT * FROM Transactions t WHERE t.receipt_number = :receipt_number LIMIT 1")
+    TransactionCompleteDetails getTransactionViaReceiptNumber(String receipt_number);
 
     @Update()
     void update(Transactions transaction);

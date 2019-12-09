@@ -139,7 +139,7 @@ public class OrderWithDiscounts {
 //        this.discountName = discountName;
 //    }
 
-        @Embedded
+    @Embedded
     public Orders orders;
 
     @Relation(parentColumn = "id", entityColumn = "order_id", entity = OrderDiscounts.class)

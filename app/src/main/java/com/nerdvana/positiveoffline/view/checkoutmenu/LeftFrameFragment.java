@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
+import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.Utils;
@@ -30,6 +32,7 @@ import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.OrdersContract;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
+import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
 import com.nerdvana.positiveoffline.view.dialog.ChangeQtyDialog;
 import com.nerdvana.positiveoffline.view.dialog.CutOffMenuDialog;
@@ -402,9 +405,16 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                     transactionsViewModel, transactionId,
                                     userViewModel) {
                                 @Override
-                                public void completed() {
+                                public void completed(String receiptNumber) {
 
-                                    Helper.showDialogMessage(getActivity(), getContext().getString(R.string.transaction_completed), getContext().getString(R.string.header_message));
+
+                                    try {
+                                        BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
 
                                     try {
                                         if (transactionsList().size() > 0) {
@@ -667,7 +677,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                             if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
                                 controlNumber = Utils.getCtrlNumberFormat("1");
                             } else {
-                                controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceAll("0", "")) + 1));
+                                controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
                             }
 
                         }
@@ -703,8 +713,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     selectedProduct.getAmount(),
                     selectedProduct.getProduct(),
                     selectedProduct.getDepartmentId(),
-                    Utils.roundedOffTwoDecimal(selectedProduct.getAmount() * .12),
-                    Utils.roundedOffTwoDecimal(selectedProduct.getAmount()),
+                    Utils.roundedOffTwoDecimal((selectedProduct.getAmount() / 1.12) * .12),
+                    Utils.roundedOffTwoDecimal(selectedProduct.getAmount() / 1.12),
                     0.00,
                     0.00
             ));

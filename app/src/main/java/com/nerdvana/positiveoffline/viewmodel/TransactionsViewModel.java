@@ -20,6 +20,7 @@ import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.model.OrderWithDiscounts;
+import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.model.TransactionWithDiscounts;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.repository.TransactionsRepository;
@@ -110,7 +111,14 @@ public class TransactionsViewModel extends AndroidViewModel {
 
                     for (OrderDiscounts od : owd.orderWithDiscountList) {
                         if (!od.getIs_void()) {
+
+
                             totalDiscountAmount += Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100));
+                            PostedDiscounts pd = discountViewModel.getPostedDiscount((int)od.getPosted_discount_id());
+                            pd.setId((int)od.getPosted_discount_id());
+                            pd.setAmount(Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100)));
+                            discountViewModel.updatePostedDiscount(pd);
+
                             remainingAmount = Utils.roundedOffTwoDecimal(remainingAmount - totalDiscountAmount);
                         }
                     }
@@ -151,7 +159,7 @@ public class TransactionsViewModel extends AndroidViewModel {
                             selectedProduct.getName(),
                             selectedProduct.getDepartmentId(),
                             Utils.roundedOffTwoDecimal(selectedProduct.getOriginal_amount() * .12),
-                            Utils.roundedOffTwoDecimal( selectedProduct.getOriginal_amount()),
+                            Utils.roundedOffTwoDecimal( selectedProduct.getOriginal_amount() / 1.12),
                             0.00,
                             0.00
                     );
@@ -263,6 +271,9 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.loadedTransactionViaControlNumber(controlNumber);
     }
 
+    public TransactionCompleteDetails getTransaction(String receiptNumber) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getTransaction(receiptNumber);
+    }
 
 
 

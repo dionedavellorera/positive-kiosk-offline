@@ -15,7 +15,9 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.entities.PrinterSeries;
 import com.nerdvana.positiveoffline.intf.ButtonsContract;
+import com.nerdvana.positiveoffline.intf.PrinterSettingsContract;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.SimpleListModel;
 
@@ -25,9 +27,16 @@ import java.util.List;
 public class SimpleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private List<SimpleListModel> simpleListModel;
     private Context context;
-    public SimpleListAdapter(List<SimpleListModel> simpleListModel, Context context) {
+    private PrinterSettingsContract printerSettingsContract;
+    private int type;
+    public SimpleListAdapter(List<SimpleListModel> simpleListModel,
+                             Context context,
+                             PrinterSettingsContract printerSettingsContract,
+                             int type) {
         this.context = context;
         this.simpleListModel = simpleListModel;
+        this.printerSettingsContract = printerSettingsContract;
+        this.type = type;
     }
 
     @NonNull
@@ -51,11 +60,11 @@ public class SimpleListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int i) {
-        SimpleListModel model = simpleListModel.get(holder.getAdapterPosition());
+        final SimpleListModel model = simpleListModel.get(holder.getAdapterPosition());
         ((SimpleListAdapter.ViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                buttonsContract.clicked(buttonsModelList.get(i));
+                printerSettingsContract.clicked(model, type);
             }
         });
 

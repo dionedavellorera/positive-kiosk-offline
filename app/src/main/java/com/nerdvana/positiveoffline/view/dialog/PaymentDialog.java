@@ -168,7 +168,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             cashAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
             creditCardAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
 
-            if (tendered >= amountDue) {
+            if (Utils.roundedOffTwoDecimal(tendered) >= Utils.roundedOffTwoDecimal(amountDue)) {
                 pay.setBackgroundResource(R.drawable.button_selector);
             } else {
                 pay.setBackgroundResource(R.drawable.button_selector_red);
@@ -311,21 +311,22 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                     Double amountDue = 0.00;
                     Double change = 0.00;
                     for (Payments payments : transactionsViewModel.paymentList(transactionId)) {
-                        tendered += payments.getAmount();
+                        tendered += Utils.roundedOffTwoDecimal(payments.getAmount());
                     }
 
                     for (Orders order : transactionsViewModel.orderList(transactionId)) {
-                        amountDue += order.getAmount() * order.getQty();
+                        amountDue += Utils.roundedOffTwoDecimal(order.getAmount()) * order.getQty();
                     }
 
-                    change = (tendered - amountDue < 1 ? 0.00 : tendered - amountDue);
+
+                    change = (Utils.roundedOffTwoDecimal(tendered) - Utils.roundedOffTwoDecimal(amountDue) < 1 ? 0.00 : Utils.roundedOffTwoDecimal(tendered) - Utils.roundedOffTwoDecimal(amountDue));
 
                     totalPayment.setText(Utils.digitsWithComma(tendered));
                     totalAmountDue.setText(Utils.digitsWithComma(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
                     totalChange.setText(Utils.digitsWithComma(change));
 
 
-                    if (tendered >= Utils.roundedOffTwoDecimal(amountDue)) {
+                    if (Utils.roundedOffTwoDecimal(tendered) >= Utils.roundedOffTwoDecimal(amountDue)) {
                         String receiptNumber = "";
                         if (transactionsViewModel.lastOrNumber() == null) {
                             receiptNumber = Utils.getOrFormat("1");
@@ -333,7 +334,11 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                             if (TextUtils.isEmpty(transactionsViewModel.lastOrNumber().getReceipt_number())) {
                                 receiptNumber = Utils.getOrFormat("1");
                             } else {
-                                receiptNumber = Utils.getOrFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastOrNumber().getReceipt_number().split("-")[1].replaceAll("0", "")) + 1));
+                                receiptNumber =
+                                        Utils.getOrFormat(
+                                                String.valueOf(
+                                                        Integer.valueOf(
+                                                                transactionsViewModel.lastOrNumber().getReceipt_number().split("-")[1].replaceFirst("0", "")) + 1));
                             }
 
                         }
@@ -365,7 +370,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
                         transactionsViewModel.update(transactions);
                         dismiss();
-                        completed();
+                        completed(receiptNumber);
                         pay.stopLoading(pay);
                     } else {
                         pay.stopLoading(pay);
@@ -402,23 +407,28 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                     !TextUtils.isEmpty(authorization.getText().toString()) &&
                     !TextUtils.isEmpty(creditCardAmount.getText().toString())) {
 
-                        Map<String, String> cardMap = new HashMap<>();
-                        cardMap.put("card_number", cardNumber.getText().toString());
-                        cardMap.put("cardholder_name", cardHoldersName.getText().toString());
-                        cardMap.put("expiration", expiration.getText().toString());
-                        cardMap.put("authorization", authorization.getText().toString());
-                        cardMap.put("credit_card_amount", creditCardAmount.getText().toString());
-                        cardMap.put("remarks", remarks.getText().toString());
-                        cardMap.put("core_id", String.valueOf(rgCards.getCheckedRadioButtonId()));
-                        cardMap.put("card_type", ((RadioButton)findViewById(rgCards.getCheckedRadioButtonId())).getText().toString());
+                        if (rgCards.getCheckedRadioButtonId() != -1) {
+                            Map<String, String> cardMap = new HashMap<>();
+                            cardMap.put("card_number", cardNumber.getText().toString());
+                            cardMap.put("cardholder_name", cardHoldersName.getText().toString());
+                            cardMap.put("expiration", expiration.getText().toString());
+                            cardMap.put("authorization", authorization.getText().toString());
+                            cardMap.put("credit_card_amount", creditCardAmount.getText().toString());
+                            cardMap.put("remarks", remarks.getText().toString());
+                            cardMap.put("core_id", String.valueOf(rgCards.getCheckedRadioButtonId()));
+                            cardMap.put("card_type", ((RadioButton)findViewById(rgCards.getCheckedRadioButtonId())).getText().toString());
 
-                        List<Payments> cardPayment = new ArrayList<>();
-                        Payments p = new Payments(
-                                Integer.valueOf(transactionId), paymentTypes.getCore_id(),
-                                Double.valueOf(creditCardAmount.getText().toString()), paymentTypes.getPayment_type());
-                        p.setOther_data(GsonHelper.getGson().toJson(cardMap));
-                        cardPayment.add(p);
-                        transactionsViewModel.insertPayment(cardPayment);
+                            List<Payments> cardPayment = new ArrayList<>();
+                            Payments p = new Payments(
+                                    Integer.valueOf(transactionId), paymentTypes.getCore_id(),
+                                    Double.valueOf(creditCardAmount.getText().toString()), paymentTypes.getPayment_type());
+                            p.setOther_data(GsonHelper.getGson().toJson(cardMap));
+                            cardPayment.add(p);
+                            transactionsViewModel.insertPayment(cardPayment);
+                        } else {
+                            Helper.showDialogMessage(getContext(), getContext().getString(R.string.error_select_card), getContext().getString(R.string.header_message));
+                        }
+                        
                     } else {
                         Helper.showDialogMessage(getContext(), context.getString(R.string.error_message_fill_up_all_fields), context.getString(R.string.header_message));
                     }
@@ -442,7 +452,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         transactionsViewModel.updatePayment(payments);
     }
 
-    public abstract void completed();
+    public abstract void completed(String receiptNumber);
 
     private User getUser() throws ExecutionException, InterruptedException {
         return userViewModel.searchLoggedInUser().get(0);

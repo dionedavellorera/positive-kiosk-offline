@@ -24,6 +24,13 @@ public class EndOfDay {
     private Double total_change = 0.00;
     private String created_at;
 
+    private int seniorCount = 0;
+    private Double seniorAmount = 0.00;
+    private int pwdCount = 0;
+    private Double pwdAmount = 0.00;
+    private int othersCount = 0;
+    private Double othersAmount = 0.00;
+
     public EndOfDay(int number_of_transactions, Double gross_sales,
                     Double net_sales, Double vatable_sales,
                     Double vat_exempt_sales, Double vat_amount,
@@ -38,6 +45,55 @@ public class EndOfDay {
         this.void_amount = void_amount;
         this.total_cash_amount = total_cash_amount;
         this.created_at = created_at;
+    }
+
+
+    public int getSeniorCount() {
+        return seniorCount;
+    }
+
+    public void setSeniorCount(int seniorCount) {
+        this.seniorCount = seniorCount;
+    }
+
+    public Double getSeniorAmount() {
+        return seniorAmount;
+    }
+
+    public void setSeniorAmount(Double seniorAmount) {
+        this.seniorAmount = seniorAmount;
+    }
+
+    public int getPwdCount() {
+        return pwdCount;
+    }
+
+    public void setPwdCount(int pwdCount) {
+        this.pwdCount = pwdCount;
+    }
+
+    public Double getPwdAmount() {
+        return pwdAmount;
+    }
+
+    public void setPwdAmount(Double pwdAmount) {
+        this.pwdAmount = pwdAmount;
+    }
+
+    public int getOthersCount() {
+        return othersCount;
+    }
+
+    public void setOthersCount(int othersCount) {
+        this.othersCount = othersCount;
+    }
+
+    public Double getOthersAmount() {
+        return othersAmount;
+    }
+
+    public void setOthersAmount(Double othersAmount) {
+        this.othersAmount = othersAmount;
     }
 
     public Double getTotal_change() {

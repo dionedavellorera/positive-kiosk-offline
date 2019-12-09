@@ -7,6 +7,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.nerdvana.positiveoffline.BusProvider;
+import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.Utils;
@@ -14,7 +16,9 @@ import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.Transactions;
+import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.viewmodel.CutOffViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
@@ -84,8 +88,6 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                     Utils.getDateTimeToday()
                             ));
 
-
-
                             List<Transactions> transactionsList = transactionsViewModel.unCutOffTransactions(userViewModel.searchLoggedInUser().get(0).getUsername());
                             int number_of_transaction = 0;
                             Double gross_sales = 0.00;
@@ -98,6 +100,15 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                             Double total_cash_payments = 0.00;
                             Double total_card_payments = 0.00;
                             Double total_change = 0.00;
+
+                            int seniorCount = 0;
+                            Double seniorAmount = 0.00;
+                            int pwdCount = 0;
+                            Double pwdAmount = 0.00;
+                            int othersCount = 0;
+                            Double othersAmount = 0.00;
+
+
                             if (transactionsList.size() > 0) {
                                 for (Transactions tr : transactionsList) {
                                     if (tr.getIs_void()) {
@@ -135,6 +146,20 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                 }
                             }
 
+                            for (PostedDiscounts postedDiscounts : cutOffViewModel.getUnCutOffPostedDiscount()) {
+                                postedDiscounts.setCut_off_id((int)cut_off_id);
+                                if (postedDiscounts.getDiscount_name().equalsIgnoreCase("SENIOR")) {
+                                    seniorCount += 1;
+                                    seniorAmount += postedDiscounts.getAmount();
+                                } else if (postedDiscounts.getDiscount_name().equalsIgnoreCase("PWD")) {
+                                    pwdCount += 1;
+                                    pwdAmount += postedDiscounts.getAmount();
+                                } else {
+                                    othersCount += 1;
+                                    othersAmount += postedDiscounts.getAmount();
+                                }
+                            }
+
                             CutOff cutOff = cutOffViewModel.getCutOff(cut_off_id);
                             cutOff.setTotal_change(Utils.roundedOffTwoDecimal(total_change));
                             cutOff.setGross_sales(Utils.roundedOffTwoDecimal(gross_sales));
@@ -147,6 +172,16 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                             cutOff.setTotal_cash_amount(Utils.roundedOffTwoDecimal(totalCash));
                             cutOff.setTotal_cash_payments(Utils.roundedOffTwoDecimal(total_cash_payments));
                             cutOff.setTotal_card_payments(Utils.roundedOffTwoDecimal(total_card_payments));
+
+                            cutOff.setSeniorCount(seniorCount);
+                            cutOff.setSeniorAmount(seniorAmount);
+                            cutOff.setPwdCount(pwdCount);
+                            cutOff.setPwdAmount(pwdAmount);
+                            cutOff.setOthersCount(othersCount);
+                            cutOff.setOthersAmount(othersAmount);
+
+                            BusProvider.getInstance().post(new PrintModel("PRINT_XREAD", GsonHelper.getGson().toJson(cutOff)));
+
                             cutOffViewModel.update(cutOff);
                             CutOffMenuDialog.this.dismiss();
                         } catch (ExecutionException e) {
@@ -177,6 +212,11 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                 Utils.getDateTimeToday()
                         ));
 
+                        for (PostedDiscounts postedDiscounts : cutOffViewModel.getZeroEndOfDay()) {
+                            postedDiscounts.setEnd_of_day_id((int)end_of_day_id);
+                        }
+
+
                         int number_of_transaction = 0;
                         Double gross_sales = 0.00;
                         Double net_sales = 0.00;
@@ -188,6 +228,14 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         Double total_cash_payments = 0.00;
                         Double total_card_payments = 0.00;
                         Double total_change = 0.00;
+
+                        int seniorCount = 0;
+                        Double seniorAmount = 0.00;
+                        int pwdCount = 0;
+                        Double pwdAmount = 0.00;
+                        int othersCount = 0;
+                        Double othersAmount = 0.00;
+
                         for (CutOff cutOff : cutOffViewModel.getUnCutOffData()) {
                             cutOff.setCreated_at(Utils.getDateTimeToday());
                             cutOff.setZ_read_id((int) end_of_day_id);
@@ -204,6 +252,12 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                             total_card_payments += cutOff.getTotal_card_payments();
                             total_change += cutOff.getTotal_change();
 
+                            seniorCount += cutOff.getSeniorCount();
+                            seniorAmount += cutOff.getSeniorAmount();
+                            pwdCount += cutOff.getPwdCount();
+                            pwdAmount += cutOff.getPwdAmount();
+                            othersCount += cutOff.getOthersCount();
+                            othersAmount += cutOff.getOthersAmount();
                         }
 
                         EndOfDay endOfDay = cutOffViewModel.getEndOfDay(end_of_day_id);
@@ -219,7 +273,18 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         endOfDay.setTotal_card_payments(Utils.roundedOffTwoDecimal(total_card_payments));
                         endOfDay.setTotal_change(total_change);
 
+                        endOfDay.setSeniorCount(seniorCount);
+                        endOfDay.setSeniorAmount(seniorAmount);
+                        endOfDay.setPwdCount(pwdCount);
+                        endOfDay.setPwdAmount(pwdAmount);
+                        endOfDay.setOthersCount(othersCount);
+                        endOfDay.setOthersAmount(othersAmount);
+
                         cutOffViewModel.update(endOfDay);
+
+                        BusProvider.getInstance().post(new PrintModel("PRINT_ZREAD", GsonHelper.getGson().toJson(endOfDay)));
+
+
                         CutOffMenuDialog.this.dismiss();
                     } else {
                         Helper.showDialogMessage(getContext(), getContext().getString(R.string.error_no_cut_off_to_end_of_day), getContext().getString(R.string.header_message));

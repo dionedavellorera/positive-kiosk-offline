@@ -52,6 +52,7 @@ public class Orders {
         this.discountAmount = discountAmount;
     }
 
+
     public Double getDiscountAmount() {
         return discountAmount;
     }

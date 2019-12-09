@@ -51,6 +51,22 @@ public class DataSyncViewModel extends AndroidViewModel {
         mRepository.update(dataSync);
     }
 
+    public void truncatePrinterSeries() {
+        mRepository.truncatePrinterSeries();
+    }
+
+    public void truncatePrinterLanguage() {
+        mRepository.truncatePrinterLanguage();
+    }
+
+    public void updatePrinterSeries(PrinterSeries printerSeries) {
+        mRepository.update(printerSeries);
+    }
+
+    public void updatePrinterLanguage(PrinterLanguage printerLanguage) {
+        mRepository.update(printerLanguage);
+    }
+
     public void insertData(List<DataSync> list) {
         mRepository.insert(list);
     }
@@ -74,6 +90,14 @@ public class DataSyncViewModel extends AndroidViewModel {
 
     public List<PrinterLanguage> getPrinterLanguage() throws ExecutionException, InterruptedException {
         return mRepository.getPrinterLanguageList();
+    }
+
+    public PrinterSeries getActivePrinterSeries() throws ExecutionException, InterruptedException {
+        return mRepository.getActivePrinterSeries();
+    }
+
+    public PrinterLanguage getActivePrinterLanguage() throws ExecutionException, InterruptedException {
+        return mRepository.getActivePrinterLanguage();
     }
 
     public MutableLiveData<FetchCashDenominationResponse> getCashDenoLiveData() {

@@ -21,6 +21,10 @@ public class PostedDiscounts {
     private String name;
     private String address;
 
+    private int cut_off_id = 0;
+    private int end_of_day_id = 0;
+
+    private Double amount=  0.00;
     public PostedDiscounts(int transaction_id, int discount_id,
                            String discount_name, Boolean is_void,
                            String card_number, String name,
@@ -32,6 +36,30 @@ public class PostedDiscounts {
         this.card_number = card_number;
         this.name = name;
         this.address = address;
+    }
+
+    public int getEnd_of_day_id() {
+        return end_of_day_id;
+    }
+
+    public void setEnd_of_day_id(int end_of_day_id) {
+        this.end_of_day_id = end_of_day_id;
+    }
+
+    public Double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
+
+    public int getCut_off_id() {
+        return cut_off_id;
+    }
+
+    public void setCut_off_id(int cut_off_id) {
+        this.cut_off_id = cut_off_id;
     }
 
     public String getCard_number() {

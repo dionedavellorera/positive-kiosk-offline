@@ -340,10 +340,12 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 dataSyncViewModel.updateIsSynced(syncModelList.get(5));
                 break;
             case "printer series":
+                dataSyncViewModel.truncatePrinterSeries();
                 syncModelList.get(6).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(6));
                 break;
             case "printer language":
+                dataSyncViewModel.truncatePrinterLanguage();
                 syncModelList.get(7).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(7));
                 break;

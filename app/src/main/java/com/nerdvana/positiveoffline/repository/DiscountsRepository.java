@@ -57,6 +57,31 @@ public class DiscountsRepository {
         return future.get();
     }
 
+    public List<PostedDiscounts> getUnCutOffPostedDiscounts() throws ExecutionException, InterruptedException {
+        Callable<List<PostedDiscounts>> callable = new Callable<List<PostedDiscounts>>() {
+            @Override
+            public List<PostedDiscounts> call() throws Exception {
+                return postedDiscountsDao.getUnCutOffPostedDiscounts();
+            }
+        };
+
+        Future<List<PostedDiscounts>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+    public List<PostedDiscounts> getZeroEndOfDay() throws ExecutionException, InterruptedException {
+        Callable<List<PostedDiscounts>> callable = new Callable<List<PostedDiscounts>>() {
+            @Override
+            public List<PostedDiscounts> call() throws Exception {
+                return postedDiscountsDao.getZeroEndOfDay();
+            }
+        };
+
+        Future<List<PostedDiscounts>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
+
     public List<OrderWithDiscounts> getOrderWithDiscountList(final String transaction_id) throws ExecutionException, InterruptedException {
         Callable<List<OrderWithDiscounts>> callable = new Callable<List<OrderWithDiscounts>>() {
             @Override

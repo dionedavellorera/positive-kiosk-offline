@@ -181,6 +181,30 @@ public class DataSyncRepository {
         return future.get();
     }
 
+    public PrinterSeries getActivePrinterSeries() throws ExecutionException, InterruptedException {
+        Callable<PrinterSeries> callable = new Callable<PrinterSeries>() {
+            @Override
+            public PrinterSeries call() throws Exception {
+                return printerSeriesDao.activePrinterSeries();
+            }
+        };
+
+        Future<PrinterSeries> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public PrinterLanguage getActivePrinterLanguage() throws ExecutionException, InterruptedException {
+        Callable<PrinterLanguage> callable = new Callable<PrinterLanguage>() {
+            @Override
+            public PrinterLanguage call() throws Exception {
+                return printerLanguageDao.activePrinterLanguage();
+            }
+        };
+
+        Future<PrinterLanguage> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
 
 
     public MutableLiveData<FetchDiscountResponse> getFetchDiscountLiveData() {
@@ -211,6 +235,14 @@ public class DataSyncRepository {
         new DataSyncRepository.insertDiscountWithSettingAsync(discountsDao, discountSettingsDao, discountsList, discountSettingsList).execute();
     }
 
+    public void truncatePrinterSeries() {
+        new DataSyncRepository.truncatePrinterSeriesAsyncTask(printerSeriesDao).execute();
+    }
+
+    public void truncatePrinterLanguage() {
+        new DataSyncRepository.truncatePrinterLanguageAsyncTask(printerLanguageDao).execute();
+    }
+
     public void insert(List<DataSync> dataSync) {
         new DataSyncRepository.insertAsyncTask(dataSyncDao).execute(dataSync);
     }
@@ -219,6 +251,56 @@ public class DataSyncRepository {
         new DataSyncRepository.updateAsyncTask(dataSyncDao, dataSync).execute();
     }
 
+    public void update(PrinterSeries printerSeries) {
+        new DataSyncRepository.updatePrinterSeriesAsyncTask(printerSeriesDao, printerSeries).execute();
+    }
+
+    public void update(PrinterLanguage printerLanguage) {
+        new DataSyncRepository.updatePrinterLanguageAsyncTask(printerLanguageDao, printerLanguage).execute();
+    }
+
+    private static class updatePrinterSeriesAsyncTask extends AsyncTask<PrinterSeries, Void, Void> {
+
+        private PrinterSeriesDao mAsyncTaskDao;
+
+        private PrinterSeries printerSeries;
+        updatePrinterSeriesAsyncTask(PrinterSeriesDao dao, PrinterSeries printerSeries) {
+            mAsyncTaskDao = dao;
+            this.printerSeries = printerSeries;
+        }
+
+        @Override
+        protected Void doInBackground(final PrinterSeries... params) {
+            mAsyncTaskDao.update(printerSeries);
+            return null;
+        }
+
+    }
+
+    private static class updatePrinterLanguageAsyncTask extends AsyncTask<PrinterLanguage, Void, Void> {
+
+        private PrinterLanguageDao mAsyncTaskDao;
+        private PrinterLanguage printerLanguage;
+
+        updatePrinterLanguageAsyncTask(PrinterLanguageDao dao, PrinterLanguage printerLanguage) {
+            mAsyncTaskDao = dao;
+            this.printerLanguage = printerLanguage;
+        }
+
+        @Override
+        protected Void doInBackground(final PrinterLanguage... params) {
+            mAsyncTaskDao.update(printerLanguage);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+
+
+
     private static class UnsyncedAsyncTask extends AsyncTask<List<DataSync>, Void, List<DataSync>> {
 
         private DataSyncDao mAsyncTaskDao;
@@ -226,7 +308,6 @@ public class DataSyncRepository {
         UnsyncedAsyncTask(DataSyncDao dao) {
             mAsyncTaskDao = dao;
         }
-
 
         @Override
         protected List<DataSync> doInBackground(List<DataSync>... lists) {
@@ -443,6 +524,47 @@ public class DataSyncRepository {
 
             }
         });
+
+    }
+
+    private static class truncatePrinterSeriesAsyncTask extends AsyncTask<List<Void>, Void, Void> {
+
+        private PrinterSeriesDao mAsyncTaskDao;
+
+        truncatePrinterSeriesAsyncTask(PrinterSeriesDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(List<Void>... lists) {
+            mAsyncTaskDao.truncatePrinterSeries();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+
+    private static class truncatePrinterLanguageAsyncTask extends AsyncTask<List<Void>, Void, Void> {
+
+        private PrinterLanguageDao mAsyncTaskDao;
+
+        truncatePrinterLanguageAsyncTask(PrinterLanguageDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(List<Void>... lists) {
+            mAsyncTaskDao.truncatePrinterLanguage();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
     }
 
 

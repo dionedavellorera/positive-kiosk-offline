@@ -18,6 +18,7 @@ import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.Transactions;
+import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 
 import java.util.List;
@@ -214,6 +215,18 @@ public class TransactionsRepository {
         };
 
         Future<List<Transactions>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public TransactionCompleteDetails getTransaction(final String receiptNumber) throws ExecutionException, InterruptedException {
+        Callable<TransactionCompleteDetails> callable = new Callable<TransactionCompleteDetails>() {
+            @Override
+            public TransactionCompleteDetails call() throws Exception {
+                return transactionsDao.getTransactionViaReceiptNumber(receiptNumber);
+            }
+        };
+
+        Future<TransactionCompleteDetails> future = Executors.newSingleThreadExecutor().submit(callable);
         return future.get();
     }
 

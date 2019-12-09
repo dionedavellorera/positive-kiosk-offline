@@ -65,6 +65,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         if (!TextUtils.isEmpty(SharedPreferenceManager.getString(LoginActivity.this, AppConstants.API_BASE_URL))) {
             PosClient.changeApiBaseUrl(SharedPreferenceManager.getString(LoginActivity.this, AppConstants.API_BASE_URL));
         }
+        if (TextUtils.isEmpty(SharedPreferenceManager.getString(LoginActivity.this, AppConstants.MAX_COLUMN_COUNT))) {
+            SharedPreferenceManager.saveString(LoginActivity.this, "32", AppConstants.MAX_COLUMN_COUNT);
+        }
     }
 
     private void initTransactionViewModel() {
