@@ -50,26 +50,22 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
     private Printer printer;
     private ILocalizeReceipts iLocalizeReceipts;
     private StarIOPort port = null;
-    public PrintReceiptAsync(PrintModel printModel, Context context,
-                             AsyncFinishCallBack asyncFinishCallBack,
-                             DataSyncViewModel dataSyncViewModel) {
-        this.context = context;
-        this.printModel = printModel;
-        this.asyncFinishCallBack = asyncFinishCallBack;
-        this.dataSyncViewModel = dataSyncViewModel;
-    }
+
+    private boolean isReprint = false;
+
 
     public PrintReceiptAsync(PrintModel printModel, Context context,
                              AsyncFinishCallBack asyncFinishCallBack,
                              DataSyncViewModel dataSyncViewModel,
                              ILocalizeReceipts iLocalizeReceipts,
-                             StarIOPort starIOPort) {
+                             StarIOPort starIOPort, boolean isReprint) {
         this.context = context;
         this.printModel = printModel;
         this.asyncFinishCallBack = asyncFinishCallBack;
         this.dataSyncViewModel = dataSyncViewModel;
         this.iLocalizeReceipts = iLocalizeReceipts;
         this.port = starIOPort;
+        this.isReprint = isReprint;
     }
 
 
@@ -121,7 +117,12 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
 
             PrinterUtils.addHeader(printModel, printer);
             addPrinterSpace(1, printer);
-            addTextToPrinter(printer, "OFFICIAL RECEIPT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+            if (isReprint) {
+                addTextToPrinter(printer, "OFFICIAL RECEIPT(REPRINT)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+            } else {
+                addTextToPrinter(printer, "OFFICIAL RECEIPT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+            }
+
             addPrinterSpace(1, printer);
             addTextToPrinter(printer, twoColumns(
                     "OR NO",

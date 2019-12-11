@@ -20,6 +20,8 @@ public interface EndOfDayDao {
     @Query("SELECT * FROM EndOfDay WHERE id = :end_of_day_id")
     EndOfDay endOfDayData(long end_of_day_id);
 
+    @Query("SELECT * FROM EndOfDay WHERE DATE(created_at) BETWEEN :startDate AND :endDate")
+    List<EndOfDay> getEndOfDayViaDate(String startDate, String endDate);
 
     @Update
     void update(EndOfDay cutOff);

@@ -1,6 +1,7 @@
 package com.nerdvana.positiveoffline.view.dialog;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -34,9 +35,14 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
     private Button btnReprintXReading;
     private Button btnReprintZReading;
     private UserViewModel userViewModel;
+
+    private ReprintXReadDialog reprintXReadDialog;
+    private ReprintZReadDialog reprintZReadDialog;
+
     private TransactionsViewModel transactionsViewModel;
     private CutOffViewModel cutOffViewModel;
     private DataSyncViewModel dataSyncViewModel;
+    private DateRangeDialog dateRangeDialog;
     public CutOffMenuDialog(Context context, TransactionsViewModel transactionsViewModel,
                             UserViewModel userViewModel, DataSyncViewModel dataSyncViewModel,
                             CutOffViewModel cutOffViewModel) {
@@ -69,7 +75,6 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btnXReading:
-
                 CollectionDialog collectionDialog = new CollectionDialog(getContext(), dataSyncViewModel) {
                     @Override
                     public void cutOffSuccess(Double totalCash) {
@@ -216,7 +221,6 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                             postedDiscounts.setEnd_of_day_id((int)end_of_day_id);
                         }
 
-
                         int number_of_transaction = 0;
                         Double gross_sales = 0.00;
                         Double net_sales = 0.00;
@@ -298,8 +302,135 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
 
                 break;
             case R.id.btnReprintXRead:
+                if (dateRangeDialog == null) {
+                    dateRangeDialog = new DateRangeDialog(getContext()) {
+                        @Override
+                        void dateConfirmed(String dateFrom, String dateTo) {
+                            if (reprintXReadDialog == null) {
+                                try {
+
+                                    Log.d("MYDATA", String.valueOf(cutOffViewModel.getCutOffViaDate(dateFrom, dateTo).size()));
+
+                                    if (cutOffViewModel.getCutOffViaDate(dateFrom, dateTo).size() > 0) {
+                                        reprintXReadDialog = new ReprintXReadDialog(CutOffMenuDialog.this.getContext(), cutOffViewModel.getCutOffViaDate(dateFrom, dateTo));
+                                        reprintXReadDialog.setOnCancelListener(new OnCancelListener() {
+                                            @Override
+                                            public void onCancel(DialogInterface dialogInterface) {
+                                                reprintXReadDialog = null;
+                                            }
+                                        });
+
+                                        reprintXReadDialog.setOnDismissListener(new OnDismissListener() {
+                                            @Override
+                                            public void onDismiss(DialogInterface dialogInterface) {
+                                                reprintXReadDialog = null;
+                                            }
+                                        });
+
+                                        reprintXReadDialog.show();
+
+
+                                    } else {
+                                        Helper.showDialogMessage(CutOffMenuDialog.this.getContext(), String.format("No data for x reading %s %s", dateFrom, dateTo), getContext().getString(R.string.header_message));
+                                    }
+
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+
+
+                            }
+
+
+                        }
+                    };
+
+                    dateRangeDialog.setOnCancelListener(new OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialogInterface) {
+                            dateRangeDialog = null;
+                        }
+                    });
+
+                    dateRangeDialog.setOnDismissListener(new OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            dateRangeDialog = null;
+                        }
+                    });
+                    dateRangeDialog.show();
+                }
+
                 break;
             case R.id.btnReprintZRead:
+
+                if (dateRangeDialog == null) {
+                    dateRangeDialog = new DateRangeDialog(getContext()) {
+                        @Override
+                        void dateConfirmed(String dateFrom, String dateTo) {
+
+                            if (reprintZReadDialog == null) {
+
+                                try {
+
+                                    Log.d("MYDATA", String.valueOf(cutOffViewModel.getEndOfDayViaDate(dateFrom, dateTo).size()));
+                                    if (cutOffViewModel.getEndOfDayViaDate(dateFrom, dateTo).size() > 0) {
+                                        reprintZReadDialog = new ReprintZReadDialog(CutOffMenuDialog.this.getContext(), cutOffViewModel.getEndOfDayViaDate(dateFrom, dateTo));
+                                        reprintZReadDialog.setOnCancelListener(new OnCancelListener() {
+                                            @Override
+                                            public void onCancel(DialogInterface dialogInterface) {
+                                                reprintZReadDialog = null;
+                                            }
+                                        });
+
+                                        reprintZReadDialog.setOnDismissListener(new OnDismissListener() {
+                                            @Override
+                                            public void onDismiss(DialogInterface dialogInterface) {
+                                                reprintZReadDialog = null;
+                                            }
+                                        });
+
+                                        reprintZReadDialog.show();
+
+
+                                    } else {
+                                        Helper.showDialogMessage(CutOffMenuDialog.this.getContext(), String.format("No data for z reading %s %s", dateFrom, dateTo), getContext().getString(R.string.header_message));
+                                    }
+
+
+
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                        }
+                    };
+
+
+                    dateRangeDialog.setOnCancelListener(new OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialogInterface) {
+                            dateRangeDialog = null;
+                        }
+                    });
+
+                    dateRangeDialog.setOnDismissListener(new OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            dateRangeDialog = null;
+                        }
+                    });
+                    dateRangeDialog.show();
+                }
+
+
+
+
                 break;
         }
     }

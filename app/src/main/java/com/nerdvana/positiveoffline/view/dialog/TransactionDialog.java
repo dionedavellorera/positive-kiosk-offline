@@ -15,12 +15,15 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.BusProvider;
+import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.adapter.TransactionsAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.TransactionsContract;
+import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
@@ -169,7 +172,7 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                 }, 500);
                 search.setText("");
             } else {
-                //FOR REPRINT
+                BusProvider.getInstance().post(new PrintModel("REPRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(transactionWithOrders.transactions.getReceipt_number()))));
             }
 
         } catch (ExecutionException e) {

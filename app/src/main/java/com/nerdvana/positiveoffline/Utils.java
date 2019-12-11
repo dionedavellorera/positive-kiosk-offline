@@ -8,7 +8,10 @@ import androidx.room.util.StringUtil;
 import org.joda.time.DateTime;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class Utils {
@@ -52,6 +55,12 @@ public class Utils {
     public static String getCtrlNumberFormat(String value) {
         String str = String.format("CN-%8s",value);
         return str.replace(' ','0');
+    }
+
+    public static String getCurrentDate() {
+        Date c = Calendar.getInstance().getTime();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        return simpleDateFormat.format(c);
     }
 
 }

@@ -23,6 +23,10 @@ public interface CutOffDao {
     @Query("SELECT * FROM CutOff WHERE z_read_id = 0")
     List<CutOff> unCutOffTransactions();
 
+    //getCutOffViaDate
+    @Query("SELECT * FROM CutOff WHERE DATE(created_at) BETWEEN :startDate AND :endDate")
+    List<CutOff> getCutOffViaDate(String startDate, String endDate);
+
     @Update
     void update(CutOff cutOff);
 }

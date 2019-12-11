@@ -375,10 +375,15 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
 
         switch (printModel.getType()) {
+            case "REPRINT_RECEIPT":
+                addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, starIoPort,true), "reprint_receipt");
+                break;
             case "PRINT_RECEIPT":
                 addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, starIoPort), "print_receipt");
+                        iLocalizeReceipts, starIoPort, false), "print_receipt");
                 break;
             case "PRINT_XREAD":
                 addAsync(new CutOffAsync(printModel, MainActivity.this,
@@ -406,6 +411,10 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     private void runTask(String taskName, AsyncTask asyncTask) {
 
         switch (taskName) {
+            case "reprint_receipt":
+                PrintReceiptAsync reprintAsync = (PrintReceiptAsync) asyncTask;
+                reprintAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                break;
             case "print_receipt":
                 PrintReceiptAsync printReceiptAsync = (PrintReceiptAsync) asyncTask;
                 printReceiptAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);

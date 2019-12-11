@@ -97,4 +97,6 @@
     <string name="lang_southasia">SOUTH ASIA</string>
     <string name="title_activity_settings">SettingsActivity</string>
     <string name="error_select_card">Please select type of card</string>
+    <string name="label_date_from">Starting Date</string>
+    <string name="label_date_to">Ending Date</string>
 </resources>

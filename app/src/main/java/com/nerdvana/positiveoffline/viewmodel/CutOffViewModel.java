@@ -73,4 +73,12 @@ public class CutOffViewModel extends AndroidViewModel {
         return cutOffRepository.getAllPayments();
     }
 
+    public List<CutOff> getCutOffViaDate(String startDate, String endDate) throws ExecutionException, InterruptedException {
+        return cutOffRepository.getCutOffViaDate(startDate, endDate);
+    }
+
+    public List<EndOfDay> getEndOfDayViaDate(String startDate, String endDate) throws ExecutionException, InterruptedException {
+        return cutOffRepository.getEndOfDayViaDate(startDate, endDate);
+    }
+
 }
