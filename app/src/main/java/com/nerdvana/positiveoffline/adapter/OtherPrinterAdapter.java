@@ -56,7 +56,7 @@ public class OtherPrinterAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             ((OtherPrinterAdapter.OtherPrinterViewHolder)holder).row.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    printerConnection.clicked(i);
+                    printerConnection.clicked(holder.getAdapterPosition());
                 }
             });
 

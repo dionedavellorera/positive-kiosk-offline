@@ -411,8 +411,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                     try {
                                         BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
                                     } catch (ExecutionException e) {
+                                        Log.d("EXECEPT", e.getLocalizedMessage());
                                         e.printStackTrace();
                                     } catch (InterruptedException e) {
+                                        Log.d("EXECEPT", e.getLocalizedMessage());
                                         e.printStackTrace();
                                     }
 

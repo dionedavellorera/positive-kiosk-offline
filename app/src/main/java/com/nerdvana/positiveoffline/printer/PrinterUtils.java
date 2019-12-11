@@ -9,6 +9,8 @@ import com.epson.epos2.printer.Printer;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.model.PrintModel;
+import com.starmicronics.stario.StarIOPort;
+import com.starmicronics.stario.StarIOPortException;
 
 public class PrinterUtils {
 
@@ -36,6 +38,10 @@ public class PrinterUtils {
         }
     }
 
+    public static StarIOPort getStarPort(Context context) throws StarIOPortException {
+        return StarIOPort.getPort(SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY), "", 2000, context);
+    }
+
     public static void connect(Context context, Printer printer) {
         if (!TextUtils.isEmpty(SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY))) {
             try {
@@ -43,6 +49,7 @@ public class PrinterUtils {
                     printer.connect(SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY), Printer.PARAM_DEFAULT);
                 }
             } catch (Epos2Exception e) {
+
                 e.printStackTrace();
             }
         }
@@ -155,6 +162,37 @@ public class PrinterUtils {
 //            addPrinterSpace(1);
         }
     }
+
+    public static String receiptString(String partOne, String partTwo, Context context, boolean isCenter) {
+        String finalString = "";
+        int filler = 0;
+        int maxColumnDivideTwo = (Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT)) / 2);
+
+        if (isCenter) {
+            if (partOne.length() > Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))) {
+                finalString = partOne.substring(0, Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT)));
+            } else {
+                int custFillter = (Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT)) - partOne.length()) / 2;
+                finalString = repeat(" ", custFillter) + partOne + repeat(" ", custFillter);
+            }
+
+        } else {
+
+            if (partOne.length() < maxColumnDivideTwo) {
+                filler += (maxColumnDivideTwo - partOne.length());
+            }
+            if (partTwo.length() < maxColumnDivideTwo) {
+                filler += (maxColumnDivideTwo - partTwo.length());
+            }
+            finalString = (partOne.length() >= maxColumnDivideTwo ? partOne.substring(0, maxColumnDivideTwo) : partOne)
+                    + repeat(" ", filler)
+                    + (partTwo.length() >= maxColumnDivideTwo ? partTwo.substring(0, maxColumnDivideTwo) : partTwo);
+
+        }
+
+        return finalString + "\n";
+    }
+
 
 
 

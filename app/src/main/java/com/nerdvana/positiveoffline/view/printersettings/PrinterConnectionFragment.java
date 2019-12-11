@@ -1,6 +1,7 @@
 package com.nerdvana.positiveoffline.view.printersettings;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,10 @@ import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.adapter.OtherPrinterAdapter;
 import com.nerdvana.positiveoffline.intf.PrinterConnection;
 import com.nerdvana.positiveoffline.model.OtherPrinterModel;
+import com.nerdvana.positiveoffline.printer.SStarPort;
+import com.starmicronics.stario.PortInfo;
+import com.starmicronics.stario.StarIOPort;
+import com.starmicronics.stario.StarIOPortException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +74,16 @@ public class PrinterConnectionFragment extends Fragment implements PrinterConnec
         if (!SharedPreferenceManager.getString(getContext(), AppConstants.SELECTED_PRINTER_MANUALLY).isEmpty()) {
             activePrinter.setText(SharedPreferenceManager.getString(getContext(), AppConstants.SELECTED_PRINTER_MANUALLY));
         }
+
+        try {
+            List<PortInfo> portList = StarIOPort.searchPrinter("BT:");
+            for (PortInfo portInfo : portList) {
+                otherPrinterModelList.add(new OtherPrinterModel("BT:"+portInfo.getMacAddress(), portInfo.getModelName(), OtherPrinterModel.STAR_PRINTER));
+                if (otherPrinterAdapter != null) otherPrinterAdapter.notifyDataSetChanged();
+            }
+        } catch (StarIOPortException e) {
+            e.printStackTrace();
+        }
         return view;
     }
 
@@ -90,7 +105,7 @@ public class PrinterConnectionFragment extends Fragment implements PrinterConnec
                 @Override
                 public void run() {
                     Toast.makeText(getContext(), deviceInfo.getTarget(), Toast.LENGTH_SHORT).show();
-                    otherPrinterModelList.add(new OtherPrinterModel(deviceInfo.getTarget(), deviceInfo.getDeviceName()));
+                    otherPrinterModelList.add(new OtherPrinterModel(deviceInfo.getTarget(), deviceInfo.getDeviceName(), OtherPrinterModel.EPSON));
                     if (otherPrinterAdapter != null) otherPrinterAdapter.notifyDataSetChanged();
                 }
             });
@@ -99,7 +114,12 @@ public class PrinterConnectionFragment extends Fragment implements PrinterConnec
 
     @Override
     public void clicked(int position) {
+
+        if (String.valueOf(otherPrinterModelList.get(position).getPrinterModel()).equalsIgnoreCase(String.valueOf(OtherPrinterModel.STAR_PRINTER))) {
+            SStarPort.changePort(getContext());
+        }
         SharedPreferenceManager.saveString(getContext(), otherPrinterModelList.get(position).getHead(), AppConstants.SELECTED_PRINTER_MANUALLY);
+        SharedPreferenceManager.saveString(getContext(), String.valueOf(otherPrinterModelList.get(position).getPrinterModel()), AppConstants.SELECTED_PRINTER_MODEL);
         activePrinter.setText(otherPrinterModelList.get(position).getHead());
     }
 }
