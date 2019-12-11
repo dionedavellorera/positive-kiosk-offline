@@ -309,8 +309,6 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                             if (reprintXReadDialog == null) {
                                 try {
 
-                                    Log.d("MYDATA", String.valueOf(cutOffViewModel.getCutOffViaDate(dateFrom, dateTo).size()));
-
                                     if (cutOffViewModel.getCutOffViaDate(dateFrom, dateTo).size() > 0) {
                                         reprintXReadDialog = new ReprintXReadDialog(CutOffMenuDialog.this.getContext(), cutOffViewModel.getCutOffViaDate(dateFrom, dateTo));
                                         reprintXReadDialog.setOnCancelListener(new OnCancelListener() {
@@ -375,7 +373,6 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
 
                                 try {
 
-                                    Log.d("MYDATA", String.valueOf(cutOffViewModel.getEndOfDayViaDate(dateFrom, dateTo).size()));
                                     if (cutOffViewModel.getEndOfDayViaDate(dateFrom, dateTo).size() > 0) {
                                         reprintZReadDialog = new ReprintZReadDialog(CutOffMenuDialog.this.getContext(), cutOffViewModel.getEndOfDayViaDate(dateFrom, dateTo));
                                         reprintZReadDialog.setOnCancelListener(new OnCancelListener() {
