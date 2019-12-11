@@ -57,6 +57,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setDialogLayout(R.layout.dialog_cutoff_menu, "CUT OFF MENU");
+        setCancelable(false);
         initViews();
     }
 
