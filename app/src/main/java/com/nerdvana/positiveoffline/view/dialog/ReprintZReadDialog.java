@@ -6,11 +6,14 @@ import android.os.Bundle;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.BusProvider;
+import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.adapter.ZReadAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.intf.ZReadContract;
+import com.nerdvana.positiveoffline.model.PrintModel;
 
 import java.util.List;
 
@@ -45,6 +48,6 @@ public class ReprintZReadDialog extends BaseDialog implements ZReadContract {
 
     @Override
     public void clicked(EndOfDay endOfDay) {
-
+        BusProvider.getInstance().post(new PrintModel("REPRINT_ZREAD", GsonHelper.getGson().toJson(endOfDay)));
     }
 }

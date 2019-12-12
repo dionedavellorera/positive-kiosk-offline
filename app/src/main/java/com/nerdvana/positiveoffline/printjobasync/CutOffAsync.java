@@ -48,28 +48,20 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
 
     private ILocalizeReceipts iLocalizeReceipts;
     private StarIOPort port = null;
-
-    public CutOffAsync(PrintModel printModel, Context context,
-                       AsyncFinishCallBack asyncFinishCallBack,
-                       DataSyncViewModel dataSyncViewModel) {
-        this.context = context;
-        this.printModel = printModel;
-        this.asyncFinishCallBack = asyncFinishCallBack;
-        this.dataSyncViewModel = dataSyncViewModel;
-    }
-
+    private boolean isReprint;
 
     public CutOffAsync(PrintModel printModel, Context context,
                        AsyncFinishCallBack asyncFinishCallBack,
                        DataSyncViewModel dataSyncViewModel,
                        ILocalizeReceipts iLocalizeReceipts,
-                       StarIOPort starIOPort) {
+                       StarIOPort starIOPort, boolean isReprint) {
         this.context = context;
         this.printModel = printModel;
         this.asyncFinishCallBack = asyncFinishCallBack;
         this.dataSyncViewModel = dataSyncViewModel;
         this.iLocalizeReceipts = iLocalizeReceipts;
         this.port = starIOPort;
+        this.isReprint = isReprint;
     }
 
 
@@ -120,7 +112,12 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
 
             PrinterUtils.addHeader(printModel, printer);
             addPrinterSpace(1, printer);
-            addTextToPrinter(printer, "X READING", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+            if (isReprint) {
+                addTextToPrinter(printer, "X READING(REPRINT)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+            } else {
+                addTextToPrinter(printer, "X READING", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+            }
+
             addPrinterSpace(1, printer);
 
             addTextToPrinter(printer, "POSTING DATE:" + cutOff.getCreated_at(), Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
@@ -281,7 +278,7 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
                             StarIoExt.Emulation.StarPRNT,
                             iLocalizeReceipts,
                             false,
-                            EJFileCreator.cutOffString(cutOff, context));
+                            EJFileCreator.cutOffString(cutOff, context, isReprint));
 
                     port.writePort(command, 0, command.length);
 

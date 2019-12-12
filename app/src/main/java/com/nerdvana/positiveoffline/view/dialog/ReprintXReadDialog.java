@@ -6,11 +6,14 @@ import android.os.Bundle;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.BusProvider;
+import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.adapter.XReadAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.intf.XReadContract;
+import com.nerdvana.positiveoffline.model.PrintModel;
 
 import java.util.List;
 
@@ -45,6 +48,9 @@ public class ReprintXReadDialog extends BaseDialog implements XReadContract {
 
     @Override
     public void clicked(CutOff cutOff) {
+
+        BusProvider.getInstance().post(new PrintModel("REPRINT_XREAD", GsonHelper.getGson().toJson(cutOff)));
+
 
     }
 }

@@ -88,113 +88,6 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         initUserViewModel();
         initDataSyncViewModel();
         initILocalizeReceipts();
-
-
-//        try {
-//            List<PortInfo> portList = StarIOPort.searchPrinter("BT:");
-//            for (PortInfo port : portList) {
-//                StarIOPort poty = StarIOPort.getPort("BT:" + port.getMacAddress(), "", 10000, MainActivity.this);
-//
-//                if (!poty.retreiveStatus().offline) {
-//                    // Print end monitoring -Start
-//                    StarPrinterStatus status = poty.beginCheckedBlock();
-//
-//                    ILocalizeReceipts dsdsadsa = new ILocalizeReceipts() {
-//                        @Override
-//                        public void append2inchTextReceiptData(ICommandBuilder builder, boolean utf8) {
-//
-//                        }
-//
-//                        @Override
-//                        public void append3inchTextReceiptData(ICommandBuilder builder, boolean utf8) {
-//
-//                        }
-//
-//                        @Override
-//                        public void append4inchTextReceiptData(ICommandBuilder builder, boolean utf8) {
-//
-//                        }
-//
-//                        @Override
-//                        public Bitmap create2inchRasterReceiptImage() {
-//                            return null;
-//                        }
-//
-//                        @Override
-//                        public Bitmap create3inchRasterReceiptImage() {
-//                            return null;
-//                        }
-//
-//                        @Override
-//                        public Bitmap create4inchRasterReceiptImage() {
-//                            return null;
-//                        }
-//
-//                        @Override
-//                        public Bitmap createCouponImage(Resources resources) {
-//                            return null;
-//                        }
-//
-//                        @Override
-//                        public Bitmap createEscPos3inchRasterReceiptImage() {
-//                            return null;
-//                        }
-//
-//                        @Override
-//                        public void appendEscPos3inchTextReceiptData(ICommandBuilder builder, boolean utf8) {
-//
-//                        }
-//
-//                        @Override
-//                        public void appendDotImpact3inchTextReceiptData(ICommandBuilder builder, boolean utf8) {
-//
-//                        }
-//
-//                        @Override
-//                        public Bitmap createSk12inchRasterReceiptImage() {
-//                            return null;
-//                        }
-//
-//                        @Override
-//                        public void appendSk12inchTextReceiptData(ICommandBuilder builder, boolean utf8) {
-//
-//                        }
-//
-//                        @Override
-//                        public void appendTextLabelData(ICommandBuilder builder, boolean utf8) {
-//
-//                        }
-//
-//                        @Override
-//                        public String createPasteTextLabelString() {
-//                            return null;
-//                        }
-//
-//                        @Override
-//                        public void appendPasteTextLabelData(ICommandBuilder builder, String pasteText, boolean utf8) {
-//
-//                        }
-//                    };
-//                    byte[] command = PrinterFunctions.createTextReceiptData(StarIoExt.Emulation.StarPRNT, dsdsadsa, false);
-//
-//                    // Send print data
-//                    poty.writePort(command, 0, command.length);
-//                    // Print end monitoring -Endt
-//                    status = poty.endCheckedBlock();
-//
-//
-//                }
-//            }
-//
-//
-//        }
-//        catch (StarIOPortException e) {
-//
-//            Log.d("MYPORT_ERR", e.getLocalizedMessage());
-//            //There was an error opening the port
-//        }
-
-
     }
 
     private void initILocalizeReceipts() {
@@ -329,7 +222,6 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                         getApplicationContext()
                 );
             } catch (Exception e) {
-                Log.d("PIPIPI-EPSON-ERR", e.getLocalizedMessage());
             }
         } else if (SharedPreferenceManager.getString(MainActivity.this, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.STAR_PRINTER))){
             if (starIoPort == null) {
@@ -338,7 +230,6 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                     starIoPort = SStarPort.getStarIOPort();
                 starIoPort = StarIOPort.getPort(SharedPreferenceManager.getString(MainActivity.this, AppConstants.SELECTED_PRINTER_MANUALLY), "", 30000, MainActivity.this);
                 } catch (StarIOPortException e) {
-                    Log.d("PIPIPI-STAR-ERR", e.getLocalizedMessage());
                     e.printStackTrace();
                 }
             }
@@ -385,15 +276,25 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                         this, dataSyncViewModel,
                         iLocalizeReceipts, starIoPort, false), "print_receipt");
                 break;
+            case "REPRINT_XREAD":
+                addAsync(new CutOffAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, starIoPort, true), "print_xread");
+                break;
             case "PRINT_XREAD":
                 addAsync(new CutOffAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, starIoPort), "print_xread");
+                        iLocalizeReceipts, starIoPort, false), "print_xread");
+                break;
+            case "REPRINT_ZREAD":
+                addAsync(new EndOfDayAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, starIoPort, true), "print_zread");
                 break;
             case "PRINT_ZREAD":
                 addAsync(new EndOfDayAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, starIoPort), "print_zread");
+                        iLocalizeReceipts, starIoPort, false), "print_zread");
                 break;
         }
 

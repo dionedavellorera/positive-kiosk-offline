@@ -23,7 +23,7 @@ import static com.nerdvana.positiveoffline.printer.PrinterUtils.twoColumns;
 
 public class EJFileCreator {
 
-    public static String cutOffString(CutOff cutOff, Context context) {
+    public static String cutOffString(CutOff cutOff, Context context, boolean isReprint) {
         String finalString = "";
 
         finalString += PrinterUtils.receiptString("ABC COMPANY", "", context, true);
@@ -35,7 +35,12 @@ public class EJFileCreator {
 
 
         finalString += PrinterUtils.receiptString("", "", context, true);
-        finalString += PrinterUtils.receiptString("X READING", "", context, true);
+        if (isReprint) {
+            finalString += PrinterUtils.receiptString("X READING(REPRINT)", "", context, true);
+        } else {
+            finalString += PrinterUtils.receiptString("X READING", "", context, true);
+        }
+
         finalString += PrinterUtils.receiptString("", "", context, true);
 
         finalString += PrinterUtils.receiptString("POSTING DATE:", cutOff.getCreated_at(), context, true);
@@ -144,7 +149,7 @@ public class EJFileCreator {
         return finalString;
     }
 
-    public static String endOfDayString(EndOfDay endOfDay, Context context) {
+    public static String endOfDayString(EndOfDay endOfDay, Context context, boolean isReprint) {
         String finalString = "";
 
         finalString += PrinterUtils.receiptString("ABC COMPANY", "", context, true);
@@ -159,11 +164,20 @@ public class EJFileCreator {
                 "",
                 context,
                 true);
-        finalString += PrinterUtils.receiptString(
-                "Z READING",
-                "",
-                context,
-                true);
+        if (isReprint) {
+            finalString += PrinterUtils.receiptString(
+                    "Z READING(REPRINT)",
+                    "",
+                    context,
+                    true);
+        } else {
+            finalString += PrinterUtils.receiptString(
+                    "Z READING",
+                    "",
+                    context,
+                    true);
+        }
+
         finalString += PrinterUtils.receiptString(
                 "",
                 "",
@@ -427,7 +441,7 @@ public class EJFileCreator {
         return finalString;
     }
 
-    public static String orString(TransactionCompleteDetails transactionCompleteDetails, Context context) {
+    public static String orString(TransactionCompleteDetails transactionCompleteDetails, Context context, boolean isReprint) {
         String finalString = "";
 
         finalString += PrinterUtils.receiptString("ABC COMPANY", "", context, true);
@@ -437,7 +451,12 @@ public class EJFileCreator {
         finalString += PrinterUtils.receiptString("MIN NO: *****************", "", context, true);
         finalString += PrinterUtils.receiptString("SERIAL NO: ********", "", context, true);
         finalString += PrinterUtils.receiptString("", "", context, true);
-        finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT", "", context, true);
+        if (isReprint) {
+            finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(REPRINT)", "", context, true);
+        } else {
+            finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT", "", context, true);
+        }
+
         finalString += PrinterUtils.receiptString("", "", context, true);
         finalString += PrinterUtils.receiptString("OR NO", transactionCompleteDetails.transactions.getReceipt_number(), context, false);
         finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getCreated_at(), context, false);

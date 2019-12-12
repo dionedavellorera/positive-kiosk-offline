@@ -41,27 +41,19 @@ public class EndOfDayAsync extends AsyncTask<Void, Void, Void> {
 
     private ILocalizeReceipts iLocalizeReceipts;
     private StarIOPort port = null;
-
-    public EndOfDayAsync(PrintModel printModel, Context context,
-                       AsyncFinishCallBack asyncFinishCallBack,
-                       DataSyncViewModel dataSyncViewModel) {
-        this.context = context;
-        this.printModel = printModel;
-        this.asyncFinishCallBack = asyncFinishCallBack;
-        this.dataSyncViewModel = dataSyncViewModel;
-    }
-
+    private boolean isReprint;
     public EndOfDayAsync(PrintModel printModel, Context context,
                          AsyncFinishCallBack asyncFinishCallBack,
                          DataSyncViewModel dataSyncViewModel,
                          ILocalizeReceipts iLocalizeReceipts,
-                         StarIOPort starIOPort) {
+                         StarIOPort starIOPort, boolean isReprint) {
         this.context = context;
         this.printModel = printModel;
         this.asyncFinishCallBack = asyncFinishCallBack;
         this.dataSyncViewModel = dataSyncViewModel;
         this.iLocalizeReceipts = iLocalizeReceipts;
         this.port = starIOPort;
+        this.isReprint = isReprint;
     }
 
 
@@ -113,7 +105,12 @@ public class EndOfDayAsync extends AsyncTask<Void, Void, Void> {
 
             PrinterUtils.addHeader(printModel, printer);
             addPrinterSpace(1, printer);
-            addTextToPrinter(printer, "Z READING", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+            if (isReprint) {
+                addTextToPrinter(printer, "Z READING(REPRINT)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+            } else {
+                addTextToPrinter(printer, "Z READING", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+            }
+
             addPrinterSpace(1, printer);
 
             addTextToPrinter(printer, "POSTING DATE:" + endOfDay.getCreated_at(), Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
@@ -312,7 +309,7 @@ public class EndOfDayAsync extends AsyncTask<Void, Void, Void> {
                             StarIoExt.Emulation.StarPRNT,
                             iLocalizeReceipts,
                             false,
-                            EJFileCreator.endOfDayString(endOfDay, context));
+                            EJFileCreator.endOfDayString(endOfDay, context, isReprint));
 
                     port.writePort(command, 0, command.length);
 

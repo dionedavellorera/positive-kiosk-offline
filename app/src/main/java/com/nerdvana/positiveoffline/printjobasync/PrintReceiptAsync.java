@@ -328,7 +328,7 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                             StarIoExt.Emulation.StarPRNT,
                             iLocalizeReceipts,
                             false,
-                            EJFileCreator.orString(transactionCompleteDetails, context));
+                            EJFileCreator.orString(transactionCompleteDetails, context, isReprint));
 
                     port.writePort(command, 0, command.length);
 
