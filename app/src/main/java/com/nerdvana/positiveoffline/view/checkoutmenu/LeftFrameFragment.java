@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -164,11 +165,12 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     } else {
                         if (transactions.size() > 0) {
                             transactionId = String.valueOf(transactions.get(0).getId());
-                            setOrderAdapter(transactionsViewModel.orderList(transactionId));
+
                             if (selectedProduct != null) {
                                 insertSelectedOrder();
                                 selectedProduct = null;
                             }
+                            setOrderAdapter(transactionsViewModel.orderList(transactionId));
                         } else {
                             defaults();
                         }
@@ -274,7 +276,11 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     transactions.getVat_exempt_sales() == null ? 0.00 : transactions.getVat_exempt_sales(),
                     transactions.getVatable_sales() == null ? 0.00 : transactions.getVatable_sales(),
                     transactions.getDiscount_amount() == null ? 0.00 : transactions.getDiscount_amount(),
-                    0.00
+                    0.00,
+                    transactions.getVoid_at(),
+                    transactions.getCompleted_at(),
+                    Utils.getDateTimeToday(),
+                    transactions.getIs_cut_off_at()
 
             );
         } catch (ExecutionException e) {
@@ -694,6 +700,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
                     tr.add(new Transactions(controlNumber, getUser().getUsername(), Utils.getDateTimeToday()));
                     transactionsViewModel.insert(tr);
+
+
                 }
             }
 

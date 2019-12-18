@@ -19,15 +19,20 @@ public class Transactions {
     private String user_id;
     private Boolean is_void = false;
     private String is_void_by = "";
+    private String void_at = "";
     private Boolean is_completed = false;
     private String is_completed_by = "";
+    private String completed_at = "";
     private Boolean is_saved = false;
     private String is_saved_by = "";
+    private String saved_at;
     private Boolean is_cut_off = false;
     private String is_cut_off_by = "";
+    private String is_cut_off_at = "";
     private String trans_name;
     private String created_at;
     private String receipt_number = "";
+
 
     private Double gross_sales = 0.00;
     private Double net_sales = 0.00;
@@ -37,6 +42,8 @@ public class Transactions {
     private Double discount_amount;
     private Double change = 0.00;
     private long cut_off_id = 0;
+
+    private int has_special = 0;
 
     public Transactions(@NonNull String control_number,
                         String user_id, String created_at) {
@@ -56,7 +63,12 @@ public class Transactions {
                         Double gross_sales, Double net_sales,
                         Double vatable_sales, Double vat_exempt_sales,
                         Double vat_amount, Double discountAmount,
-                        Double change) {
+                        Double change, String void_at,
+                        String completed_at, String saved_at, String is_cut_off_at) {
+        this.void_at = void_at;
+        this.completed_at = completed_at;
+        this.saved_at = saved_at;
+        this.is_cut_off_at = is_cut_off_at;
         this.id = id;
         this.control_number = control_number;
         this.user_id = user_id;
@@ -78,6 +90,46 @@ public class Transactions {
         this.vat_amount = vat_amount;
         this.discount_amount = discountAmount;
         this.change = change;
+    }
+
+    public int getHas_special() {
+        return has_special;
+    }
+
+    public void setHas_special(int has_special) {
+        this.has_special = has_special;
+    }
+
+    public String getVoid_at() {
+        return void_at;
+    }
+
+    public void setVoid_at(String void_at) {
+        this.void_at = void_at;
+    }
+
+    public String getCompleted_at() {
+        return completed_at;
+    }
+
+    public void setCompleted_at(String completed_at) {
+        this.completed_at = completed_at;
+    }
+
+    public String getSaved_at() {
+        return saved_at;
+    }
+
+    public void setSaved_at(String saved_at) {
+        this.saved_at = saved_at;
+    }
+
+    public String getIs_cut_off_at() {
+        return is_cut_off_at;
+    }
+
+    public void setIs_cut_off_at(String is_cut_off_at) {
+        this.is_cut_off_at = is_cut_off_at;
     }
 
     public Double getChange() {

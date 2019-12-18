@@ -132,6 +132,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                     tr.setIs_cut_off(true);
                                     tr.setIs_cut_off_by(userViewModel.searchLoggedInUser().get(0).getUsername());
                                     tr.setCut_off_id(cut_off_id);
+                                    tr.setIs_cut_off_at(Utils.getDateTimeToday());
                                     transactionsViewModel.update(tr);
                                 }
                                 dismiss();

@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.TransactionsAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.Transactions;
@@ -158,8 +159,14 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                         reference.getVat_exempt_sales(),
                         reference.getVat_amount(),
                         reference.getDiscount_amount(),
-                        reference.getChange()
+                        reference.getChange(),
+                        Utils.getDateTimeToday(),
+                        reference.getCompleted_at(),
+                        reference.getSaved_at(),
+                        reference.getIs_cut_off_at()
                 );
+
+
 
 
                 transactionsViewModel.update(transactions);

@@ -6,6 +6,8 @@ import android.util.Log;
 import androidx.room.util.StringUtil;
 
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -61,6 +63,19 @@ public class Utils {
         Date c = Calendar.getInstance().getTime();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         return simpleDateFormat.format(c);
+    }
+
+    public static String convertDateToReadableDate(String createdAt) {
+        DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        String res = "";
+        try {
+            DateTime jodatime = dtf.parseDateTime(createdAt);
+            DateTimeFormatter dtfOut = DateTimeFormat.forPattern("MMM d h:m a");
+            res = dtfOut.print(jodatime);
+        } catch (Exception e) {
+            res  = "NA";
+        }
+        return res.toUpperCase();
     }
 
 }

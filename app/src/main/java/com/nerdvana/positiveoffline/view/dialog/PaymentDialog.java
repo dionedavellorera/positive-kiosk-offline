@@ -365,9 +365,13 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                 tmp.getVat_exempt_sales(),
                                 tmp.getVat_amount(),
                                 tmp.getDiscount_amount(),
-                                Utils.roundedOffTwoDecimal(change)
+                                Utils.roundedOffTwoDecimal(change),
+                                tmp.getVoid_at(),
+                                Utils.getDateTimeToday(),
+                                tmp.getSaved_at(),
+                                tmp.getIs_cut_off_at()
                         );
-
+                        transactions.setHas_special(tmp.getHas_special());
                         transactionsViewModel.update(transactions);
                         dismiss();
                         completed(receiptNumber);

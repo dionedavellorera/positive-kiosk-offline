@@ -38,6 +38,7 @@ public class DiscountMenuDialog extends BaseDialog implements DiscountsContract 
     private RecyclerView rvPostedDiscounts;
     private SpecialDiscDialog specialDiscDialog;
     private CustomDiscDialog customDiscDialog;
+    private ManualDiscDialog manualDiscDialog;
     private TransactionsViewModel transactionsViewModel;
     private String transactionId;
     private TextView noData;
@@ -124,7 +125,24 @@ public class DiscountMenuDialog extends BaseDialog implements DiscountsContract 
     @Override
     public void clicked(DiscountWithSettings discountWithSettings) {
         if (discountWithSettings.discounts.getCore_id() == 1000) { //SHOW MANUAL DIALOG
-
+            if (manualDiscDialog == null) {
+//                manualDiscDialog = new ManualDiscDialog(getContext(), discountViewModel);
+//                manualDiscDialog.setOnDismissListener(new OnDismissListener() {
+//                    @Override
+//                    public void onDismiss(DialogInterface dialogInterface) {
+//                        manualDiscDialog = null;
+//                    }
+//                });
+//
+//                manualDiscDialog.setOnCancelListener(new OnCancelListener() {
+//                    @Override
+//                    public void onCancel(DialogInterface dialogInterface) {
+//                        manualDiscDialog = null;
+//                    }
+//                });
+//
+//                manualDiscDialog.show();
+            }
         } else if (discountWithSettings.discounts.getCore_id() == 1001) { //SHOW CUSTOM DIALOG
             if (customDiscDialog == null) {
                 customDiscDialog = new CustomDiscDialog(getContext(), discountViewModel);

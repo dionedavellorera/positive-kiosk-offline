@@ -43,11 +43,13 @@ public class PaymentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         private TextView name;
+        private TextView value;
         private ImageView close;
         private RelativeLayout rootView;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.name);
+            value = itemView.findViewById(R.id.value);
             rootView = itemView.findViewById(R.id.rootView);
             close = itemView.findViewById(R.id.close);
         }
@@ -57,7 +59,8 @@ public class PaymentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int i) {
 
         final Payments model = paymentsList.get(holder.getAdapterPosition());
-        ((PaymentsAdapter.ViewHolder)holder).name.setText(Utils.digitsWithComma(model.getAmount()));
+        ((ViewHolder)holder).value.setText(Utils.digitsWithComma(model.getAmount()));
+        ((ViewHolder)holder).name.setText(model.getName().toUpperCase());
 
         ((ViewHolder)holder).close.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -65,6 +68,8 @@ public class PaymentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 paymentsContract.clicked(model);
             }
         });
+
+
 
     }
 

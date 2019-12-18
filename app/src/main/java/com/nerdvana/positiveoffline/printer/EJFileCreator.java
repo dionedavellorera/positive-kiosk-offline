@@ -5,6 +5,8 @@ import android.util.Log;
 
 import com.epson.epos2.printer.Printer;
 import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.BusProvider;
+import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.entities.CutOff;
@@ -12,6 +14,7 @@ import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
+import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 
 import java.util.ArrayList;
@@ -441,7 +444,7 @@ public class EJFileCreator {
         return finalString;
     }
 
-    public static String orString(TransactionCompleteDetails transactionCompleteDetails, Context context, boolean isReprint) {
+    public static String orString(TransactionCompleteDetails transactionCompleteDetails, Context context, boolean isReprint, PrintModel printModel) {
         String finalString = "";
 
         finalString += PrinterUtils.receiptString("ABC COMPANY", "", context, true);
@@ -451,10 +454,30 @@ public class EJFileCreator {
         finalString += PrinterUtils.receiptString("MIN NO: *****************", "", context, true);
         finalString += PrinterUtils.receiptString("SERIAL NO: ********", "", context, true);
         finalString += PrinterUtils.receiptString("", "", context, true);
-        if (isReprint) {
-            finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(REPRINT)", "", context, true);
+
+        Log.d("DIONE", String.valueOf(transactionCompleteDetails.transactions.getHas_special()));
+        Log.d("DIONE", printModel.getType());
+
+        if (transactionCompleteDetails.transactions.getHas_special() == 1) {
+
+            if (printModel.getType().equalsIgnoreCase("PRINT_RECEIPT")) {
+                finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(STORE COPY)", "", context, true);
+                BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT_SPEC", GsonHelper.getGson().toJson(transactionCompleteDetails)));
+            } else if (printModel.getType().equalsIgnoreCase("REPRINT_RECEIPT")) {
+                finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(STORE COPY)\nREPRINT", "", context, true);
+                BusProvider.getInstance().post(new PrintModel("REPRINT_RECEIPT_SPEC", GsonHelper.getGson().toJson(transactionCompleteDetails)));
+            }
+            if (printModel.getType().equalsIgnoreCase("PRINT_RECEIPT_SPEC")) {
+                finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(CUSTOMER COPY)", "", context, true);
+            } else if (printModel.getType().equalsIgnoreCase("REPRINT_RECEIPT_SPEC")) {
+                finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(CUSTOMER COPY)\nREPRINT", "", context, true);
+            }
         } else {
-            finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT", "", context, true);
+            if (isReprint) {
+                finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(REPRINT)", "", context, true);
+            } else {
+                finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT", "", context, true);
+            }
         }
 
         finalString += PrinterUtils.receiptString("", "", context, true);

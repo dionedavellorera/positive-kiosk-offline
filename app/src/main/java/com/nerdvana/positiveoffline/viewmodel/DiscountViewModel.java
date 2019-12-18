@@ -77,6 +77,53 @@ public class DiscountViewModel extends AndroidViewModel {
     public void updateOrderDiscount(OrderDiscounts orderDiscounts) {
         discountsRepository.updateOrderDiscount(orderDiscounts);
     }
+
+    public void insertManualDiscount(List<Orders> ordersList, String transactionId,
+                                     int discountId, String discountName,
+                                     boolean isPercentage, Double amount) {
+        long last_inserted_id = 0;
+
+
+
+        for (Orders orders : ordersList) {
+            try {
+                PostedDiscounts postedDiscounts = new PostedDiscounts(
+                        Integer.valueOf(transactionId),
+                        discountId,
+                        discountName,
+                        false,
+                        "",
+                        "",
+                        ""
+
+                );
+
+                last_inserted_id = insertPostedDiscount(postedDiscounts);
+
+                List<OrderDiscounts> orderDiscountsList = new ArrayList<>();
+
+                orderDiscountsList.add(new OrderDiscounts(
+                        orders.getCore_id(),
+                        isPercentage,
+                        amount,
+                        Integer.valueOf(transactionId),
+                        orders.getId(),
+                        discountName,
+                        last_inserted_id,
+                        false));
+
+                insertOrderDiscount(orderDiscountsList);
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
+    }
+
     public void insertDiscount(List<Orders> ordersList, List<DiscountSettings> discountList,
                                String transactionId, SpecialDiscountInfo specialDiscountInfo) {
         long last_inserted_id = 0;
@@ -86,7 +133,6 @@ public class DiscountViewModel extends AndroidViewModel {
             String discName = "";
             int discId = 0;
             for (DiscountSettings disc : discountList) {
-
                 if (!TextUtils.isEmpty(disc.getProduct_id())) {
                     if (disc.getProduct_id().equalsIgnoreCase("all")) {
                         count+=1;

@@ -3,6 +3,7 @@ package com.nerdvana.positiveoffline.adapter;
 import android.content.Context;
 import android.os.Environment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -98,7 +99,13 @@ public class ResumeTransactionAdapter extends RecyclerView.Adapter<RecyclerView.
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int i) {
         final Transactions model = transactionFilteredList.get(i);
-        ((ResumeTransactionAdapter.ViewHolder)holder).name.setText(TextUtils.isEmpty(model.getTrans_name()) ? model.getControl_number() : model.getTrans_name());
+
+        Log.d("TETETE", model.getSaved_at());
+
+        ((ResumeTransactionAdapter.ViewHolder)holder).name.setText(
+                TextUtils.isEmpty(model.getTrans_name()) ?
+                        Utils.convertDateToReadableDate(model.getSaved_at()) + "\n" + model.getControl_number() :
+                        Utils.convertDateToReadableDate(model.getSaved_at()) + "\n" +  model.getTrans_name());
         ((ViewHolder)holder).price.setText(String.format("CTRL NO: %s", model.getControl_number()));
         ((ViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
             @Override

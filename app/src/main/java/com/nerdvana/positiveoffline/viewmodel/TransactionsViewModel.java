@@ -92,6 +92,16 @@ public class TransactionsViewModel extends AndroidViewModel {
         }
     }
 
+    public void recomputeTransactionManualDiscount(String transactionId, DiscountViewModel discountViewModel) {
+        Double grossSales = 0.00;
+        Double netSales = 0.00;
+        Double vatableSales = 0.00;
+        Double vatExemptSales = 0.00;
+        Double vatAmount = 0.00;
+        Double discountAmount = 0.00;
+
+    }
+
     public void recomputeTransactionWithDiscount(String transactionId, DiscountViewModel discountViewModel) {
 
         Double grossSales = 0.00;
@@ -100,10 +110,11 @@ public class TransactionsViewModel extends AndroidViewModel {
         Double vatExemptSales = 0.00;
         Double vatAmount = 0.00;
         Double discountAmount = 0.00;
-
+        int hasSpecial = 0;
         try {
             if (discountViewModel.getTransactionWithDiscounts(transactionId).size() > 0) {
                 for (OrderWithDiscounts owd : discountViewModel.getOrderWithDiscount(transactionId)) {
+
 
                     Double remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
                     Double finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
@@ -111,8 +122,8 @@ public class TransactionsViewModel extends AndroidViewModel {
 
                     for (OrderDiscounts od : owd.orderWithDiscountList) {
                         if (!od.getIs_void()) {
-
-
+                            hasSpecial = 1;
+                            Log.d("WITHDISC", "Y");
                             totalDiscountAmount += Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100));
                             PostedDiscounts pd = discountViewModel.getPostedDiscount((int)od.getPosted_discount_id());
                             pd.setId((int)od.getPosted_discount_id());
@@ -174,6 +185,8 @@ public class TransactionsViewModel extends AndroidViewModel {
                     discountAmount += 0.00;
                 }
             }
+
+            Log.d("WITHDISC", String.valueOf(hasSpecial));
             Transactions tr = loadedTransactionList(transactionId).get(0);
             tr.setId(Integer.valueOf(transactionId));
             tr.setGross_sales(Utils.roundedOffTwoDecimal(grossSales));
@@ -182,6 +195,7 @@ public class TransactionsViewModel extends AndroidViewModel {
             tr.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vatExemptSales));
             tr.setVat_amount(Utils.roundedOffTwoDecimal(vatAmount));
             tr.setDiscount_amount(Utils.roundedOffTwoDecimal(discountAmount));
+            tr.setHas_special(hasSpecial);
             update(tr);
         } catch (ExecutionException e) {
             e.printStackTrace();

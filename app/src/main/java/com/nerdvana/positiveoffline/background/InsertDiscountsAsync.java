@@ -48,6 +48,7 @@ public class InsertDiscountsAsync extends AsyncTask<Void, Void, Void> {
                 0);
         discountList.add(manual);
 
+
         Discounts custom = new Discounts(
                 1001,
                 "CUSTOM",

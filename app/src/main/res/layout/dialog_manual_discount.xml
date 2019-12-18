@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include layout="@layout/partial_header" android:id="@+id/header"/>
+
+    <TextView
+        android:layout_below="@id/header"
+        android:id="@+id/tvValue"
+        android:layout_margin="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/label_value"/>
+
+    <com.nerdvana.positiveoffline.view.HidingEditText
+        android:id="@+id/etHostName"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:padding="10dp"
+        android:background="@drawable/edittext_round"
+        android:layout_below="@id/tvValue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_amount_percentage"/>
+
+    <RadioGroup
+        android:id="@+id/rgType"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:layout_below="@id/etHostName"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <RadioButton
+            android:padding="10dp"
+            android:id="@+id/rbAmount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fixed Amount"/>
+        <RadioButton
+            android:padding="10dp"
+            android:id="@+id/rbPercentage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Percentage"/>
+    </RadioGroup>
+
+    <Button
+        android:textColor="@color/colorWhite"
+        android:background="@drawable/button_selector"
+        android:layout_margin="15dp"
+        android:layout_below="@id/rgType"
+        android:id="@+id/btnConfirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/button_label_confirm"/>
+
+
+
+</RelativeLayout>

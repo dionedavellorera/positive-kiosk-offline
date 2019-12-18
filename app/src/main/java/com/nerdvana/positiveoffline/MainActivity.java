@@ -224,15 +224,20 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
             } catch (Exception e) {
             }
         } else if (SharedPreferenceManager.getString(MainActivity.this, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.STAR_PRINTER))){
-            if (starIoPort == null) {
-                try {
-                    new SStarPort(MainActivity.this);
-                    starIoPort = SStarPort.getStarIOPort();
-                starIoPort = StarIOPort.getPort(SharedPreferenceManager.getString(MainActivity.this, AppConstants.SELECTED_PRINTER_MANUALLY), "", 30000, MainActivity.this);
-                } catch (StarIOPortException e) {
-                    e.printStackTrace();
+
+
+
+            try {
+                if (StarIOPort.searchPrinter("BT:").size() > 0) {
+//                    if (starIoPort == null) {
+//                        Log.d("PEKPEK", "GERE");
+//                        starIoPort = SStarPort.getStarIOPort();
+//                    }
                 }
+            } catch (StarIOPortException e) {
+
             }
+
 
 
         } else {
@@ -266,35 +271,45 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
 
         switch (printModel.getType()) {
+            case "PRINT_RECEIPT_SPEC":
+                addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "print_receipt_spec");
+                break;
+            case "REPRINT_RECEIPT_SPEC":
+                addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "reprint_receipt_spec");
+                break;
             case "REPRINT_RECEIPT":
                 addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, starIoPort,true), "reprint_receipt");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "reprint_receipt");
                 break;
             case "PRINT_RECEIPT":
                 addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, starIoPort, false), "print_receipt");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_receipt");
                 break;
             case "REPRINT_XREAD":
                 addAsync(new CutOffAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, starIoPort, true), "print_xread");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(), true), "print_xread");
                 break;
             case "PRINT_XREAD":
                 addAsync(new CutOffAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, starIoPort, false), "print_xread");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_xread");
                 break;
             case "REPRINT_ZREAD":
                 addAsync(new EndOfDayAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, starIoPort, true), "print_zread");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(), true), "print_zread");
                 break;
             case "PRINT_ZREAD":
                 addAsync(new EndOfDayAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, starIoPort, false), "print_zread");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_zread");
                 break;
         }
 
@@ -312,6 +327,14 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     private void runTask(String taskName, AsyncTask asyncTask) {
 
         switch (taskName) {
+            case "reprint_receipt_spec":
+                PrintReceiptAsync reprintAsync1 = (PrintReceiptAsync) asyncTask;
+                reprintAsync1.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                break;
+            case "print_receipt_spec":
+                PrintReceiptAsync reprintAsync2 = (PrintReceiptAsync) asyncTask;
+                reprintAsync2.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                break;
             case "reprint_receipt":
                 PrintReceiptAsync reprintAsync = (PrintReceiptAsync) asyncTask;
                 reprintAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
@@ -336,7 +359,8 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     public void doneProcessing() {
         myPrintJobs.remove(0);
         if (myPrintJobs.size() > 0) {
-            if (myPrintJobs.get(0).getTaskName().equalsIgnoreCase("print_receipt")) {
+            if (myPrintJobs.get(0).getTaskName().equalsIgnoreCase("print_receipt") ||
+                    myPrintJobs.get(0).getTaskName().equalsIgnoreCase("print_receipt_spec")) {
                 Handler handler = new Handler(Looper.getMainLooper());
                 handler.postDelayed(new Runnable() {
                     @Override

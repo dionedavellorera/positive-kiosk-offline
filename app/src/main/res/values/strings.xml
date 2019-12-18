@@ -99,4 +99,6 @@
     <string name="error_select_card">Please select type of card</string>
     <string name="label_date_from">Starting Date</string>
     <string name="label_date_to">Ending Date</string>
+    <string name="label_value">Value</string>
+    <string name="hint_amount_percentage">Enter Value</string>
 </resources>

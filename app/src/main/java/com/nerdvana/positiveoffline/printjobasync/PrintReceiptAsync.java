@@ -11,6 +11,7 @@ import com.epson.epos2.printer.PrinterStatusInfo;
 import com.epson.epos2.printer.ReceiveListener;
 import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.MainActivity;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
@@ -78,6 +79,8 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
         TransactionCompleteDetails transactionCompleteDetails = GsonHelper.getGson().fromJson(printModel.getData(), TransactionCompleteDetails.class);
 
 
+        Log.d("MYPRINTER", SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MODEL));
+
         if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.EPSON))) {
 
             try {
@@ -117,11 +120,29 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
 
             PrinterUtils.addHeader(printModel, printer);
             addPrinterSpace(1, printer);
-            if (isReprint) {
-                addTextToPrinter(printer, "OFFICIAL RECEIPT(REPRINT)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+
+            if (transactionCompleteDetails.transactions.getHas_special() == 1) {
+
+                if (printModel.getType().equalsIgnoreCase("PRINT_RECEIPT")) {
+                    addTextToPrinter(printer, "OFFICIAL RECEIPT(STORE COPY)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+                    BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT_SPEC", GsonHelper.getGson().toJson(transactionCompleteDetails)));
+                } else if (printModel.getType().equalsIgnoreCase("REPRINT_RECEIPT")) {
+                    addTextToPrinter(printer, "OFFICIAL RECEIPT(STORE COPY)\nREPRINT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+                    BusProvider.getInstance().post(new PrintModel("REPRINT_RECEIPT_SPEC", GsonHelper.getGson().toJson(transactionCompleteDetails)));
+                }
+                if (printModel.getType().equalsIgnoreCase("PRINT_RECEIPT_SPEC")) {
+                    addTextToPrinter(printer, "OFFICIAL RECEIPT(CUSTOMER COPY)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+                } else if (printModel.getType().equalsIgnoreCase("REPRINT_RECEIPT_SPEC")) {
+                    addTextToPrinter(printer, "OFFICIAL RECEIPT(CUSTOMER COPY)\nREPRINT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+                }
             } else {
-                addTextToPrinter(printer, "OFFICIAL RECEIPT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+                if (isReprint) {
+                    addTextToPrinter(printer, "OFFICIAL RECEIPT(REPRINT)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+                } else {
+                    addTextToPrinter(printer, "OFFICIAL RECEIPT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+                }
             }
+
 
             addPrinterSpace(1, printer);
             addTextToPrinter(printer, twoColumns(
@@ -320,15 +341,18 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
 
         } else if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.STAR_PRINTER))){
 
+            Log.d("TEKTEK", "START");
             if (this.port != null) {
                 try {
                     StarPrinterStatus status = port.beginCheckedBlock();
+
+                    Log.d("TEKTEK", EJFileCreator.orString(transactionCompleteDetails, context, isReprint, printModel));
 
                     byte[] command = PrinterFunctions.createTextReceiptData(
                             StarIoExt.Emulation.StarPRNT,
                             iLocalizeReceipts,
                             false,
-                            EJFileCreator.orString(transactionCompleteDetails, context, isReprint));
+                            EJFileCreator.orString(transactionCompleteDetails, context, isReprint, printModel));
 
                     port.writePort(command, 0, command.length);
 

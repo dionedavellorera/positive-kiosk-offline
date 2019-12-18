@@ -115,11 +115,14 @@ public class PrinterConnectionFragment extends Fragment implements PrinterConnec
     @Override
     public void clicked(int position) {
 
+        SharedPreferenceManager.saveString(getContext(), otherPrinterModelList.get(position).getHead(), AppConstants.SELECTED_PRINTER_MANUALLY);
+        SharedPreferenceManager.saveString(getContext(), String.valueOf(otherPrinterModelList.get(position).getPrinterModel()), AppConstants.SELECTED_PRINTER_MODEL);
+
+
         if (String.valueOf(otherPrinterModelList.get(position).getPrinterModel()).equalsIgnoreCase(String.valueOf(OtherPrinterModel.STAR_PRINTER))) {
             SStarPort.changePort(getContext());
         }
-        SharedPreferenceManager.saveString(getContext(), otherPrinterModelList.get(position).getHead(), AppConstants.SELECTED_PRINTER_MANUALLY);
-        SharedPreferenceManager.saveString(getContext(), String.valueOf(otherPrinterModelList.get(position).getPrinterModel()), AppConstants.SELECTED_PRINTER_MODEL);
+
         activePrinter.setText(otherPrinterModelList.get(position).getHead());
     }
 }

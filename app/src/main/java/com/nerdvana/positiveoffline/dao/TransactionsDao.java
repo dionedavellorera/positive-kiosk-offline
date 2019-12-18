@@ -24,7 +24,7 @@ public interface TransactionsDao {
     @Query("SELECT * FROM Transactions WHERE is_saved = 0 AND is_completed = 0 AND is_cut_off = 0")
     LiveData<List<Transactions>> ldTransactionsList();
 
-    @Query("SELECT * FROM Transactions WHERE is_saved = 1 AND is_completed = 0 AND is_cut_off = 0")
+    @Query("SELECT * FROM Transactions WHERE is_saved = 1 AND is_completed = 0 AND is_cut_off = 0 ORDER BY DATE(saved_at) ASC")
     LiveData<List<Transactions>> ldSavedTransactionsList();
 
     @Query("SELECT * FROM Transactions WHERE is_completed = 1 AND is_void = 0 AND is_cut_off = 0")
