@@ -12,6 +12,7 @@ import androidx.room.Query;
 import com.facebook.stetho.common.Util;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
+import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.OrderDiscounts;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
@@ -202,8 +203,17 @@ public class TransactionsViewModel extends AndroidViewModel {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
     }
+
+    public void insertOrDetails(OrDetails orDetails) {
+        transactionsRepository.insertOrDetails(orDetails);
+    }
+
+    public OrDetails getOrDetails(String transactionId) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getOrDetails(transactionId);
+    }
+
+
 
     public void updateOrder(Orders order) {
         transactionsRepository.update(order);

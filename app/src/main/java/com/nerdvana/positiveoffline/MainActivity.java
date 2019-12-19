@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
@@ -22,7 +23,9 @@ import android.widget.Toast;
 
 import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
+import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.DataSync;
+import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.functions.PrinterFunctions;
 import com.nerdvana.positiveoffline.intf.AsyncFinishCallBack;
@@ -31,6 +34,8 @@ import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.OtherPrinterModel;
 import com.nerdvana.positiveoffline.model.PrintJobModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
+import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
+import com.nerdvana.positiveoffline.printer.EJFileCreator;
 import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.printer.SPrinter;
 import com.nerdvana.positiveoffline.printer.SStarPort;
@@ -57,9 +62,13 @@ import com.starmicronics.starioextension.StarIoExtManager;
 import com.starmicronics.starioextension.StarIoExtManagerListener;
 
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -264,6 +273,38 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         finish();
     }
 
+    private void saveEjFile(PrintModel printModel) {
+        String finalString = "";
+        try {
+            switch (printModel.getType()) {
+                case "PRINT_RECEIPT":
+                    TransactionCompleteDetails transactionCompleteDetails = GsonHelper.getGson().fromJson(printModel.getData(), TransactionCompleteDetails.class);
+                    finalString = EJFileCreator.orString(transactionCompleteDetails, MainActivity.this, false, printModel);
+                    break;
+                case "PRINT_XREAD":
+                    CutOff cutOff = GsonHelper.getGson().fromJson(printModel.getData(), CutOff.class);
+                    finalString = EJFileCreator.cutOffString(cutOff, MainActivity.this, false);
+                    break;
+                case "PRINT_ZREAD":
+                    EndOfDay endOfDay = GsonHelper.getGson().fromJson(printModel.getData(), EndOfDay.class);
+                    finalString = EJFileCreator.endOfDayString(endOfDay, MainActivity.this, false);
+                    break;
+            }
+            File root = new File(Environment.getExternalStorageDirectory(), "POS/");
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+            File gpxfile = new File(root, Utils.getCurrentDate() +".txt");
+            FileWriter writer = null;
+            writer = new FileWriter(gpxfile, true);
+            writer.append(finalString);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+        }
+
+
+    }
 
     @Subscribe
     public void print(PrintModel printModel) {
@@ -287,6 +328,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                         iLocalizeReceipts, SStarPort.getStarIOPort(),true), "reprint_receipt");
                 break;
             case "PRINT_RECEIPT":
+                saveEjFile(printModel);
                 addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
                         iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_receipt");
@@ -297,6 +339,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                         iLocalizeReceipts, SStarPort.getStarIOPort(), true), "print_xread");
                 break;
             case "PRINT_XREAD":
+                saveEjFile(printModel);
                 addAsync(new CutOffAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
                         iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_xread");
@@ -307,6 +350,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                         iLocalizeReceipts, SStarPort.getStarIOPort(), true), "print_zread");
                 break;
             case "PRINT_ZREAD":
+                saveEjFile(printModel);
                 addAsync(new EndOfDayAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
                         iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_zread");

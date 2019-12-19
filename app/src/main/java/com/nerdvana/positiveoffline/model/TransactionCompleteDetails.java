@@ -3,6 +3,7 @@ package com.nerdvana.positiveoffline.model;
 import androidx.room.Embedded;
 import androidx.room.Relation;
 
+import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
@@ -22,4 +23,7 @@ public class TransactionCompleteDetails {
 
     @Relation(parentColumn = "id", entityColumn = "transaction_id", entity = Payments.class)
     public List<Payments> paymentsList;
+
+    @Relation(parentColumn = "id", entityColumn = "transaction_id", entity = OrDetails.class)
+    public OrDetails orDetails;
 }

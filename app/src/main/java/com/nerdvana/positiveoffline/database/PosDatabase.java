@@ -10,6 +10,7 @@ import com.nerdvana.positiveoffline.dao.DataSyncDao;
 import com.nerdvana.positiveoffline.dao.DiscountSettingsDao;
 import com.nerdvana.positiveoffline.dao.DiscountsDao;
 import com.nerdvana.positiveoffline.dao.EndOfDayDao;
+import com.nerdvana.positiveoffline.dao.OrDetailsDao;
 import com.nerdvana.positiveoffline.dao.OrderDiscountsDao;
 import com.nerdvana.positiveoffline.dao.OrdersDao;
 import com.nerdvana.positiveoffline.dao.PaymentTypeDao;
@@ -27,6 +28,7 @@ import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.DiscountSettings;
 import com.nerdvana.positiveoffline.entities.Discounts;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
+import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.OrderDiscounts;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
@@ -46,8 +48,8 @@ import com.nerdvana.positiveoffline.entities.User;
                         DiscountSettings.class, OrderDiscounts.class,
                         PostedDiscounts.class, CutOff.class,
                         EndOfDay.class, PrinterSeries.class,
-                        PrinterLanguage.class},
-          version = 66)
+                        PrinterLanguage.class, OrDetails.class},
+          version = 67)
 
 public abstract class PosDatabase extends RoomDatabase {
     public abstract UserDao userDao();
@@ -67,4 +69,5 @@ public abstract class PosDatabase extends RoomDatabase {
     public abstract EndOfDayDao endOfDayDao();
     public abstract PrinterSeriesDao printerSeriesDao();
     public abstract PrinterLanguageDao printerLanguageDao();
+    public abstract OrDetailsDao orDetailsDao();
 }

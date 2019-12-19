@@ -68,7 +68,7 @@ public class PaymentTypeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             }
         });
 
-        if (model.getCore_id() != 1 && model.getCore_id() != 2) {
+        if (model.getCore_id() != 1 && model.getCore_id() != 2 && model.getCore_id() != 999) {
             ((ViewHolder)holder).rootView.getLayoutParams().height = 0;
         }
 

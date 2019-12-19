@@ -455,9 +455,6 @@ public class EJFileCreator {
         finalString += PrinterUtils.receiptString("SERIAL NO: ********", "", context, true);
         finalString += PrinterUtils.receiptString("", "", context, true);
 
-        Log.d("DIONE", String.valueOf(transactionCompleteDetails.transactions.getHas_special()));
-        Log.d("DIONE", printModel.getType());
-
         if (transactionCompleteDetails.transactions.getHas_special() == 1) {
 
             if (printModel.getType().equalsIgnoreCase("PRINT_RECEIPT")) {
@@ -621,27 +618,55 @@ public class EJFileCreator {
                 context,
                 false);
 
-        finalString += PrinterUtils.receiptString(
-                "NAME:___________________________",
-                "",
-                context,
-                false);
+        if (transactionCompleteDetails.orDetails != null) {
+            finalString += PrinterUtils.receiptString(
+                    "NAME:" + transactionCompleteDetails.orDetails.getName(),
+                    "",
+                    context,
+                    true);
 
-        finalString += PrinterUtils.receiptString(
-                "ADDRESS:________________________",
-                "",
-                context,
-                false);
-        finalString += PrinterUtils.receiptString(
-                "TIN#:___________________________",
-                "",
-                context,
-                false);
-        finalString += PrinterUtils.receiptString(
-                "BUSINESS STYLE:_________________",
-                "",
-                context,
-                false);
+            finalString += PrinterUtils.receiptString(
+                    "ADDRESS:" + transactionCompleteDetails.orDetails.getAddress(),
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "TIN#:" + transactionCompleteDetails.orDetails.getTin_number(),
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "BUSINESS STYLE:" + transactionCompleteDetails.orDetails.getBusiness_style(),
+                    "",
+                    context,
+                    true);
+
+        } else {
+            finalString += PrinterUtils.receiptString(
+                    "NAME:___________________________",
+                    "",
+                    context,
+                    true);
+
+            finalString += PrinterUtils.receiptString(
+                    "ADDRESS:________________________",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "TIN#:___________________________",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "BUSINESS STYLE:_________________",
+                    "",
+                    context,
+                    true);
+        }
+
+
+
         finalString += PrinterUtils.receiptString(
                 "",
                 "",

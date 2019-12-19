@@ -75,8 +75,17 @@ public class InsertPaymentTypeAsync extends AsyncTask<Void, Void, Void> {
                 mgr.enqueue(request);
             }
 
+
+
             paymentList.add(paymentType);
         }
+
+        PaymentTypes pTypeGuest = new PaymentTypes(
+                999,
+                "8.jpg",
+                "GUEST");
+
+        paymentList.add(pTypeGuest);
 
         dataSyncViewModel.insertPaymentType(paymentList);
         return null;

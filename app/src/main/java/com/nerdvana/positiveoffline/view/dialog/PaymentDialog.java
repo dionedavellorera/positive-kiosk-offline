@@ -3,6 +3,7 @@ package com.nerdvana.positiveoffline.view.dialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -28,6 +29,7 @@ import com.nerdvana.positiveoffline.adapter.PaymentTypeAdapter;
 import com.nerdvana.positiveoffline.adapter.PaymentsAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.CreditCards;
+import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
 import com.nerdvana.positiveoffline.entities.Payments;
@@ -73,6 +75,16 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     private HidingEditText creditCardAmount;
     private HidingEditText remarks;
 
+    private HidingEditText guestNameInput;
+    private HidingEditText guestAddressinput;
+    private HidingEditText guestTinInput;
+    private HidingEditText guestBusinessStyle;
+
+    private TextView guestName;
+    private TextView guestAddress;
+    private TextView guestTin;
+    private TextView displayBusinessStyle;
+
     private RadioGroup rgCards;
 
     private DataSyncViewModel dataSyncViewModel;
@@ -106,7 +118,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         showForm("1");
         loadPayments();
         loadCreditCardTypes();
-
+        loadOrDetails(transactionId);
         try {
             transactionsViewModel.ldPaymentList(transactionId).observe((LifecycleOwner) context, new Observer<List<Payments>>() {
                 @Override
@@ -223,6 +235,17 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         totalAmountDue = findViewById(R.id.totalAmountDue);
         listPostedPayments = findViewById(R.id.listPostedPayments);
         totalChange = findViewById(R.id.totalChange);
+
+        guestNameInput = findViewById(R.id.guestNameInput);
+        guestAddressinput = findViewById(R.id.guestAddressinput);
+        guestTinInput = findViewById(R.id.guestTinInput);
+        guestBusinessStyle = findViewById(R.id.guestBusinessStyle);
+
+        guestName = findViewById(R.id.guestName);
+        guestAddress = findViewById(R.id.guestAddress);
+        guestTin = findViewById(R.id.guestTin);
+        displayBusinessStyle = findViewById(R.id.displayBusinessStyle);
+
     }
 
     @Override
@@ -248,6 +271,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             case 2://CREDIT CARD
                 showForm("2");
                 break;
+            case 999://GUEST INFO
+                showForm("999");
         }
     }
 
@@ -445,6 +470,27 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
                 } else if (paymentTypes.getCore_id() == 999) {
 
+                    if (!TextUtils.isEmpty(guestNameInput.getText().toString()) &&
+                        !TextUtils.isEmpty(guestAddressinput.getText().toString()) &&
+                        !TextUtils.isEmpty(guestTinInput.getText().toString()) &&
+                        !TextUtils.isEmpty(guestBusinessStyle.getText().toString())) {
+
+                        OrDetails orDetails = new OrDetails();
+                        orDetails.setName(guestNameInput.getText().toString());
+                        orDetails.setAddress(guestAddressinput.getText().toString());
+                        orDetails.setTin_number(guestTinInput.getText().toString());
+                        orDetails.setBusiness_style(guestBusinessStyle.getText().toString());
+                        orDetails.setTransaction_id(Integer.valueOf(transactionId));
+
+                        transactionsViewModel.insertOrDetails(orDetails);
+
+                        Helper.showDialogMessage(getContext(), context.getString(R.string.message_or_details_success), context.getString(R.string.header_message));
+
+                        loadOrDetails(transactionId);
+
+                    } else {
+                        Helper.showDialogMessage(getContext(), context.getString(R.string.error_message_fill_up_all_fields), context.getString(R.string.header_message));
+                    }
                 }
                 break;
         }
@@ -461,4 +507,39 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     private User getUser() throws ExecutionException, InterruptedException {
         return userViewModel.searchLoggedInUser().get(0);
     }
+
+    private void loadOrDetails(final String transactionId)  {
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                OrDetails orDetails = null;
+                try {
+                    orDetails = transactionsViewModel.getOrDetails(transactionId);
+                    if (orDetails != null) {
+                        guestName.setText(String.format("name:%s", orDetails.getName().toUpperCase()));
+                        guestAddress.setText(String.format("address:%s", orDetails.getAddress().toUpperCase()));
+                        guestTin.setText(String.format("tin#:%s", orDetails.getTin_number().toUpperCase()));
+                        displayBusinessStyle.setText(String.format("business style:%s", orDetails.getBusiness_style().toUpperCase()));
+                        guestAddressinput.setText(orDetails.getAddress());
+                        guestTinInput.setText(orDetails.getTin_number());
+                        guestBusinessStyle.setText(orDetails.getBusiness_style());
+                    } else {
+                        guestName.setText(String.format("name:%s", "N/A"));
+                        guestAddress.setText(String.format("address:%s", "N/A"));
+                        guestTin.setText(String.format("tin#:%s", "N/A"));
+                        displayBusinessStyle.setText(String.format("business style:%s", "N/A"));
+                    }
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, 300);
+
+
+    }
+
 }

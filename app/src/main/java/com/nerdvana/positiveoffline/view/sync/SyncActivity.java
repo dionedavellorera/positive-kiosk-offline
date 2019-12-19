@@ -82,9 +82,6 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onChanged(FetchDiscountResponse fetchDiscountResponse) {
 
-                Log.d("ENDASyNC", "Y12321321");
-
-
                 new InsertDiscountsAsync(fetchDiscountResponse.getResult(), SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
             }
         });

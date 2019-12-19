@@ -71,27 +71,6 @@
 
 
 
-                    <TextView
-                        android:layout_margin="10dp"
-                        android:textSize="16sp"
-                        android:textColor="@color/colorBlack"
-                        android:text="Is customer an employee?"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <View
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginTop="5dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/colorLtGrey"/>
-                    <CheckBox
-                        android:text="Employee"
-                        android:textColor="@color/colorBlack"
-                        android:id="@+id/checkEmployee"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
 
                     <TextView
                         android:layout_margin="10dp"
@@ -111,12 +90,6 @@
 
 
 
-
-                    <Spinner
-                        android:visibility="gone"
-                        android:id="@+id/spinnerEmplyeeSelection"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_gravity="center"
@@ -703,7 +676,7 @@
                     android:layout_height="match_parent"/>
 
                 <RelativeLayout
-                    android:visibility="gone"
+                    android:visibility="visible"
                     android:layout_above="@id/linTotals"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -737,6 +710,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Tin Number"/>
+                    <TextView
+                        android:paddingLeft="5dp"
+                        android:layout_below="@id/guestTin"
+                        android:id="@+id/displayBusinessStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Business Style"/>
                 </RelativeLayout>
                 <LinearLayout
                     android:visibility="gone"

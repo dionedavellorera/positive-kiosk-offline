@@ -9,12 +9,14 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.dao.DataSyncDao;
+import com.nerdvana.positiveoffline.dao.OrDetailsDao;
 import com.nerdvana.positiveoffline.dao.OrdersDao;
 import com.nerdvana.positiveoffline.dao.PaymentsDao;
 import com.nerdvana.positiveoffline.dao.TransactionsDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
 import com.nerdvana.positiveoffline.entities.DataSync;
+import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.Transactions;
@@ -32,6 +34,7 @@ public class TransactionsRepository {
     private TransactionsDao transactionsDao;
     private OrdersDao ordersDao;
     private PaymentsDao paymentsDao;
+    private OrDetailsDao orDetailsDao;
     private MutableLiveData<FetchProductsResponse> fetchProductLiveData;
 
     public TransactionsRepository(Application application) {
@@ -39,6 +42,8 @@ public class TransactionsRepository {
         transactionsDao = posDatabase.transactionsDao();
         ordersDao = posDatabase.ordersDao();
         paymentsDao = posDatabase.paymentsDao();
+        orDetailsDao = posDatabase.orDetailsDao();
+
 
     }
 
@@ -174,6 +179,9 @@ public class TransactionsRepository {
         new TransactionsRepository.updateAsyncTask(transactionsDao, transactions).execute();
     }
 
+    public void insertOrDetails(OrDetails orDetails) {
+        new TransactionsRepository.insertOrDetailsAsyncTask(orDetailsDao).execute(orDetails);
+    }
     public void update(Orders orders) {
         new TransactionsRepository.updateOrderAsyncTask(ordersDao, orders).execute();
     }
@@ -193,6 +201,20 @@ public class TransactionsRepository {
     public void updatePayment(Payments payments) {
         new TransactionsRepository.updatePaymentAsyncTask(paymentsDao, payments).execute();
     }
+
+
+    public OrDetails getOrDetails(final String transactionId) throws ExecutionException, InterruptedException {
+        Callable<OrDetails> callable = new Callable<OrDetails>() {
+            @Override
+            public OrDetails call() throws Exception {
+                return orDetailsDao.orDetails(transactionId);
+            }
+        };
+
+        Future<OrDetails> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
 
     public List<Transactions> getLatestTransaction() throws ExecutionException, InterruptedException {
         Callable<List<Transactions>> callable = new Callable<List<Transactions>>() {
@@ -323,6 +345,22 @@ public class TransactionsRepository {
         @Override
         protected Void doInBackground(final List<Payments>... params) {
             mAsyncTaskDao.insert(params[0]);
+            return null;
+        }
+    }
+
+
+    private static class insertOrDetailsAsyncTask extends AsyncTask<OrDetails, Void, Void> {
+
+        private OrDetailsDao mAsyncTaskDao;
+
+        insertOrDetailsAsyncTask(OrDetailsDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(OrDetails... orDetails) {
+            mAsyncTaskDao.insert(orDetails[0]);
             return null;
         }
     }
