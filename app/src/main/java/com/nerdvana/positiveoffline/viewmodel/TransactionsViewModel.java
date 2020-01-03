@@ -200,7 +200,10 @@ public class TransactionsViewModel extends AndroidViewModel {
                             hasSpecial == 1 ? Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() - (owd.orders.getOriginal_amount() / 1.12)) : Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() * .12),
                             hasSpecial == 1 ? 0.00 : owd.orders.getOriginal_amount() / 1.12,
                             hasSpecial == 1 ? Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12) : 0.00,
-                            Utils.roundedOffTwoDecimal(totalDiscountAmount)
+                            Utils.roundedOffTwoDecimal(totalDiscountAmount),
+                            owd.orders.getDepartmentName(),
+                            owd.orders.getCategoryName(),
+                            owd.orders.getCategoryId()
 
                     );
                     ord.setId(owd.orders.getId());
@@ -225,7 +228,10 @@ public class TransactionsViewModel extends AndroidViewModel {
                             Utils.roundedOffTwoDecimal(selectedProduct.getOriginal_amount() * .12),
                             Utils.roundedOffTwoDecimal( selectedProduct.getOriginal_amount() / 1.12),
                             0.00,
-                            0.00
+                            0.00,
+                            selectedProduct.getDepartmentName(),
+                            selectedProduct.getCategoryName(),
+                            selectedProduct.getCategoryId()
                     );
                     ord.setId(selectedProduct.getId());
                     updateOrder(ord);

@@ -25,12 +25,15 @@ public class Products {
 
     @NonNull
     private int departmentId;
+    @NonNull
+    private int categoryId;
     public Products(int core_id,
                     @NonNull String product, @NonNull String product_initial,
                     String product_barcode, @NonNull Double tax_rate,
                     String image_file, Double amount,
                     Double mark_up, String category,
-                    String department, int departmentId) {
+                    String department, int departmentId,
+                    int categoryId) {
         this.core_id = core_id;
         this.product = product;
         this.product_initial = product_initial;
@@ -42,9 +45,16 @@ public class Products {
         this.category = category;
         this.department = department;
         this.departmentId = departmentId;
+        this.categoryId = categoryId;
     }
 
+    public int getCategoryId() {
+        return categoryId;
+    }
 
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
 
     public void setCore_id(int core_id) {
         this.core_id = core_id;

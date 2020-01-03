@@ -726,7 +726,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     Utils.roundedOffTwoDecimal((selectedProduct.getAmount() / 1.12) * .12),
                     Utils.roundedOffTwoDecimal(selectedProduct.getAmount() / 1.12),
                     0.00,
-                    0.00
+                    0.00,
+                    selectedProduct.getDepartment(),
+                    selectedProduct.getCategory(),
+                    selectedProduct.getCategoryId()
             ));
             transactionsViewModel.insertOrder(orderList);
         }

@@ -33,12 +33,21 @@ public class Orders {
     private Double vatExempt;
     private Double discountAmount;
 
+    private String departmentName;
+    private String categoryName;
+    private int categoryId;
+
     public Orders(int transaction_id, int core_id,
                   int qty, @NonNull Double amount,
                   @NonNull Double original_amount,
                   @NonNull String name, int departmentId,
                   Double vatAmount, Double vatable,
-                  Double vatExempt, Double discountAmount) {
+                  Double vatExempt, Double discountAmount,
+                  String departmentName, String categoryName,
+                  int categoryId) {
+        this.categoryId = categoryId;
+        this.departmentName = departmentName;
+        this.categoryName = categoryName;
         this.transaction_id = transaction_id;
         this.core_id = core_id;
         this.qty = qty;
@@ -52,6 +61,29 @@ public class Orders {
         this.discountAmount = discountAmount;
     }
 
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public String getDepartmentName() {
+        return departmentName;
+    }
+
+    public void setDepartmentName(String departmentName) {
+        this.departmentName = departmentName;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
 
     public Double getDiscountAmount() {
         return discountAmount;

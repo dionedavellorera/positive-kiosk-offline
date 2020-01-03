@@ -186,7 +186,10 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
                                 Utils.roundedOffTwoDecimal(products.getAmount() - (products.getAmount() / 1.12)),
                                 Utils.roundedOffTwoDecimal(products.getAmount() / 1.12),
                                 0.00,
-                                0.00
+                                0.00,
+                                products.getDepartment(),
+                                products.getCategory(),
+                                products.getCategoryId()
                         ));
                         transactionsViewModel.insertOrder(orderList);
                     }
