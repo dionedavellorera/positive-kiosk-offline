@@ -123,29 +123,54 @@ public class DiscountMenuDialog extends BaseDialog implements DiscountsContract 
     }
 
     @Override
-    public void clicked(DiscountWithSettings discountWithSettings) {
+    public void clicked(DiscountWithSettings discountWithSettings) throws ExecutionException, InterruptedException {
         if (discountWithSettings.discounts.getCore_id() == 1000) { //SHOW MANUAL DIALOG
             if (manualDiscDialog == null) {
-//                manualDiscDialog = new ManualDiscDialog(getContext(), discountViewModel);
-//                manualDiscDialog.setOnDismissListener(new OnDismissListener() {
-//                    @Override
-//                    public void onDismiss(DialogInterface dialogInterface) {
-//                        manualDiscDialog = null;
-//                    }
-//                });
-//
-//                manualDiscDialog.setOnCancelListener(new OnCancelListener() {
-//                    @Override
-//                    public void onCancel(DialogInterface dialogInterface) {
-//                        manualDiscDialog = null;
-//                    }
-//                });
-//
-//                manualDiscDialog.show();
+                try {
+                    manualDiscDialog = new ManualDiscDialog(getContext(), discountViewModel,
+                            transactionsViewModel.orderList(transactionId),
+                            transactionId,
+                            transactionsViewModel) {
+                        @Override
+                        public void discountSuccess() {
+                            loadDiscounts();
+                        }
+                    };
+                    manualDiscDialog.setOnDismissListener(new OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            manualDiscDialog = null;
+                        }
+                    });
+
+                    manualDiscDialog.setOnCancelListener(new OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialogInterface) {
+                            manualDiscDialog = null;
+                        }
+                    });
+
+                    manualDiscDialog.show();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
             }
         } else if (discountWithSettings.discounts.getCore_id() == 1001) { //SHOW CUSTOM DIALOG
             if (customDiscDialog == null) {
-                customDiscDialog = new CustomDiscDialog(getContext(), discountViewModel);
+                customDiscDialog = new CustomDiscDialog(
+                        getContext(),
+                        discountViewModel,
+                        transactionsViewModel.orderList(transactionId),
+                        transactionsViewModel,
+                        transactionId) {
+                    @Override
+                    public void discountSuccess() {
+                        loadDiscounts();
+                    }
+                };
                 customDiscDialog.setOnCancelListener(new OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialogInterface) {
@@ -214,8 +239,10 @@ public class DiscountMenuDialog extends BaseDialog implements DiscountsContract 
                     tmpPd.getDiscount_name(),
                     true,
                     tmpPd.getCard_number(),
-                    tmpPd.getDiscount_name(),
-                    tmpPd.getAddress()
+                    tmpPd.getName(),
+                    tmpPd.getAddress(),
+                    tmpPd.getIs_percentage(),
+                    tmpPd.getDiscount_value()
             );
             postedDiscounts.setId(transactionWithDiscounts.getPosted_discount_id());
 
@@ -243,7 +270,6 @@ public class DiscountMenuDialog extends BaseDialog implements DiscountsContract 
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-//        discountViewModel.updatePostedDiscount();
     }
 
     private void setDiscountAdapter(List<TransactionWithDiscounts> orderDiscountsList) {

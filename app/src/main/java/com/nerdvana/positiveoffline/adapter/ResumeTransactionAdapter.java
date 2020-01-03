@@ -100,8 +100,6 @@ public class ResumeTransactionAdapter extends RecyclerView.Adapter<RecyclerView.
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int i) {
         final Transactions model = transactionFilteredList.get(i);
 
-        Log.d("TETETE", model.getSaved_at());
-
         ((ResumeTransactionAdapter.ViewHolder)holder).name.setText(
                 TextUtils.isEmpty(model.getTrans_name()) ?
                         Utils.convertDateToReadableDate(model.getSaved_at()) + "\n" + model.getControl_number() :

@@ -116,24 +116,76 @@ public class TransactionsViewModel extends AndroidViewModel {
             if (discountViewModel.getTransactionWithDiscounts(transactionId).size() > 0) {
                 for (OrderWithDiscounts owd : discountViewModel.getOrderWithDiscount(transactionId)) {
 
-
-                    Double remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
-                    Double finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
-                    Double totalDiscountAmount = 0.00;
-
+                    //region check if special
                     for (OrderDiscounts od : owd.orderWithDiscountList) {
                         if (!od.getIs_void()) {
-                            hasSpecial = 1;
-                            Log.d("WITHDISC", "Y");
-                            totalDiscountAmount += Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100));
+                            if (od.getDiscount_name().equalsIgnoreCase("senior") ||
+                                    od.getDiscount_name().equalsIgnoreCase("pwd")) {
+                                hasSpecial = 1;
+                            }
+
+                        }
+                    }
+                    //endregion
+
+                    Double remainingAmount = 0.00;
+                    Double finalAmount = 0.00;
+                    Double totalDiscountAmount = 0.00;
+
+                    if (hasSpecial == 1) {
+                        remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
+                        finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
+                        totalDiscountAmount = 0.00;
+                    } else {
+                        remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
+                        finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
+                        totalDiscountAmount = 0.00;
+                    }
+
+                    //region apply discounting
+                    List<OrderDiscounts> sortedDiscounts = new ArrayList<>();
+                    for (OrderDiscounts od : owd.orderWithDiscountList) {
+                        if (!od.getIs_void()) {
+                            int specialCounter = 0;
+                            if (od.getDiscount_name().equalsIgnoreCase("senior") ||
+                                    od.getDiscount_name().equalsIgnoreCase("pwd")) {
+                                sortedDiscounts.add(0, od);
+                                specialCounter += 1;
+                            } else {
+                                if (od.getIs_percentage()) {
+                                    sortedDiscounts.add(specialCounter, od);
+                                } else {
+                                    sortedDiscounts.add(od);
+                                }
+                            }
+                        }
+                    }
+
+                    for (OrderDiscounts od : sortedDiscounts) {
+                        if (!od.getIs_void()) {
+
+                            if (od.getIs_percentage()) {
+                                totalDiscountAmount += Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100));
+
+                            } else {
+                                totalDiscountAmount += Utils.roundedOffTwoDecimal(od.getValue());
+
+                            }
+
+
                             PostedDiscounts pd = discountViewModel.getPostedDiscount((int)od.getPosted_discount_id());
                             pd.setId((int)od.getPosted_discount_id());
-                            pd.setAmount(Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100)));
+                            pd.setAmount(
+                                    od.getIs_percentage() ? Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100)) : Utils.roundedOffTwoDecimal(od.getValue()));
                             discountViewModel.updatePostedDiscount(pd);
 
                             remainingAmount = Utils.roundedOffTwoDecimal(remainingAmount - totalDiscountAmount);
+
                         }
                     }
+
+
+                    //endregion
 
                     finalAmount = finalAmount - totalDiscountAmount;
 
@@ -145,9 +197,9 @@ public class TransactionsViewModel extends AndroidViewModel {
                             owd.orders.getOriginal_amount(),
                             owd.orders.getName(),
                             owd.orders.getDepartmentId(),
-                            Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() - (owd.orders.getOriginal_amount() / 1.12)),
-                            0.00,
-                            Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12),
+                            hasSpecial == 1 ? Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() - (owd.orders.getOriginal_amount() / 1.12)) : Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() * .12),
+                            hasSpecial == 1 ? 0.00 : owd.orders.getOriginal_amount() / 1.12,
+                            hasSpecial == 1 ? Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12) : 0.00,
                             Utils.roundedOffTwoDecimal(totalDiscountAmount)
 
                     );
@@ -187,7 +239,6 @@ public class TransactionsViewModel extends AndroidViewModel {
                 }
             }
 
-            Log.d("WITHDISC", String.valueOf(hasSpecial));
             Transactions tr = loadedTransactionList(transactionId).get(0);
             tr.setId(Integer.valueOf(transactionId));
             tr.setGross_sales(Utils.roundedOffTwoDecimal(grossSales));

@@ -82,9 +82,6 @@ public class DiscountViewModel extends AndroidViewModel {
                                      int discountId, String discountName,
                                      boolean isPercentage, Double amount) {
         long last_inserted_id = 0;
-
-
-
         for (Orders orders : ordersList) {
             try {
                 PostedDiscounts postedDiscounts = new PostedDiscounts(
@@ -94,7 +91,9 @@ public class DiscountViewModel extends AndroidViewModel {
                         false,
                         "",
                         "",
-                        ""
+                        "",
+                        isPercentage,
+                        amount
 
                 );
 
@@ -124,7 +123,7 @@ public class DiscountViewModel extends AndroidViewModel {
 
     }
 
-    public void insertDiscount(List<Orders> ordersList, List<DiscountSettings> discountList,
+    public void insertDiscount(List<Orders> ordersList, DiscountWithSettings discountWithSettings,
                                String transactionId, SpecialDiscountInfo specialDiscountInfo) {
         long last_inserted_id = 0;
         for (Orders orders : ordersList) {
@@ -132,7 +131,7 @@ public class DiscountViewModel extends AndroidViewModel {
             double percentage = 0.00;
             String discName = "";
             int discId = 0;
-            for (DiscountSettings disc : discountList) {
+            for (DiscountSettings disc : discountWithSettings.discountsList) {
                 if (!TextUtils.isEmpty(disc.getProduct_id())) {
                     if (disc.getProduct_id().equalsIgnoreCase("all")) {
                         count+=1;
@@ -151,7 +150,7 @@ public class DiscountViewModel extends AndroidViewModel {
 
                 percentage = disc.getPercentage();
                 discName = disc.getDiscount_name();
-                discId = disc.getCore_id();
+                discId = discountWithSettings.discounts.getCore_id();
             }
             if (count == 2) {
                 try {
@@ -163,7 +162,9 @@ public class DiscountViewModel extends AndroidViewModel {
                                 false,
                                 specialDiscountInfo.getCard_number(),
                                 specialDiscountInfo.getName(),
-                                specialDiscountInfo.getAddress()
+                                specialDiscountInfo.getAddress(),
+                                true,
+                                percentage
 
                         );
 

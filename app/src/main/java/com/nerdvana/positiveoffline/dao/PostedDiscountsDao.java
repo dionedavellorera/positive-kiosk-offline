@@ -28,11 +28,29 @@ public interface PostedDiscountsDao {
     List<PostedDiscounts> getZeroEndOfDay();
 
 
+//    @Query("SELECT pd.transaction_id as id,pd.id as pd_id, pd.discount_name, ds.percentage " +
+//            " FROM PostedDiscounts pd " +
+//            " INNER JOIN Discounts d ON pd.discount_id = d.core_id " +
+//            " WHERE pd.transaction_id = :transaction_id AND pd.is_void = 0")
+
+    @Query("SELECT DISTINCT " +
+            "pd.discount_name, pd.transaction_id as id," +
+            "pd.id as pd_id," +
+            "pd.discount_value, " +
+            "pd.is_percentage " +
+            " FROM PostedDiscounts pd " +
+            " INNER JOIN Discounts d ON pd.discount_id = d.core_id " +
+            " LEFT JOIN DiscountSettings ds ON d.core_id = ds.discount_id " +
+            " WHERE pd.transaction_id = :transaction_id AND pd.is_void = 0")
+    List<TransactionWithDiscounts>  postedDiscountList(String transaction_id);
+
     @Query("SELECT pd.transaction_id as id,pd.id as pd_id, pd.discount_name, ds.percentage " +
             " FROM PostedDiscounts pd " +
-            " INNER JOIN DiscountSettings ds ON pd.discount_id = ds.core_id " +
+            " INNER JOIN Discounts d ON pd.discount_id = d.core_id " +
+            " INNER JOIN DiscountSettings ds ON d.core_id = ds.discount_id " +
             " WHERE pd.transaction_id = :transaction_id AND pd.is_void = 0")
-    List<TransactionWithDiscounts> postedDiscountList(String transaction_id);
+    List<TransactionWithDiscounts> postedDiscountListWithSettings(String transaction_id);
+
 
     @Update
     public void update(PostedDiscounts postedDiscounts);

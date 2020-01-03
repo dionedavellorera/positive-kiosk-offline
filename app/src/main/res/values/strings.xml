@@ -102,4 +102,6 @@
     <string name="label_value">Value</string>
     <string name="hint_amount_percentage">Enter Value</string>
     <string name="message_or_details_success">OR Details successfully saved</string>
+    <string name="label_card_number">CARD NUMBER</string>
+    <string name="error_card_number_required">Card number is always required</string>
 </resources>

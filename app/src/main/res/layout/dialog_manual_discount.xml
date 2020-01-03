@@ -14,7 +14,8 @@
         android:text="@string/label_value"/>
 
     <com.nerdvana.positiveoffline.view.HidingEditText
-        android:id="@+id/etHostName"
+        android:inputType="numberDecimal"
+        android:id="@+id/etValue"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginTop="5dp"
@@ -32,11 +33,12 @@
         android:layout_marginRight="15dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
-        android:layout_below="@id/etHostName"
+        android:layout_below="@id/etValue"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <RadioButton
+            android:checked="true"
             android:padding="10dp"
             android:id="@+id/rbAmount"
             android:layout_width="wrap_content"

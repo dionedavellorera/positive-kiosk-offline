@@ -78,9 +78,6 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
 
         TransactionCompleteDetails transactionCompleteDetails = GsonHelper.getGson().fromJson(printModel.getData(), TransactionCompleteDetails.class);
 
-
-        Log.d("MYPRINTER", SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MODEL));
-
         if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.EPSON))) {
 
             try {
@@ -351,12 +348,10 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
 
         } else if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.STAR_PRINTER))){
 
-            Log.d("TEKTEK", "START");
             if (this.port != null) {
                 try {
                     StarPrinterStatus status = port.beginCheckedBlock();
 
-                    Log.d("TEKTEK", EJFileCreator.orString(transactionCompleteDetails, context, isReprint, printModel));
 
                     byte[] command = PrinterFunctions.createTextReceiptData(
                             StarIoExt.Emulation.StarPRNT,

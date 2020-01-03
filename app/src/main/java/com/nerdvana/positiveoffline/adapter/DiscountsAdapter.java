@@ -62,7 +62,13 @@ public class DiscountsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         ((ViewHolder)holder).name.setText(model.getPosted_discount_name());
 
-        ((ViewHolder)holder).value.setText(String.valueOf(model.getPercentage()) + "%");
+
+        if (model.getIs_percentage()) {
+            ((ViewHolder)holder).value.setText(String.valueOf(model.getDiscount_value()) + "%");
+        } else {
+            ((ViewHolder)holder).value.setText(String.valueOf(model.getDiscount_value()));
+        }
+
 
 
         ((DiscountsAdapter.ViewHolder)holder).close.setOnClickListener(new View.OnClickListener() {

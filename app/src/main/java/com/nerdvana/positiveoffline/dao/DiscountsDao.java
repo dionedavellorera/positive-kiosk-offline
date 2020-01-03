@@ -36,6 +36,6 @@ public interface DiscountsDao {
     List<DiscountWithSettings> customDiscountList();
 
 //    @Query("SELECT * FROM Discounts WHERE is_special = 1 OR core_id = 1000 OR core_id = 1001")
-    @Query("SELECT * FROM Discounts WHERE is_special = 1 OR core_id = 1000")
+    @Query("SELECT * FROM Discounts WHERE is_special = 1 OR core_id = 1000 OR core_id = 1001")
     List<DiscountWithSettings> menuDiscountList();
 }

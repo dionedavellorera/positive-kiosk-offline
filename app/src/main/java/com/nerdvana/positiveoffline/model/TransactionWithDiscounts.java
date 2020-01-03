@@ -18,9 +18,18 @@ public class TransactionWithDiscounts {
     private int posted_discount_id;
     @ColumnInfo(name = "discount_name")
     private String posted_discount_name;
-    @ColumnInfo(name = "percentage")
-    private Double percentage;
+    @ColumnInfo(name = "discount_value")
+    private Double discount_value;
+    @ColumnInfo(name = "is_percentage")
+    private Boolean is_percentage;
 
+    public Boolean getIs_percentage() {
+        return is_percentage;
+    }
+
+    public void setIs_percentage(Boolean is_percentage) {
+        this.is_percentage = is_percentage;
+    }
 
     public String getTransaction_id() {
         return transaction_id;
@@ -46,12 +55,12 @@ public class TransactionWithDiscounts {
         this.posted_discount_name = posted_discount_name;
     }
 
-    public Double getPercentage() {
-        return percentage;
+    public Double getDiscount_value() {
+        return discount_value;
     }
 
-    public void setPercentage(Double percentage) {
-        this.percentage = percentage;
+    public void setDiscount_value(Double discount_value) {
+        this.discount_value = discount_value;
     }
 
     //    @Embedded

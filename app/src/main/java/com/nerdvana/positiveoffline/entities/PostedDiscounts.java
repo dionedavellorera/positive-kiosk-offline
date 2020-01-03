@@ -25,10 +25,14 @@ public class PostedDiscounts {
     private int end_of_day_id = 0;
 
     private Double amount=  0.00;
+
+    private Boolean is_percentage;
+    private Double discount_value;
     public PostedDiscounts(int transaction_id, int discount_id,
                            String discount_name, Boolean is_void,
                            String card_number, String name,
-                           String address) {
+                           String address, Boolean is_percentage,
+                           Double discount_value) {
         this.transaction_id = transaction_id;
         this.discount_id = discount_id;
         this.discount_name = discount_name;
@@ -36,6 +40,24 @@ public class PostedDiscounts {
         this.card_number = card_number;
         this.name = name;
         this.address = address;
+        this.is_percentage = is_percentage;
+        this.discount_value = discount_value;
+    }
+
+    public Boolean getIs_percentage() {
+        return is_percentage;
+    }
+
+    public void setIs_percentage(Boolean is_percentage) {
+        this.is_percentage = is_percentage;
+    }
+
+    public Double getDiscount_value() {
+        return discount_value;
+    }
+
+    public void setDiscount_value(Double discount_value) {
+        this.discount_value = discount_value;
     }
 
     public int getEnd_of_day_id() {

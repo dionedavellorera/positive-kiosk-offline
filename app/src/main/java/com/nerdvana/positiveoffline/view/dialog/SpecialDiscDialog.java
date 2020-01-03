@@ -79,11 +79,6 @@ public abstract class SpecialDiscDialog extends BaseDialog implements View.OnCli
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btnConfirm:
-
-
-
-
-
                 if (!TextUtils.isEmpty(etCardNumber.getText().toString()) &&
                     !TextUtils.isEmpty(etName.getText().toString()) &&
                     !TextUtils.isEmpty(etAddress.getText().toString())) {
@@ -94,7 +89,8 @@ public abstract class SpecialDiscDialog extends BaseDialog implements View.OnCli
                             etAddress.getText().toString().trim()
                     );
 
-                    discountViewModel.insertDiscount(ordersList, discountWithSettings.discountsList, transactionId, specialDiscountInfo);
+
+                    discountViewModel.insertDiscount(ordersList, discountWithSettings, transactionId, specialDiscountInfo);
 
                     final Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {

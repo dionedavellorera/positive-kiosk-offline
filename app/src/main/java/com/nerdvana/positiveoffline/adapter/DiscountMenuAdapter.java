@@ -22,6 +22,7 @@ import com.nerdvana.positiveoffline.model.DiscountWithSettings;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class DiscountMenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -61,7 +62,13 @@ public class DiscountMenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         ((DiscountMenuAdapter.ViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                discountsContract.clicked(model);
+                try {
+                    discountsContract.clicked(model);
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         });
 

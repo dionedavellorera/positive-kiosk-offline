@@ -9,6 +9,7 @@ import com.nerdvana.positiveoffline.entities.Discounts;
 import com.nerdvana.positiveoffline.entities.OrderDiscounts;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
+import com.nerdvana.positiveoffline.entities.Transactions;
 
 import java.util.List;
 
@@ -147,5 +148,8 @@ public class OrderWithDiscounts {
 
     @Relation(parentColumn = "transaction_id", entityColumn = "transaction_id", entity = PostedDiscounts.class)
     public List<PostedDiscounts> postedDiscounts;
+
+    @Relation(parentColumn = "transaction_id", entityColumn = "id", entity = Transactions.class)
+    public Transactions transactions;
 
 }
