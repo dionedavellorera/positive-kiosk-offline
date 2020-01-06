@@ -39,7 +39,6 @@ public class ResumeTransactionAdapter extends RecyclerView.Adapter<RecyclerView.
         this.context = context;
         transactionFilteredList = new ArrayList<>(transactionList);
         this.transactionsContract = transactionsContract;
-
     }
 
     @NonNull
@@ -87,11 +86,13 @@ public class ResumeTransactionAdapter extends RecyclerView.Adapter<RecyclerView.
         private TextView name;
         private TextView price;
         private CardView rootView;
+        private ImageView backButton;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.name);
             price = itemView.findViewById(R.id.price);
             rootView = itemView.findViewById(R.id.rootView);
+            backButton = itemView.findViewById(R.id.backButton);
         }
     }
 
@@ -111,13 +112,13 @@ public class ResumeTransactionAdapter extends RecyclerView.Adapter<RecyclerView.
                 transactionsContract.clicked(model);
             }
         });
-    }
 
-
-    public void addItems(List<Transactions> productsModelList) {
-        this.transactionList = new ArrayList<>(productsModelList);
-        this.transactionFilteredList = productsModelList;
-        notifyDataSetChanged();
+        ((ViewHolder)holder).backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                transactionsContract.remove(model);
+            }
+        });
     }
 
     @Override

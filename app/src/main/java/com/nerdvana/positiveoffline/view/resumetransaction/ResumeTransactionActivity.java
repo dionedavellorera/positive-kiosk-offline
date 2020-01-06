@@ -24,16 +24,20 @@ import android.widget.TextView;
 
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.ResumeTransactionAdapter;
 import com.nerdvana.positiveoffline.entities.Transactions;
+import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.TransactionsContract;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
+import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class ResumeTransactionActivity extends AppCompatActivity implements TransactionsContract {
-
+    private UserViewModel userViewModel;
     private TextView tvNoData;
     private RecyclerView rvTransactionList;
     private Toolbar toolbar;
@@ -49,6 +53,7 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
         initViews();
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        initUserViewModel();
         initTransViewModel();
         initTransViewModelListener();
         setTitle();
@@ -111,8 +116,17 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
 
     @Override
     public boolean onSupportNavigateUp() {
-        super.onBackPressed();
+        Intent intent = new Intent();
+        setResult(RESULT_CANCELED, intent);
+        finish();
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent();
+        setResult(RESULT_CANCELED, intent);
+        finish();
     }
 
     void returnSuccessData(String transactionId) {
@@ -135,7 +149,53 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
     }
 
     @Override
+    public void remove(Transactions transactions) {
+        Transactions tr = null;
+        tr = new Transactions(
+                transactions.getId(),
+                transactions.getControl_number(),
+                transactions.getUser_id(),
+                transactions.getIs_void(),
+                transactions.getIs_void_by(),
+                transactions.getIs_completed(),
+                transactions.getIs_completed_by(),
+                transactions.getIs_saved(),
+                transactions.getIs_saved_by(),
+                transactions.getIs_cut_off(),
+                transactions.getIs_cut_off_by(),
+                transactions.getTrans_name(),
+                transactions.getCreated_at(),
+                transactions.getReceipt_number(),
+                transactions.getGross_sales() == null ? 0.00 : transactions.getGross_sales(),
+                transactions.getNet_sales() == null ? 0.00 : transactions.getNet_sales(),
+                transactions.getVatable_sales() == null ? 0.00 :transactions.getVatable_sales(),
+                transactions.getVat_exempt_sales() == null ? 0.00 : transactions.getVat_exempt_sales(),
+                transactions.getVatable_sales() == null ? 0.00 : transactions.getVatable_sales(),
+                transactions.getDiscount_amount() == null ? 0.00 : transactions.getDiscount_amount(),
+                transactions.getChange(),
+                transactions.getVoid_at(),
+                transactions.getCompleted_at(),
+                transactions.getSaved_at(),
+                transactions.getIs_cut_off_at(),
+                true,
+                transactions.getIs_cancelled_by(),
+                Utils.getDateTimeToday()
+        );
+
+
+        transactionsViewModel.update(tr);
+    }
+
+    @Override
     public void clicked(TransactionWithOrders transactionWithOrders) {
 
+    }
+
+    private User getUser() throws ExecutionException, InterruptedException {
+        return userViewModel.searchLoggedInUser().get(0);
+    }
+
+    private void initUserViewModel() {
+        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
     }
 }

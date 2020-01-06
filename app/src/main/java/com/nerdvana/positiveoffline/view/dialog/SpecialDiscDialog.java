@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
@@ -38,6 +39,9 @@ public abstract class SpecialDiscDialog extends BaseDialog implements View.OnCli
     private HidingEditText etCardNumber;
     private HidingEditText etName;
     private HidingEditText etAddress;
+
+    private TextView tvCardNumber;
+
     private DiscountWithSettings discountWithSettings;
     private List<Orders> ordersList;
     private TransactionsViewModel transactionsViewModel;
@@ -65,6 +69,7 @@ public abstract class SpecialDiscDialog extends BaseDialog implements View.OnCli
         setDialogLayout(R.layout.dialog_specialdiscount, header);
         setCancelable(false);
         initViews();
+        tvCardNumber.setText(String.format("%s NUMBER", header));
     }
 
     private void initViews() {
@@ -73,6 +78,7 @@ public abstract class SpecialDiscDialog extends BaseDialog implements View.OnCli
         etCardNumber = findViewById(R.id.etCardNumber);
         etName = findViewById(R.id.etName);
         etAddress = findViewById(R.id.etAddress);
+        tvCardNumber = findViewById(R.id.tvCardNumber);
     }
 
     @Override

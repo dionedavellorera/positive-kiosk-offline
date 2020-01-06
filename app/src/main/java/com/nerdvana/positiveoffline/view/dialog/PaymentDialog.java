@@ -394,8 +394,14 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                 tmp.getVoid_at(),
                                 Utils.getDateTimeToday(),
                                 tmp.getSaved_at(),
-                                tmp.getIs_cut_off_at()
+                                tmp.getIs_cut_off_at(),
+                                tmp.getIs_cancelled(),
+                                tmp.getIs_cancelled_by(),
+                                tmp.getIs_cancelled_at()
                         );
+
+
+
                         transactions.setHas_special(tmp.getHas_special());
                         transactionsViewModel.update(transactions);
                         dismiss();
@@ -403,7 +409,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                         pay.stopLoading(pay);
                     } else {
                         pay.stopLoading(pay);
-                        Helper.showDialogMessage(getContext(), context.getString(R.string.error_has_balance), context.getString(R.string.header_message));
+//                        Helper.showDialogMessage(getContext(), context.getString(R.string.error_has_balance), context.getString(R.string.header_message));
                     }
                 } catch (ExecutionException e) {
                     pay.stopLoading(pay);

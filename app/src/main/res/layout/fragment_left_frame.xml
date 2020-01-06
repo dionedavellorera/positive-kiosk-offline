@@ -19,7 +19,6 @@
 
         <ImageView
             android:alpha="0.1"
-            android:src="@drawable/pos_logo_watermark_edited"
             android:layout_above="@id/linSubtotal"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>

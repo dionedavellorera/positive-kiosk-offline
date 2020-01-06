@@ -133,6 +133,11 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
     }
 
     @Override
+    public void remove(Transactions transactions) {
+
+    }
+
+    @Override
     public void clicked(TransactionWithOrders transactionWithOrders) {
         try {
             if (forVoid) {
@@ -163,11 +168,11 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                         Utils.getDateTimeToday(),
                         reference.getCompleted_at(),
                         reference.getSaved_at(),
-                        reference.getIs_cut_off_at()
+                        reference.getIs_cut_off_at(),
+                        reference.getIs_cancelled(),
+                        reference.getIs_cancelled_by(),
+                        reference.getIs_cancelled_at()
                 );
-
-
-
 
                 transactionsViewModel.update(transactions);
                 final Handler handler = new Handler();

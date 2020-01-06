@@ -68,6 +68,11 @@
             android:screenOrientation="landscape"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateHidden|adjustPan" />
+
+        <service
+            android:name=".background.TimerService"
+            android:enabled="true"/>
+
     </application>
 
 </manifest>

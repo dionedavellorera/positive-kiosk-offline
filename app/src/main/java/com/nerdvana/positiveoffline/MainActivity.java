@@ -19,10 +19,15 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
+import com.nerdvana.positiveoffline.apirequests.TestRequest;
+import com.nerdvana.positiveoffline.apiresponses.TestResponse;
+import com.nerdvana.positiveoffline.background.TimerService;
 import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
@@ -34,6 +39,7 @@ import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.OtherPrinterModel;
 import com.nerdvana.positiveoffline.model.PrintJobModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
+import com.nerdvana.positiveoffline.model.ServerConnectionTest;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.printer.EJFileCreator;
 import com.nerdvana.positiveoffline.printer.PrinterUtils;
@@ -73,10 +79,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import static com.epson.epsonio.DevType.TCP;
 
 public class MainActivity extends AppCompatActivity implements AsyncFinishCallBack {
+    private ImageView onlineImageIndicator;
+    private TextView onlineTextIndicator;
+    private TextView user;
 
+    private Intent timerIntent;
 
     private UserViewModel userViewModel;
 
@@ -94,9 +108,38 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         openFragment(R.id.leftFrame, new LeftFrameFragment());
         openFragment(R.id.rightFrame, new RightFrameFragment());
         myPrintJobs = new ArrayList<>();
+        initViews();
         initUserViewModel();
+        setUserData();
         initDataSyncViewModel();
         initILocalizeReceipts();
+        startTimerService();
+    }
+
+    private void setUserData() {
+        try {
+            List<User> currentUser = userViewModel.searchLoggedInUser();
+            if (currentUser.size() > 0) {
+                user.setText(currentUser.get(0).getName().toUpperCase());
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    private void initViews() {
+        onlineImageIndicator = findViewById(R.id.onlineImageIndicator);
+        onlineTextIndicator = findViewById(R.id.onlineTextIndicator);
+        user = findViewById(R.id.user);
+    }
+
+    private void startTimerService() {
+        timerIntent = new Intent(this, TimerService.class);
+        startService(timerIntent);
     }
 
     private void initILocalizeReceipts() {
@@ -591,6 +634,43 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         }
     };
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (timerIntent != null) {
+            stopService(timerIntent);
+        }
+    }
 
+    @Subscribe
+    public void onConnectionTest(ServerConnectionTest serverConnectionTest) {
+        IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+        TestRequest collectionRequest = new TestRequest();
+        Call<TestResponse> call = iUsers.sendTestRequest(
+                collectionRequest.getMapValue());
 
+        call.enqueue(new Callback<TestResponse>() {
+            @Override
+            public void onResponse(Call<TestResponse> call, Response<TestResponse> response) {
+                showConnection(true);
+            }
+
+            @Override
+            public void onFailure(Call<TestResponse> call, Throwable t) {
+                showConnection(false);
+            }
+        });
+
+    }
+
+    private void showConnection(boolean canConnect) {
+        if (canConnect) {
+            onlineTextIndicator.setText("ONLINE");
+            onlineImageIndicator.setBackground(getResources().getDrawable(R.drawable.circle_online));
+        } else {
+            onlineTextIndicator.setText("OFFLINE");
+            onlineImageIndicator.setBackground(getResources().getDrawable(R.drawable.circle_offline));
+        }
+
+    }
 }

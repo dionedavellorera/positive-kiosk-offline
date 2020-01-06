@@ -45,6 +45,10 @@ public class Transactions {
 
     private int has_special = 0;
 
+    private Boolean is_cancelled = false;
+    private String is_cancelled_by = "";
+    private String is_cancelled_at = "";
+
     public Transactions(@NonNull String control_number,
                         String user_id, String created_at) {
         this.control_number = control_number;
@@ -64,7 +68,11 @@ public class Transactions {
                         Double vatable_sales, Double vat_exempt_sales,
                         Double vat_amount, Double discountAmount,
                         Double change, String void_at,
-                        String completed_at, String saved_at, String is_cut_off_at) {
+                        String completed_at, String saved_at, String is_cut_off_at,
+                        Boolean is_cancelled, String is_cancelled_by, String is_cancelled_at) {
+        this.is_cancelled = is_cancelled;
+        this.is_cancelled_by = is_cancelled_by;
+        this.is_cancelled_at = is_cancelled_at;
         this.void_at = void_at;
         this.completed_at = completed_at;
         this.saved_at = saved_at;
@@ -90,6 +98,30 @@ public class Transactions {
         this.vat_amount = vat_amount;
         this.discount_amount = discountAmount;
         this.change = change;
+    }
+
+    public void setIs_cancelled(Boolean is_cancelled) {
+        this.is_cancelled = is_cancelled;
+    }
+
+    public void setIs_cancelled_by(String is_cancelled_by) {
+        this.is_cancelled_by = is_cancelled_by;
+    }
+
+    public void setIs_cancelled_at(String is_cancelled_at) {
+        this.is_cancelled_at = is_cancelled_at;
+    }
+
+    public Boolean getIs_cancelled() {
+        return is_cancelled;
+    }
+
+    public String getIs_cancelled_by() {
+        return is_cancelled_by;
+    }
+
+    public String getIs_cancelled_at() {
+        return is_cancelled_at;
     }
 
     public int getHas_special() {

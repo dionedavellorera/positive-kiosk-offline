@@ -280,8 +280,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     transactions.getVoid_at(),
                     transactions.getCompleted_at(),
                     Utils.getDateTimeToday(),
-                    transactions.getIs_cut_off_at()
-
+                    transactions.getIs_cut_off_at(),
+                    transactions.getIs_cancelled(),
+                    transactions.getIs_cancelled_by(),
+                    transactions.getIs_cancelled_at()
             );
         } catch (ExecutionException e) {
             e.printStackTrace();
@@ -651,6 +653,19 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     try {
                         transactionId = data.getExtras().getString(AppConstants.TRANS_ID);
                         setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    try {
+                        if (transactionsList().size() > 0) {
+                            transactionId = String.valueOf(transactionsList().get(0).getId());
+                            setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                        } else {
+                            defaults();
+                        }
                     } catch (ExecutionException e) {
                         e.printStackTrace();
                     } catch (InterruptedException e) {

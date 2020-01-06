@@ -31,7 +31,7 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
         buttonsModelList.add(new ButtonsModel(99,"CHANGE QTY", "",3));
         buttonsModelList.add(new ButtonsModel(101,"ITEM CANCEL", "",4));
 
-        buttonsModelList.add(new ButtonsModel(100,"SAVE TRANSACTION", "",5));
+        buttonsModelList.add(new ButtonsModel(100,"PAUSE TRANSACTION", "",5));
         buttonsModelList.add(new ButtonsModel(9988,"RESUME TRANSACTION", "",6));
 
 
