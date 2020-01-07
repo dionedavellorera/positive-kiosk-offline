@@ -283,7 +283,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     transactions.getIs_cut_off_at(),
                     transactions.getIs_cancelled(),
                     transactions.getIs_cancelled_by(),
-                    transactions.getIs_cancelled_at()
+                    transactions.getIs_cancelled_at(),
+                    transactions.getTin_number()
             );
         } catch (ExecutionException e) {
             e.printStackTrace();
@@ -416,15 +417,13 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                 public void completed(String receiptNumber) {
 
 
-//                                    try {
-//                                        BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
-//                                    } catch (ExecutionException e) {
-//                                        Log.d("EXECEPT", e.getLocalizedMessage());
-//                                        e.printStackTrace();
-//                                    } catch (InterruptedException e) {
-//                                        Log.d("EXECEPT", e.getLocalizedMessage());
-//                                        e.printStackTrace();
-//                                    }
+                                    try {
+                                        BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
 
                                     try {
                                         if (transactionsList().size() > 0) {

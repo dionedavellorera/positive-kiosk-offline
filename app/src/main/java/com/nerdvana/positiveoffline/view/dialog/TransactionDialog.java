@@ -171,7 +171,8 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                         reference.getIs_cut_off_at(),
                         reference.getIs_cancelled(),
                         reference.getIs_cancelled_by(),
-                        reference.getIs_cancelled_at()
+                        reference.getIs_cancelled_at(),
+                        reference.getTin_number()
                 );
 
                 transactionsViewModel.update(transactions);

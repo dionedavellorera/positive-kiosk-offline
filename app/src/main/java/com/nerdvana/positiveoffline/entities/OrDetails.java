@@ -7,13 +7,14 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "OrDetails")
 public class OrDetails {
 
-    @PrimaryKey
+
     @NonNull
     private int transaction_id;
     @NonNull
     private String name;
     @NonNull
     private String address;
+    @PrimaryKey
     @NonNull
     private String tin_number;
     @NonNull

@@ -10,6 +10,7 @@ import com.epson.epos2.printer.ReceiveListener;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
+import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.functions.PrinterFunctions;
@@ -250,28 +251,28 @@ public class EndOfDayAsync extends AsyncTask<Void, Void, Void> {
             addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             addTextToPrinter(printer, twoColumns(
                     "BEG. OR NO",
-                    "--",
+                    endOfDay.getBegOrNo(),
                     40,
                     2,
                     context)
                     ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             addTextToPrinter(printer, twoColumns(
                     "ENDING OR NO",
-                    "--",
+                    endOfDay.getEndOrNo(),
                     40,
                     2,
                     context)
                     ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             addTextToPrinter(printer, twoColumns(
                     "BEG BALANCE",
-                    "--",
+                    String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getBegSales())),
                     40,
                     2,
                     context)
                     ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             addTextToPrinter(printer, twoColumns(
                     "ENDING BALANCE",
-                    "--",
+                    String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getEndSales())),
                     40,
                     2,
                     context)

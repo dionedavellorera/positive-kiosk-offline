@@ -74,8 +74,6 @@ public abstract class ManualDiscDialog extends BaseDialog implements View.OnClic
                 }
 
 
-                Log.d("DIONEDAVE", String.valueOf(Double.valueOf(etValue.getText().toString())));
-
                 if (!TextUtils.isEmpty(etValue.getText().toString())) {
                     if (Double.valueOf(etValue.getText().toString()) > 0) {
                         discountViewModel.insertManualDiscount(orderList, transactionId,

@@ -127,6 +127,18 @@ public class CutOffRepository {
         }
     }
 
+    public List<EndOfDay> endOfDayList() throws ExecutionException, InterruptedException {
+        Callable<List<EndOfDay>> callable = new Callable<List<EndOfDay>>() {
+            @Override
+            public List<EndOfDay> call() throws Exception {
+                return endOfDayDao.endOfDayList();
+            }
+        };
+
+        Future<List<EndOfDay>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
     public CutOff getCutOff(final long cut_off_id) throws ExecutionException, InterruptedException {
         Callable<CutOff> callable = new Callable<CutOff>() {
             @Override

@@ -76,7 +76,14 @@ public class PaymentTypeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
 
         File direct = new File(Environment.getExternalStorageDirectory()
                 + "/POS/PAYMENT_TYPE/" + model.getImage_url());
-        Picasso.get().load(direct).into(((PaymentTypeAdapter.ViewHolder)holder).image);
+
+        if (model.getCore_id() == 999) {
+            Picasso.get().load(R.mipmap.baseline_assignment_black_48dp).into(((PaymentTypeAdapter.ViewHolder)holder).image);
+        } else {
+            Picasso.get().load(direct).into(((PaymentTypeAdapter.ViewHolder)holder).image);
+        }
+
+
 
 
     }

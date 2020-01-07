@@ -93,15 +93,6 @@ public class TransactionsViewModel extends AndroidViewModel {
         }
     }
 
-    public void recomputeTransactionManualDiscount(String transactionId, DiscountViewModel discountViewModel) {
-        Double grossSales = 0.00;
-        Double netSales = 0.00;
-        Double vatableSales = 0.00;
-        Double vatExemptSales = 0.00;
-        Double vatAmount = 0.00;
-        Double discountAmount = 0.00;
-
-    }
 
     public void recomputeTransactionWithDiscount(String transactionId, DiscountViewModel discountViewModel) {
 

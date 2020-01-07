@@ -52,6 +52,10 @@ public class CutOffViewModel extends AndroidViewModel {
         return cutOffRepository.getCutOff(cut_off_id);
     }
 
+    public List<EndOfDay> getEndOfDayList() throws ExecutionException, InterruptedException {
+        return cutOffRepository.endOfDayList();
+    }
+
     public List<PostedDiscounts> getUnCutOffPostedDiscount() throws ExecutionException, InterruptedException {
         return discountsRepository.getUnCutOffPostedDiscounts();
     }

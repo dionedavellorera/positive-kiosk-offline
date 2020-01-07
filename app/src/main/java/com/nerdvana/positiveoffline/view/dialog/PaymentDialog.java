@@ -397,7 +397,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                 tmp.getIs_cut_off_at(),
                                 tmp.getIs_cancelled(),
                                 tmp.getIs_cancelled_by(),
-                                tmp.getIs_cancelled_at()
+                                tmp.getIs_cancelled_at(),
+                                tmp.getTin_number()
                         );
 
 
@@ -489,6 +490,16 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                         orDetails.setTransaction_id(Integer.valueOf(transactionId));
 
                         transactionsViewModel.insertOrDetails(orDetails);
+
+                        try {
+                            Transactions transactions = transactionsViewModel.loadedTransactionList(transactionId).get(0);
+                            transactions.setTin_number(guestTinInput.getText().toString());
+                            transactionsViewModel.update(transactions);
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
 
                         Helper.showDialogMessage(getContext(), context.getString(R.string.message_or_details_success), context.getString(R.string.header_message));
 

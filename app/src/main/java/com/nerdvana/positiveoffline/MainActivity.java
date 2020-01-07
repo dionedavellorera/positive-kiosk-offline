@@ -351,9 +351,6 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
     @Subscribe
     public void print(PrintModel printModel) {
-
-
-
         switch (printModel.getType()) {
             case "PRINT_RECEIPT_SPEC":
                 addAsync(new PrintReceiptAsync(printModel, MainActivity.this,

@@ -91,7 +91,9 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                     0.00,
                                     0.00,
                                     0,
-                                    Utils.getDateTimeToday()
+                                    Utils.getDateTimeToday(),
+                                    "",
+                                    ""
                             ));
 
                             List<Transactions> transactionsList = transactionsViewModel.unCutOffTransactions(userViewModel.searchLoggedInUser().get(0).getUsername());
@@ -114,12 +116,18 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                             int othersCount = 0;
                             Double othersAmount = 0.00;
 
+                            String begOrNo = "";
+                            String endOrNo = "";
+
 
                             if (transactionsList.size() > 0) {
+                                begOrNo = transactionsList.get(0).getReceipt_number();
+                                endOrNo = transactionsList.get(transactionsList.size() - 1).getReceipt_number();
                                 for (Transactions tr : transactionsList) {
                                     if (tr.getIs_void()) {
                                         void_amount += tr.getNet_sales();
                                     } else {
+
                                         gross_sales += tr.getGross_sales();
                                         net_sales += tr.getNet_sales();
                                         vatable_sales += tr.getVatable_sales();
@@ -187,6 +195,9 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                             cutOff.setOthersCount(othersCount);
                             cutOff.setOthersAmount(othersAmount);
 
+                            cutOff.setBegOrNo(begOrNo);
+                            cutOff.setEndOrNo(endOrNo);
+
                             BusProvider.getInstance().post(new PrintModel("PRINT_XREAD", GsonHelper.getGson().toJson(cutOff)));
 
                             cutOffViewModel.update(cutOff);
@@ -216,7 +227,11 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                 0.00,
                                 0.00,
                                 0.00,
-                                Utils.getDateTimeToday()
+                                Utils.getDateTimeToday(),
+                                "",
+                                "",
+                                0.00,
+                                0.00
                         ));
 
                         for (PostedDiscounts postedDiscounts : cutOffViewModel.getZeroEndOfDay()) {
@@ -242,7 +257,14 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         int othersCount = 0;
                         Double othersAmount = 0.00;
 
+                        List<String> orNumberArray = new ArrayList<>();
+
                         for (CutOff cutOff : cutOffViewModel.getUnCutOffData()) {
+
+
+                            orNumberArray.add(cutOff.getBegOrNo());
+                            orNumberArray.add(cutOff.getEndOrNo());
+
                             cutOff.setCreated_at(Utils.getDateTimeToday());
                             cutOff.setZ_read_id((int) end_of_day_id);
                             cutOffViewModel.update(cutOff);
@@ -256,7 +278,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                             total_cash += cutOff.getTotal_cash_amount();
                             total_cash_payments += cutOff.getTotal_cash_payments();
                             total_card_payments += cutOff.getTotal_card_payments();
-                            total_change += cutOff.getTotal_change();
+                            total_change += cutOff.getTotal_change() != null ? cutOff.getTotal_change() : 0.00;
 
                             seniorCount += cutOff.getSeniorCount();
                             seniorAmount += cutOff.getSeniorAmount();
@@ -285,6 +307,20 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         endOfDay.setPwdAmount(pwdAmount);
                         endOfDay.setOthersCount(othersCount);
                         endOfDay.setOthersAmount(othersAmount);
+
+                        if (orNumberArray.size() > 0) {
+                            endOfDay.setBegOrNo(orNumberArray.get(0));
+                            endOfDay.setEndOrNo(orNumberArray.get(orNumberArray.size() -1));
+                        }
+
+                        List<EndOfDay> eod = cutOffViewModel.getEndOfDayList();
+                        if (eod.size() > 1) {
+                            endOfDay.setBegSales(eod.get(1).getEndSales());
+                            endOfDay.setEndSales(gross_sales + eod.get(1).getEndSales());
+                        } else {
+                            endOfDay.setBegSales(gross_sales);
+                            endOfDay.setEndSales(gross_sales);
+                        }
 
                         cutOffViewModel.update(endOfDay);
 

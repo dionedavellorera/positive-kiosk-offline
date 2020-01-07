@@ -31,11 +31,21 @@ public class EndOfDay {
     private int othersCount = 0;
     private Double othersAmount = 0.00;
 
+    private String begOrNo = "";
+    private String endOrNo = "";
+
+    private Double begSales = 0.00;
+    private Double endSales = 0.00;
+
+
     public EndOfDay(int number_of_transactions, Double gross_sales,
                     Double net_sales, Double vatable_sales,
                     Double vat_exempt_sales, Double vat_amount,
                     Double void_amount, Double total_cash_amount,
-                    String created_at) {
+                    String created_at, String begOrNo, String endOrNo,
+                    Double begSales, Double endSales) {
+        this.begSales = begSales;
+        this.endSales = endSales;
         this.number_of_transactions = number_of_transactions;
         this.gross_sales = gross_sales;
         this.net_sales = net_sales;
@@ -45,8 +55,41 @@ public class EndOfDay {
         this.void_amount = void_amount;
         this.total_cash_amount = total_cash_amount;
         this.created_at = created_at;
+        this.begOrNo = begOrNo;
+        this.endOrNo = endOrNo;
     }
 
+    public Double getBegSales() {
+        return begSales;
+    }
+
+    public void setBegSales(Double begSales) {
+        this.begSales = begSales;
+    }
+
+    public Double getEndSales() {
+        return endSales;
+    }
+
+    public void setEndSales(Double endSales) {
+        this.endSales = endSales;
+    }
+
+    public String getBegOrNo() {
+        return begOrNo;
+    }
+
+    public void setBegOrNo(String begOrNo) {
+        this.begOrNo = begOrNo;
+    }
+
+    public String getEndOrNo() {
+        return endOrNo;
+    }
+
+    public void setEndOrNo(String endOrNo) {
+        this.endOrNo = endOrNo;
+    }
 
     public int getSeniorCount() {
         return seniorCount;

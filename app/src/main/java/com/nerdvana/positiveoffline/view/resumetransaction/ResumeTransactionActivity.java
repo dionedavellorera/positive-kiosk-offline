@@ -179,7 +179,8 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
                 transactions.getIs_cut_off_at(),
                 true,
                 transactions.getIs_cancelled_by(),
-                Utils.getDateTimeToday()
+                Utils.getDateTimeToday(),
+                transactions.getTin_number()
         );
 
 

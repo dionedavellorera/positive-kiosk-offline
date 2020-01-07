@@ -122,11 +122,12 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
 
                 if (printModel.getType().equalsIgnoreCase("PRINT_RECEIPT")) {
                     addTextToPrinter(printer, "OFFICIAL RECEIPT(STORE COPY)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
-                    BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT_SPEC", GsonHelper.getGson().toJson(transactionCompleteDetails)));
+//                    BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT_SPEC", GsonHelper.getGson().toJson(transactionCompleteDetails)));
                 } else if (printModel.getType().equalsIgnoreCase("REPRINT_RECEIPT")) {
                     addTextToPrinter(printer, "OFFICIAL RECEIPT(STORE COPY)\nREPRINT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
                     BusProvider.getInstance().post(new PrintModel("REPRINT_RECEIPT_SPEC", GsonHelper.getGson().toJson(transactionCompleteDetails)));
                 }
+
                 if (printModel.getType().equalsIgnoreCase("PRINT_RECEIPT_SPEC")) {
                     addTextToPrinter(printer, "OFFICIAL RECEIPT(CUSTOMER COPY)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
                 } else if (printModel.getType().equalsIgnoreCase("REPRINT_RECEIPT_SPEC")) {

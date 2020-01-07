@@ -317,22 +317,22 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "BEG OR NO",
-                "--",
+                endOfDay.getBegOrNo(),
                 context,
                 false);
         finalString += PrinterUtils.receiptString(
                 "ENDING OR NO",
-                "--",
+                endOfDay.getEndOrNo(),
                 context,
                 false);
         finalString += PrinterUtils.receiptString(
                 "BEG BALANCE",
-                "--",
+                String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getBegSales())),
                 context,
                 false);
         finalString += PrinterUtils.receiptString(
                 "ENDING BALANCE",
-                "--",
+                String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getEndSales())),
                 context,
                 false);
 

@@ -230,7 +230,7 @@ public class DiscountMenuDialog extends BaseDialog implements DiscountsContract 
 
     @Override
     public void clicked(TransactionWithDiscounts transactionWithDiscounts) {
-
+        //this is void discount
         try {
             PostedDiscounts tmpPd = discountViewModel.getPostedDiscount(transactionWithDiscounts.getPosted_discount_id());
             PostedDiscounts postedDiscounts = new PostedDiscounts(
@@ -252,7 +252,6 @@ public class DiscountMenuDialog extends BaseDialog implements DiscountsContract 
                 od.setIs_void(true);
                 discountViewModel.updateOrderDiscount(od);
             }
-
 
             final Handler handler = new Handler();
             handler.postDelayed(new Runnable() {

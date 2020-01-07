@@ -49,6 +49,8 @@ public class Transactions {
     private String is_cancelled_by = "";
     private String is_cancelled_at = "";
 
+    private String tin_number = "";
+
     public Transactions(@NonNull String control_number,
                         String user_id, String created_at) {
         this.control_number = control_number;
@@ -69,7 +71,9 @@ public class Transactions {
                         Double vat_amount, Double discountAmount,
                         Double change, String void_at,
                         String completed_at, String saved_at, String is_cut_off_at,
-                        Boolean is_cancelled, String is_cancelled_by, String is_cancelled_at) {
+                        Boolean is_cancelled, String is_cancelled_by, String is_cancelled_at,
+                        String tin_number) {
+        this.tin_number = tin_number;
         this.is_cancelled = is_cancelled;
         this.is_cancelled_by = is_cancelled_by;
         this.is_cancelled_at = is_cancelled_at;
@@ -98,6 +102,14 @@ public class Transactions {
         this.vat_amount = vat_amount;
         this.discount_amount = discountAmount;
         this.change = change;
+    }
+
+    public String getTin_number() {
+        return tin_number;
+    }
+
+    public void setTin_number(String tin_number) {
+        this.tin_number = tin_number;
     }
 
     public void setIs_cancelled(Boolean is_cancelled) {

@@ -30,12 +30,16 @@ public class CutOff {
     private int othersCount = 0;
     private Double othersAmount = 0.00;
 
+    private String begOrNo = "";
+    private String endOrNo = "";
+
 
     public CutOff(int number_of_transactions, Double gross_sales,
                   Double net_sales, Double vatable_sales,
                   Double vat_exempt_sales, Double vat_amount,
                   Double void_amount, Double total_cash_amount,
-                  int z_read_id, String created_at) {
+                  int z_read_id, String created_at,
+                  String begOrNo, String endOrNo) {
         this.number_of_transactions = number_of_transactions;
         this.gross_sales = gross_sales;
         this.net_sales = net_sales;
@@ -46,6 +50,24 @@ public class CutOff {
         this.total_cash_amount = total_cash_amount;
         this.z_read_id = z_read_id;
         this.created_at = created_at;
+        this.begOrNo = begOrNo;
+        this.endOrNo = endOrNo;
+    }
+
+    public String getBegOrNo() {
+        return begOrNo;
+    }
+
+    public void setBegOrNo(String begOrNo) {
+        this.begOrNo = begOrNo;
+    }
+
+    public String getEndOrNo() {
+        return endOrNo;
+    }
+
+    public void setEndOrNo(String endOrNo) {
+        this.endOrNo = endOrNo;
     }
 
     public int getSeniorCount() {
