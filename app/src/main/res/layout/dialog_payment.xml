@@ -98,7 +98,7 @@
                         <com.nerdvana.positiveoffline.view.HidingEditText
                             android:imeOptions="actionNext"
                             android:gravity="center"
-                            android:hint="Guest Name"
+                            android:hint="Name"
                             android:id="@+id/guestNameInput"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
@@ -113,7 +113,7 @@
                             android:imeOptions="actionNext"
                             android:inputType="text"
                             android:gravity="center"
-                            android:hint="Guest Address"
+                            android:hint="Address"
                             android:id="@+id/guestAddressinput"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
@@ -127,7 +127,7 @@
                             android:imeOptions="actionDone"
                             android:inputType="text"
                             android:gravity="center"
-                            android:hint="Guest tin"
+                            android:hint="TIN#"
                             android:id="@+id/guestTinInput"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />

@@ -20,10 +20,13 @@ import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
+import com.nerdvana.positiveoffline.model.DiscountComputeModel;
+import com.nerdvana.positiveoffline.model.OdWithPd;
 import com.nerdvana.positiveoffline.model.OrderWithDiscounts;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.model.TransactionWithDiscounts;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
+import com.nerdvana.positiveoffline.repository.DiscountsRepository;
 import com.nerdvana.positiveoffline.repository.TransactionsRepository;
 
 import java.util.ArrayList;
@@ -33,10 +36,12 @@ import java.util.concurrent.ExecutionException;
 public class TransactionsViewModel extends AndroidViewModel {
 
     private TransactionsRepository transactionsRepository;
+    private DiscountsRepository discountsRepository;
 
     public TransactionsViewModel(@NonNull Application application) {
         super(application);
         transactionsRepository = new TransactionsRepository(application);
+        discountsRepository = new DiscountsRepository(application);
     }
 
 
@@ -105,6 +110,7 @@ public class TransactionsViewModel extends AndroidViewModel {
         int hasSpecial = 0;
         try {
             if (discountViewModel.getTransactionWithDiscounts(transactionId).size() > 0) {
+                List<DiscountComputeModel> dcm = new ArrayList<>();
                 for (OrderWithDiscounts owd : discountViewModel.getOrderWithDiscount(transactionId)) {
 
                     //region check if special
@@ -121,7 +127,7 @@ public class TransactionsViewModel extends AndroidViewModel {
 
                     Double remainingAmount = 0.00;
                     Double finalAmount = 0.00;
-                    Double totalDiscountAmount = 0.00;
+                    Double totalDiscountAmount = 0.00; ;
 
                     if (hasSpecial == 1) {
                         remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
@@ -134,6 +140,7 @@ public class TransactionsViewModel extends AndroidViewModel {
                     }
 
                     //region apply discounting
+
                     List<OrderDiscounts> sortedDiscounts = new ArrayList<>();
                     for (OrderDiscounts od : owd.orderWithDiscountList) {
                         if (!od.getIs_void()) {
@@ -152,29 +159,24 @@ public class TransactionsViewModel extends AndroidViewModel {
                         }
                     }
 
+                    Double currentDiscountAmount = 0.00;
+
                     for (OrderDiscounts od : sortedDiscounts) {
                         if (!od.getIs_void()) {
 
                             if (od.getIs_percentage()) {
                                 totalDiscountAmount += Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100));
-
+                                currentDiscountAmount = Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100));
                             } else {
                                 totalDiscountAmount += Utils.roundedOffTwoDecimal(od.getValue());
-
+                                currentDiscountAmount = Utils.roundedOffTwoDecimal(od.getValue());
                             }
 
-
-                            PostedDiscounts pd = discountViewModel.getPostedDiscount((int)od.getPosted_discount_id());
-                            pd.setId((int)od.getPosted_discount_id());
-                            pd.setAmount(
-                                    od.getIs_percentage() ? Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100)) : Utils.roundedOffTwoDecimal(od.getValue()));
-                            discountViewModel.updatePostedDiscount(pd);
+                            dcm.add(new DiscountComputeModel((int)od.getPosted_discount_id(), currentDiscountAmount));
 
                             remainingAmount = Utils.roundedOffTwoDecimal(remainingAmount - totalDiscountAmount);
-
                         }
                     }
-
 
                     //endregion
 
@@ -205,6 +207,32 @@ public class TransactionsViewModel extends AndroidViewModel {
                     vatExemptSales += Utils.roundedOffTwoDecimal(owd.orders.getVatExempt());
                     vatAmount += Utils.roundedOffTwoDecimal(owd.orders.getVatAmount());
                     discountAmount += Utils.roundedOffTwoDecimal(totalDiscountAmount);
+                }
+
+                List<DiscountComputeModel> pepe = new ArrayList<>();
+                for (int i = 0; i < dcm.size(); i++) {
+                    boolean isExisting = false;
+                    int index = 0;
+                    for (int j = 0; j < pepe.size(); j++) {
+                        if (pepe.get(j).getPostedDiscountId() == dcm.get(i).getPostedDiscountId()) {
+                            index = j;
+                            isExisting = true;
+                        }
+
+                    }
+
+                    if (!isExisting) {
+                        pepe.add(new DiscountComputeModel(dcm.get(i).getPostedDiscountId(), dcm.get(i).getDiscountAmount()));
+                    } else {
+                        pepe.get(index).setDiscountAmount(pepe.get(index).getDiscountAmount() + dcm.get(i).getDiscountAmount());
+                    }
+
+                }
+                for (DiscountComputeModel mudel : pepe) {
+                    PostedDiscounts pd = discountViewModel.getPostedDiscount(mudel.getPostedDiscountId());
+                    pd.setId(mudel.getPostedDiscountId());
+                    pd.setAmount(mudel.getDiscountAmount());
+                    discountViewModel.updatePostedDiscount(pd);
                 }
             } else {
                 for (Orders selectedProduct : orderList(transactionId)) {
@@ -251,6 +279,11 @@ public class TransactionsViewModel extends AndroidViewModel {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+    }
+
+    public List<OdWithPd> odWithPd(int transactionId) throws ExecutionException, InterruptedException {
+        return discountsRepository.odWithPd(transactionId);
     }
 
     public void insertOrDetails(OrDetails orDetails) {

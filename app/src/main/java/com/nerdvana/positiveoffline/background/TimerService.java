@@ -9,7 +9,11 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.nerdvana.positiveoffline.BusProvider;
+import com.nerdvana.positiveoffline.dao.TransactionsDao;
+import com.nerdvana.positiveoffline.database.DatabaseHelper;
+import com.nerdvana.positiveoffline.database.PosDatabase;
 import com.nerdvana.positiveoffline.model.ServerConnectionTest;
+import com.nerdvana.positiveoffline.repository.TransactionsRepository;
 
 public class TimerService extends Service {
     long secsOfDate = 0;
@@ -30,6 +34,12 @@ public class TimerService extends Service {
 
                 if (secsOfDate % 5 == 0) {
                     BusProvider.getInstance().post(new ServerConnectionTest(""));
+                }
+
+                if (secsOfDate % 60 == 0) { //process sending of data to server
+                    PosDatabase posDatabase = DatabaseHelper.getDatabase(TimerService.this);
+                    TransactionsDao transactionsDao = posDatabase.transactionsDao();
+//                    Log.d("DIONEDATA", String.valueOf(transactionsDao.completedTransactionList().size()));
                 }
             }
         }.start();

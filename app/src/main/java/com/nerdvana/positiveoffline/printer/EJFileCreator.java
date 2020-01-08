@@ -515,12 +515,13 @@ public class EJFileCreator {
             finalString += PrinterUtils.receiptString("DISCOUNT LIST", "", context, false);
 
             for (PostedDiscounts postedDiscounts : transactionCompleteDetails.postedDiscountsList) {
-                finalString += PrinterUtils.receiptString(
-                        postedDiscounts.getDiscount_name(),
-                        postedDiscounts.getCard_number(),
-                        context,
-                        false);
-
+                if (!postedDiscounts.getIs_void()) {
+                    finalString += PrinterUtils.receiptString(
+                            postedDiscounts.getDiscount_name(),
+                            postedDiscounts.getCard_number(),
+                            context,
+                            false);
+                }
             }
 
 

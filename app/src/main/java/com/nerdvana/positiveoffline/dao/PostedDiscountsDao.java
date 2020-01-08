@@ -21,6 +21,10 @@ public interface PostedDiscountsDao {
     @Query("SELECT * FROM PostedDiscounts WHERE id = :posted_discount_id")
     PostedDiscounts getPostedDiscount(int posted_discount_id);
 
+    //getLastPostedDiscount
+    @Query("SELECT * FROM PostedDiscounts WHERE transaction_id = :transaction_id")
+    List<PostedDiscounts> getLastPostedDiscount(int transaction_id);
+
     @Query(("SELECT * FROM PostedDiscounts WHERE cut_off_id = 0"))
     List<PostedDiscounts> getUnCutOffPostedDiscounts();
 

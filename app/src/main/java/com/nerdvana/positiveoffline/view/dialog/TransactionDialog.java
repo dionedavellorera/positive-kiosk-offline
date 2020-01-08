@@ -1,6 +1,7 @@
 package com.nerdvana.positiveoffline.view.dialog;
 
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
+import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.TransactionsAdapter;
@@ -42,6 +44,9 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
     private TransactionsViewModel transactionsViewModel;
     private UserViewModel userViewModel;
     private Boolean forVoid;
+
+    private ProgressDialog progressDialog;
+
     public TransactionDialog(Context context, String header,
                              TransactionsViewModel transactionsViewModel,
                              UserViewModel userViewModel,
@@ -62,6 +67,10 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
         setTransactionsAdapter();
 
         search.setVisibility(View.VISIBLE);
+
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setCancelable(false);
+        progressDialog.setMessage("Loading.. please wait");
     }
 
 
@@ -141,6 +150,8 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
     public void clicked(TransactionWithOrders transactionWithOrders) {
         try {
             if (forVoid) {
+                progressDialog.setMessage("VOIDING TRANSACTION ...");
+                progressDialog.show();
                 //FOR VOID
                 Transactions reference = transactionsViewModel.loadedTransactionListViaControlNumber(transactionWithOrders.transactions.getControl_number()).get(0);
                 Transactions transactions = new Transactions(
@@ -181,11 +192,22 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                     @Override
                     public void run() {
                         setTransactionsAdapter();
+                        progressDialog.dismiss();
+                        Helper.showDialogMessage(getContext(), "VOID SUCCESS", getContext().getString(R.string.header_message));
                     }
                 }, 500);
                 search.setText("");
             } else {
+                progressDialog.setMessage("REPRINTING ...");
+                progressDialog.show();
                 BusProvider.getInstance().post(new PrintModel("REPRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(transactionWithOrders.transactions.getReceipt_number()))));
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressDialog.dismiss();
+                    }
+                }, 500);
             }
 
         } catch (ExecutionException e) {

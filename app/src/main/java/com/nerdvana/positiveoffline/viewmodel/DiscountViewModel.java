@@ -54,6 +54,10 @@ public class DiscountViewModel extends AndroidViewModel {
         return discountsRepository.getPostedDiscounts(posted_discount_id);
     }
 
+    public List<PostedDiscounts> getLastPostedDiscount(int transaction_id) throws ExecutionException, InterruptedException {
+        return discountsRepository.getLastPostedDiscount(transaction_id);
+    }
+
     public List<TransactionWithDiscounts> getTransactionWithDiscounts(String transaction_id) throws ExecutionException, InterruptedException {
         return discountsRepository.getTransactionWithDiscounts(transaction_id);
     }
@@ -84,6 +88,9 @@ public class DiscountViewModel extends AndroidViewModel {
         long last_inserted_id = 0;
         for (Orders orders : ordersList) {
             try {
+
+                Log.d("AMTTOINSERT", String.valueOf(amount));
+
                 PostedDiscounts postedDiscounts = new PostedDiscounts(
                         Integer.valueOf(transactionId),
                         discountId,
@@ -94,10 +101,11 @@ public class DiscountViewModel extends AndroidViewModel {
                         "",
                         isPercentage,
                         amount
-
                 );
+                if (last_inserted_id == 0) {
+                    last_inserted_id = insertPostedDiscount(postedDiscounts);
+                }
 
-                last_inserted_id = insertPostedDiscount(postedDiscounts);
 
                 List<OrderDiscounts> orderDiscountsList = new ArrayList<>();
 
@@ -155,6 +163,9 @@ public class DiscountViewModel extends AndroidViewModel {
             if (count == 2) {
                 try {
                     if (last_inserted_id == 0) {
+
+
+
                         PostedDiscounts postedDiscounts = new PostedDiscounts(
                                 Integer.valueOf(transactionId),
                                 discId,

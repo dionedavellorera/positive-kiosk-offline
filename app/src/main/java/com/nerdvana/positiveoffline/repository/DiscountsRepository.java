@@ -21,6 +21,7 @@ import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.model.DiscountWithSettings;
+import com.nerdvana.positiveoffline.model.OdWithPd;
 import com.nerdvana.positiveoffline.model.OrderWithDiscounts;
 import com.nerdvana.positiveoffline.model.TransactionWithDiscounts;
 
@@ -54,6 +55,32 @@ public class DiscountsRepository {
         };
 
         Future<PostedDiscounts> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public List<PostedDiscounts> getLastPostedDiscount(final int transaction_id) throws ExecutionException, InterruptedException {
+        Callable<List<PostedDiscounts>> callable = new Callable<List<PostedDiscounts>>() {
+            @Override
+            public List<PostedDiscounts> call() throws Exception {
+                return postedDiscountsDao.getLastPostedDiscount(transaction_id);
+            }
+        };
+
+        Future<List<PostedDiscounts>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
+
+    public List<OdWithPd> odWithPd(final int transactionId) throws ExecutionException, InterruptedException {
+        Callable<List<OdWithPd>> callable = new Callable<List<OdWithPd>>() {
+            @Override
+            public List<OdWithPd> call() throws Exception {
+                return orderDiscountsDao.odWithPd(transactionId);
+            }
+        };
+
+        Future<List<OdWithPd>> future = Executors.newSingleThreadExecutor().submit(callable);
         return future.get();
     }
 
