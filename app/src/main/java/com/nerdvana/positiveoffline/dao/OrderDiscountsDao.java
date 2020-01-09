@@ -20,6 +20,10 @@ public interface OrderDiscountsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(List<OrderDiscounts> orderDiscountsList);
 
+
+    @Query("SELECT * FROM OrderDiscounts where is_sent_to_server = 0")
+    List<OrderDiscounts> unsyncedOrderDiscounts();
+
     @Query("SELECT * FROM Orders where transaction_id = :transaction_id")
     List<OrderWithDiscounts> orderDiscountList(String transaction_id);
 

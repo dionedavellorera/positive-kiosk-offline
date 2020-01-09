@@ -24,6 +24,10 @@ public interface OrdersDao {
     @Query("SELECT * FROM Orders")
     LiveData<List<Orders>> ldOrderList();
 
+    @Query("SELECT * FROM Orders WHERE is_sent_to_server = 0")
+    List<Orders> unsyncedOrders();
+
+
     @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id AND is_void = 0")
     List<Orders> orderList(String transaction_id);
 
