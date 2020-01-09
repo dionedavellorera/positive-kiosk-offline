@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
+import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.entities.DiscountSettings;
 import com.nerdvana.positiveoffline.entities.OrderDiscounts;
@@ -117,7 +119,10 @@ public class DiscountViewModel extends AndroidViewModel {
                         orders.getId(),
                         discountName,
                         last_inserted_id,
-                        false));
+                        false,
+                        0,
+                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))));
 
                 insertOrderDiscount(orderDiscountsList);
             } catch (ExecutionException e) {
@@ -190,7 +195,10 @@ public class DiscountViewModel extends AndroidViewModel {
                             orders.getId(),
                             discName,
                             last_inserted_id,
-                            false));
+                            false,
+                            0,
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))));
                     insertOrderDiscount(orderDiscountsList);
                 } catch (ExecutionException e) {
                     e.printStackTrace();

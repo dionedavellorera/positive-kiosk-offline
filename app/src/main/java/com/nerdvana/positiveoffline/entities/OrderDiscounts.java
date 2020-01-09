@@ -27,10 +27,22 @@ public class OrderDiscounts {
     @NonNull
     private long posted_discount_id;
     private Boolean is_void;
+
+
+    private int is_sent_to_server;
+    private int machine_id;
+    private int branch_id;
+
+
     public OrderDiscounts(int product_id, @NonNull Boolean is_percentage,
                           @NonNull Double value, @NonNull int transaction_id,
                           int order_id, String discount_name,
-                          long posted_discount_id, Boolean is_void) {
+                          long posted_discount_id, Boolean is_void,
+                          int is_sent_to_server, int machine_id,
+                          int branch_id) {
+        this.is_sent_to_server = is_sent_to_server;
+        this.machine_id = machine_id;
+        this.branch_id = branch_id;
         this.order_id = order_id;
         this.product_id = product_id;
         this.is_percentage = is_percentage;
@@ -39,6 +51,30 @@ public class OrderDiscounts {
         this.discount_name = discount_name;
         this.posted_discount_id = posted_discount_id;
         this.is_void = is_void;
+    }
+
+    public int getIs_sent_to_server() {
+        return is_sent_to_server;
+    }
+
+    public void setIs_sent_to_server(int is_sent_to_server) {
+        this.is_sent_to_server = is_sent_to_server;
+    }
+
+    public int getMachine_id() {
+        return machine_id;
+    }
+
+    public void setMachine_id(int machine_id) {
+        this.machine_id = machine_id;
+    }
+
+    public int getBranch_id() {
+        return branch_id;
+    }
+
+    public void setBranch_id(int branch_id) {
+        this.branch_id = branch_id;
     }
 
     public Boolean getIs_void() {
