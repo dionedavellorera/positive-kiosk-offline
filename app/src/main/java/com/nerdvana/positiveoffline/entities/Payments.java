@@ -25,12 +25,47 @@ public class Payments {
 
     private int cut_off_id = 0;
 
+    private int is_sent_to_server;
+    private int machine_id;
+    private int branch_id;
+
+
+
     public Payments(int transaction_id, int core_id,
-                    @NonNull Double amount, @NonNull String name) {
+                    @NonNull Double amount, @NonNull String name,
+                    int is_sent_to_server, int machine_id,
+                    int branch_id) {
+        this.is_sent_to_server = is_sent_to_server;
+        this.machine_id = machine_id;
+        this.branch_id = branch_id;
         this.transaction_id = transaction_id;
         this.core_id = core_id;
         this.amount = amount;
         this.name = name;
+    }
+
+    public int getIs_sent_to_server() {
+        return is_sent_to_server;
+    }
+
+    public void setIs_sent_to_server(int is_sent_to_server) {
+        this.is_sent_to_server = is_sent_to_server;
+    }
+
+    public int getMachine_id() {
+        return machine_id;
+    }
+
+    public void setMachine_id(int machine_id) {
+        this.machine_id = machine_id;
+    }
+
+    public int getBranch_id() {
+        return branch_id;
+    }
+
+    public void setBranch_id(int branch_id) {
+        this.branch_id = branch_id;
     }
 
     public int getTransaction_id() {

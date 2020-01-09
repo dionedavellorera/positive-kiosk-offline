@@ -437,7 +437,10 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                             List<Payments> cashPayment = new ArrayList<>();
                             cashPayment.add(new Payments(
                                     Integer.valueOf(transactionId), paymentTypes.getCore_id(),
-                                    Double.valueOf(cashAmount.getText().toString()), paymentTypes.getPayment_type()));
+                                    Double.valueOf(cashAmount.getText().toString()), paymentTypes.getPayment_type(),
+                                    0,
+                                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))));
                             transactionsViewModel.insertPayment(cashPayment);
                         }
                     }
@@ -464,7 +467,10 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                             List<Payments> cardPayment = new ArrayList<>();
                             Payments p = new Payments(
                                     Integer.valueOf(transactionId), paymentTypes.getCore_id(),
-                                    Double.valueOf(creditCardAmount.getText().toString()), paymentTypes.getPayment_type());
+                                    Double.valueOf(creditCardAmount.getText().toString()), paymentTypes.getPayment_type(),
+                                    0,
+                                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)));
                             p.setOther_data(GsonHelper.getGson().toJson(cardMap));
                             cardPayment.add(p);
                             transactionsViewModel.insertPayment(cardPayment);
