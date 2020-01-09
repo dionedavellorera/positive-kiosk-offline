@@ -91,8 +91,6 @@ public class DiscountViewModel extends AndroidViewModel {
         for (Orders orders : ordersList) {
             try {
 
-                Log.d("AMTTOINSERT", String.valueOf(amount));
-
                 PostedDiscounts postedDiscounts = new PostedDiscounts(
                         Integer.valueOf(transactionId),
                         discountId,
@@ -102,7 +100,10 @@ public class DiscountViewModel extends AndroidViewModel {
                         "",
                         "",
                         isPercentage,
-                        amount
+                        amount,
+                        0,
+                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))
                 );
                 if (last_inserted_id == 0) {
                     last_inserted_id = insertPostedDiscount(postedDiscounts);
@@ -180,7 +181,10 @@ public class DiscountViewModel extends AndroidViewModel {
                                 specialDiscountInfo.getName(),
                                 specialDiscountInfo.getAddress(),
                                 true,
-                                percentage
+                                percentage,
+                                0,
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))
 
                         );
 

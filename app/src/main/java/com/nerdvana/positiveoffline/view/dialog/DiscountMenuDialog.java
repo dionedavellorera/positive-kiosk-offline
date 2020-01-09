@@ -13,7 +13,9 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.adapter.DiscountMenuAdapter;
 import com.nerdvana.positiveoffline.adapter.DiscountsAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
@@ -242,7 +244,10 @@ public class DiscountMenuDialog extends BaseDialog implements DiscountsContract 
                     tmpPd.getName(),
                     tmpPd.getAddress(),
                     tmpPd.getIs_percentage(),
-                    tmpPd.getDiscount_value()
+                    tmpPd.getDiscount_value(),
+                    0,
+                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))
             );
             postedDiscounts.setId(transactionWithDiscounts.getPosted_discount_id());
 

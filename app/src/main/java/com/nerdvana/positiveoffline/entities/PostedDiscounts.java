@@ -28,11 +28,20 @@ public class PostedDiscounts {
 
     private Boolean is_percentage;
     private Double discount_value;
+
+    private int is_sent_to_server;
+    private int machine_id;
+    private int branch_id;
+
     public PostedDiscounts(int transaction_id, int discount_id,
                            String discount_name, Boolean is_void,
                            String card_number, String name,
                            String address, Boolean is_percentage,
-                           Double discount_value) {
+                           Double discount_value, int is_sent_to_server,
+                           int machine_id, int branch_id) {
+        this.is_sent_to_server = is_sent_to_server;
+        this.machine_id = machine_id;
+        this.branch_id = branch_id;
         this.transaction_id = transaction_id;
         this.discount_id = discount_id;
         this.discount_name = discount_name;
@@ -42,6 +51,30 @@ public class PostedDiscounts {
         this.address = address;
         this.is_percentage = is_percentage;
         this.discount_value = discount_value;
+    }
+
+    public int getIs_sent_to_server() {
+        return is_sent_to_server;
+    }
+
+    public void setIs_sent_to_server(int is_sent_to_server) {
+        this.is_sent_to_server = is_sent_to_server;
+    }
+
+    public int getMachine_id() {
+        return machine_id;
+    }
+
+    public void setMachine_id(int machine_id) {
+        this.machine_id = machine_id;
+    }
+
+    public int getBranch_id() {
+        return branch_id;
+    }
+
+    public void setBranch_id(int branch_id) {
+        this.branch_id = branch_id;
     }
 
     public Boolean getIs_percentage() {
