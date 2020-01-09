@@ -33,13 +33,21 @@ public class CutOff {
     private String begOrNo = "";
     private String endOrNo = "";
 
+    private int is_sent_to_server;
+    private int machine_id;
+    private int branch_id;
 
     public CutOff(int number_of_transactions, Double gross_sales,
                   Double net_sales, Double vatable_sales,
                   Double vat_exempt_sales, Double vat_amount,
                   Double void_amount, Double total_cash_amount,
                   int z_read_id, String created_at,
-                  String begOrNo, String endOrNo) {
+                  String begOrNo, String endOrNo,
+                  int is_sent_to_server, int machine_id,
+                  int branch_id) {
+        this.branch_id = branch_id;
+        this.is_sent_to_server = is_sent_to_server;
+        this.machine_id = machine_id;
         this.number_of_transactions = number_of_transactions;
         this.gross_sales = gross_sales;
         this.net_sales = net_sales;
@@ -52,6 +60,30 @@ public class CutOff {
         this.created_at = created_at;
         this.begOrNo = begOrNo;
         this.endOrNo = endOrNo;
+    }
+
+    public int getBranch_id() {
+        return branch_id;
+    }
+
+    public void setBranch_id(int branch_id) {
+        this.branch_id = branch_id;
+    }
+
+    public int getIs_sent_to_server() {
+        return is_sent_to_server;
+    }
+
+    public void setIs_sent_to_server(int is_sent_to_server) {
+        this.is_sent_to_server = is_sent_to_server;
+    }
+
+    public int getMachine_id() {
+        return machine_id;
+    }
+
+    public void setMachine_id(int machine_id) {
+        this.machine_id = machine_id;
     }
 
     public String getBegOrNo() {

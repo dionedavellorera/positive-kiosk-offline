@@ -183,6 +183,10 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
                 transactions.getTin_number()
         );
 
+        tr.setMachine_id(transactions.getMachine_id());
+        tr.setIs_sent_to_server(transactions.getIs_sent_to_server());
+        tr.setBranch_id(transactions.getBranch_id());
+
 
         transactionsViewModel.update(tr);
     }

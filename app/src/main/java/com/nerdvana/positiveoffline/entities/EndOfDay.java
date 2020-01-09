@@ -37,13 +37,22 @@ public class EndOfDay {
     private Double begSales = 0.00;
     private Double endSales = 0.00;
 
+    private int is_sent_to_server;
+    private int machine_id;
+    private int branch_id;
+
 
     public EndOfDay(int number_of_transactions, Double gross_sales,
                     Double net_sales, Double vatable_sales,
                     Double vat_exempt_sales, Double vat_amount,
                     Double void_amount, Double total_cash_amount,
                     String created_at, String begOrNo, String endOrNo,
-                    Double begSales, Double endSales) {
+                    Double begSales, Double endSales,
+                    int is_sent_to_server, int machine_id,
+                    int branch_id) {
+        this.branch_id = branch_id;
+        this.machine_id = machine_id;
+        this.is_sent_to_server = is_sent_to_server;
         this.begSales = begSales;
         this.endSales = endSales;
         this.number_of_transactions = number_of_transactions;
@@ -57,6 +66,30 @@ public class EndOfDay {
         this.created_at = created_at;
         this.begOrNo = begOrNo;
         this.endOrNo = endOrNo;
+    }
+
+    public int getBranch_id() {
+        return branch_id;
+    }
+
+    public void setBranch_id(int branch_id) {
+        this.branch_id = branch_id;
+    }
+
+    public int getMachine_id() {
+        return machine_id;
+    }
+
+    public void setMachine_id(int machine_id) {
+        this.machine_id = machine_id;
+    }
+
+    public int getIs_sent_to_server() {
+        return is_sent_to_server;
+    }
+
+    public void setIs_sent_to_server(int is_sent_to_server) {
+        this.is_sent_to_server = is_sent_to_server;
     }
 
     public Double getBegSales() {

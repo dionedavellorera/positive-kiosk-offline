@@ -186,6 +186,10 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                         reference.getTin_number()
                 );
 
+                transactions.setMachine_id(reference.getMachine_id());
+                transactions.setIs_sent_to_server(reference.getIs_sent_to_server());
+                transactions.setBranch_id(reference.getBranch_id());
+
                 transactionsViewModel.update(transactions);
                 final Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {

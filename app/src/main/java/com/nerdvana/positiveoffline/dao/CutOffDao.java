@@ -8,6 +8,7 @@ import androidx.room.Update;
 
 import com.nerdvana.positiveoffline.entities.CreditCards;
 import com.nerdvana.positiveoffline.entities.CutOff;
+import com.nerdvana.positiveoffline.entities.EndOfDay;
 
 import java.util.List;
 
@@ -25,6 +26,9 @@ public interface CutOffDao {
 
     @Query("SELECT * FROM CutOff WHERE DATE(created_at) BETWEEN :startDate AND :endDate")
     List<CutOff> getCutOffViaDate(String startDate, String endDate);
+
+    @Query("SELECT * FROM CutOff WHERE is_sent_to_server = 0")
+    List<CutOff> unsyncedCutOff();
 
     @Update
     void update(CutOff cutOff);

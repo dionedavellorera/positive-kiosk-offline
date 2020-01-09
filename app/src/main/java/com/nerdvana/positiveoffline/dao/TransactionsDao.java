@@ -21,6 +21,9 @@ public interface TransactionsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(List<Transactions> dataSyncList);
 
+    @Query("SELECT * FROM Transactions WHERE is_sent_to_server = 0")
+    List<Transactions> unsyncedTransactions();
+
     @Query("SELECT * FROM Transactions WHERE is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0")
     LiveData<List<Transactions>> ldTransactionsList();
 

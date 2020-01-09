@@ -8,10 +8,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.CutOff;
@@ -93,7 +95,10 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                     0,
                                     Utils.getDateTimeToday(),
                                     "",
-                                    ""
+                                    "",
+                                    0,
+                                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
                             ));
 
                             List<Transactions> transactionsList = transactionsViewModel.unCutOffTransactions(userViewModel.searchLoggedInUser().get(0).getUsername());
@@ -231,7 +236,10 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                 "",
                                 "",
                                 0.00,
-                                0.00
+                                0.00,
+                                0,
+                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
                         ));
 
                         for (PostedDiscounts postedDiscounts : cutOffViewModel.getZeroEndOfDay()) {
@@ -260,11 +268,8 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         List<String> orNumberArray = new ArrayList<>();
 
                         for (CutOff cutOff : cutOffViewModel.getUnCutOffData()) {
-
-
                             orNumberArray.add(cutOff.getBegOrNo());
                             orNumberArray.add(cutOff.getEndOrNo());
-
                             cutOff.setCreated_at(Utils.getDateTimeToday());
                             cutOff.setZ_read_id((int) end_of_day_id);
                             cutOffViewModel.update(cutOff);

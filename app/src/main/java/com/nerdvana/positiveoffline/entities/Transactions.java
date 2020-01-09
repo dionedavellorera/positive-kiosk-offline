@@ -51,11 +51,21 @@ public class Transactions {
 
     private String tin_number = "";
 
+    private int is_sent_to_server;
+    private int machine_id;
+    private int branch_id;
+
     public Transactions(@NonNull String control_number,
-                        String user_id, String created_at) {
+                        String user_id, String created_at,
+                        int is_sent_to_server,
+                        int machine_id, int branch_id) {
         this.control_number = control_number;
         this.user_id = user_id;
         this.created_at = created_at;
+
+        this.is_sent_to_server = is_sent_to_server;
+        this.machine_id = machine_id;
+        this.branch_id = branch_id;
     }
 
     @Ignore
@@ -73,6 +83,7 @@ public class Transactions {
                         String completed_at, String saved_at, String is_cut_off_at,
                         Boolean is_cancelled, String is_cancelled_by, String is_cancelled_at,
                         String tin_number) {
+
         this.tin_number = tin_number;
         this.is_cancelled = is_cancelled;
         this.is_cancelled_by = is_cancelled_by;
@@ -102,6 +113,30 @@ public class Transactions {
         this.vat_amount = vat_amount;
         this.discount_amount = discountAmount;
         this.change = change;
+    }
+
+    public int getIs_sent_to_server() {
+        return is_sent_to_server;
+    }
+
+    public void setIs_sent_to_server(int is_sent_to_server) {
+        this.is_sent_to_server = is_sent_to_server;
+    }
+
+    public int getMachine_id() {
+        return machine_id;
+    }
+
+    public void setMachine_id(int machine_id) {
+        this.machine_id = machine_id;
+    }
+
+    public int getBranch_id() {
+        return branch_id;
+    }
+
+    public void setBranch_id(int branch_id) {
+        this.branch_id = branch_id;
     }
 
     public String getTin_number() {

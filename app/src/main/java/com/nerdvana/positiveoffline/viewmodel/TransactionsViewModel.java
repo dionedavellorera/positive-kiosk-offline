@@ -218,7 +218,6 @@ public class TransactionsViewModel extends AndroidViewModel {
                             index = j;
                             isExisting = true;
                         }
-
                     }
 
                     if (!isExisting) {

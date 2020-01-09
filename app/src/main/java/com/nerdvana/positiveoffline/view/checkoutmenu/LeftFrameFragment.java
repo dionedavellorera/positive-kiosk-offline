@@ -25,6 +25,7 @@ import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.CheckoutAdapter;
 import com.nerdvana.positiveoffline.entities.Orders;
@@ -286,6 +287,12 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     transactions.getIs_cancelled_at(),
                     transactions.getTin_number()
             );
+
+            tr.setMachine_id(transactions.getMachine_id());
+            tr.setIs_sent_to_server(transactions.getIs_sent_to_server());
+            tr.setBranch_id(transactions.getBranch_id());
+
+
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -712,7 +719,24 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
                     List<Transactions> tr = new ArrayList<>();
 
-                    tr.add(new Transactions(controlNumber, getUser().getUsername(), Utils.getDateTimeToday()));
+                    tr.add(new Transactions(
+                            controlNumber,
+                            getUser().getUsername(),
+                            Utils.getDateTimeToday(),
+                            0,
+                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                    ));
+
+
+
+//                    tr.add(new Transactions(
+//                            controlNumber,
+//                            getUser().getUsername(),
+//                            Utils.getDateTimeToday(),
+//                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+//                            0
+//                            ));
                     transactionsViewModel.insert(tr);
 
 

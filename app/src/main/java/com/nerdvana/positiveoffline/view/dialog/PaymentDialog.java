@@ -402,6 +402,11 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                         );
 
 
+                        transactions.setMachine_id(tmp.getMachine_id());
+                        transactions.setIs_sent_to_server(tmp.getIs_sent_to_server());
+                        transactions.setBranch_id(tmp.getBranch_id());
+
+
 
                         transactions.setHas_special(tmp.getHas_special());
                         transactionsViewModel.update(transactions);
