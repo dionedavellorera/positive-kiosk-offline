@@ -767,7 +767,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     0.00,
                     selectedProduct.getDepartment(),
                     selectedProduct.getCategory(),
-                    selectedProduct.getCategoryId()
+                    selectedProduct.getCategoryId(),
+                    0,
+                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
             ));
             transactionsViewModel.insertOrder(orderList);
         }

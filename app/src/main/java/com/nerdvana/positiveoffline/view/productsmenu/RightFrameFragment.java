@@ -16,8 +16,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.ProductsAdapter;
 import com.nerdvana.positiveoffline.entities.Orders;
@@ -189,7 +191,10 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
                                 0.00,
                                 products.getDepartment(),
                                 products.getCategory(),
-                                products.getCategoryId()
+                                products.getCategoryId(),
+                                0,
+                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
                         ));
                         transactionsViewModel.insertOrder(orderList);
                     }

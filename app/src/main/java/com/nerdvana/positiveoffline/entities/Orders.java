@@ -37,6 +37,10 @@ public class Orders {
     private String categoryName;
     private int categoryId;
 
+    private int is_sent_to_server;
+    private int machine_id;
+    private int branch_id;
+
     public Orders(int transaction_id, int core_id,
                   int qty, @NonNull Double amount,
                   @NonNull Double original_amount,
@@ -44,7 +48,11 @@ public class Orders {
                   Double vatAmount, Double vatable,
                   Double vatExempt, Double discountAmount,
                   String departmentName, String categoryName,
-                  int categoryId) {
+                  int categoryId, int is_sent_to_server,
+                  int machine_id, int branch_id) {
+        this.is_sent_to_server = is_sent_to_server;
+        this.branch_id = branch_id;
+        this.machine_id = machine_id;
         this.categoryId = categoryId;
         this.departmentName = departmentName;
         this.categoryName = categoryName;
@@ -59,6 +67,30 @@ public class Orders {
         this.vatable = vatable;
         this.vatExempt = vatExempt;
         this.discountAmount = discountAmount;
+    }
+
+    public int getIs_sent_to_server() {
+        return is_sent_to_server;
+    }
+
+    public void setIs_sent_to_server(int is_sent_to_server) {
+        this.is_sent_to_server = is_sent_to_server;
+    }
+
+    public int getMachine_id() {
+        return machine_id;
+    }
+
+    public void setMachine_id(int machine_id) {
+        this.machine_id = machine_id;
+    }
+
+    public int getBranch_id() {
+        return branch_id;
+    }
+
+    public void setBranch_id(int branch_id) {
+        this.branch_id = branch_id;
     }
 
     public int getCategoryId() {

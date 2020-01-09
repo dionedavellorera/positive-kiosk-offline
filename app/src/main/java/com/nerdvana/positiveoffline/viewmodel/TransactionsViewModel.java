@@ -10,6 +10,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.room.Query;
 
 import com.facebook.stetho.common.Util;
+import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.entities.OrDetails;
@@ -196,7 +198,10 @@ public class TransactionsViewModel extends AndroidViewModel {
                             Utils.roundedOffTwoDecimal(totalDiscountAmount),
                             owd.orders.getDepartmentName(),
                             owd.orders.getCategoryName(),
-                            owd.orders.getCategoryId()
+                            owd.orders.getCategoryId(),
+                            0,
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))
 
                     );
                     ord.setId(owd.orders.getId());
@@ -249,7 +254,10 @@ public class TransactionsViewModel extends AndroidViewModel {
                             0.00,
                             selectedProduct.getDepartmentName(),
                             selectedProduct.getCategoryName(),
-                            selectedProduct.getCategoryId()
+                            selectedProduct.getCategoryId(),
+                            0,
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))
                     );
                     ord.setId(selectedProduct.getId());
                     updateOrder(ord);
