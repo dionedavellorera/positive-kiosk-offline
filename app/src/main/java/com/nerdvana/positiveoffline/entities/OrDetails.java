@@ -20,6 +20,34 @@ public class OrDetails {
     @NonNull
     private String business_style;
 
+    private int is_sent_to_server;
+    private int machine_id;
+    private int branch_id;
+
+    public int getIs_sent_to_server() {
+        return is_sent_to_server;
+    }
+
+    public void setIs_sent_to_server(int is_sent_to_server) {
+        this.is_sent_to_server = is_sent_to_server;
+    }
+
+    public int getMachine_id() {
+        return machine_id;
+    }
+
+    public void setMachine_id(int machine_id) {
+        this.machine_id = machine_id;
+    }
+
+    public int getBranch_id() {
+        return branch_id;
+    }
+
+    public void setBranch_id(int branch_id) {
+        this.branch_id = branch_id;
+    }
+
     public int getTransaction_id() {
         return transaction_id;
     }

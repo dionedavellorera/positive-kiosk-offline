@@ -21,9 +21,11 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.PaymentTypeAdapter;
 import com.nerdvana.positiveoffline.adapter.PaymentsAdapter;
@@ -493,6 +495,9 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                         orDetails.setTin_number(guestTinInput.getText().toString());
                         orDetails.setBusiness_style(guestBusinessStyle.getText().toString());
                         orDetails.setTransaction_id(Integer.valueOf(transactionId));
+                        orDetails.setMachine_id(Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)));
+                        orDetails.setBranch_id(Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)));
+                        orDetails.setIs_sent_to_server(0);
 
                         transactionsViewModel.insertOrDetails(orDetails);
 
