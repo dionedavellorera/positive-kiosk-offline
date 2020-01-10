@@ -11,6 +11,11 @@ public class SPrinter {
         try {
             printer = new Printer(printerModel, printerLanguage, context);
         } catch (Epos2Exception e) {
+            try {
+                printer.disconnect();
+            } catch (Epos2Exception e1) {
+                e1.printStackTrace();
+            }
             e.printStackTrace();
         }
     }

@@ -11,6 +11,11 @@ import androidx.annotation.NonNull;
 
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
+import com.nerdvana.positiveoffline.IUsers;
+import com.nerdvana.positiveoffline.PosClient;
+import com.nerdvana.positiveoffline.apirequests.FetchDiscountRequest;
+import com.nerdvana.positiveoffline.apirequests.SendDataRequest;
+import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
 import com.nerdvana.positiveoffline.dao.CutOffDao;
 import com.nerdvana.positiveoffline.dao.EndOfDayDao;
 import com.nerdvana.positiveoffline.dao.OrDetailsDao;
@@ -35,6 +40,12 @@ import com.nerdvana.positiveoffline.repository.TransactionsRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class TimerService extends Service {
     long secsOfDate = 0;
@@ -59,7 +70,7 @@ public class TimerService extends Service {
 
                 Log.d("DIONEDATA", String.valueOf(secsOfDate));
 
-                if (secsOfDate % 60 == 0) { //process sending of data to server
+                if (secsOfDate % 30 == 0) { //process sending of data to server
                     final PosDatabase posDatabase = DatabaseHelper.getDatabase(TimerService.this);
                     new AsyncTask<Void, Void, Void>() {
 
@@ -74,27 +85,53 @@ public class TimerService extends Service {
                             OrdersDao ordersDao = posDatabase.ordersDao();
                             OrderDiscountsDao orderDiscountsDao = posDatabase.orderDiscountsDao();
 
-
+                            Map<String, String> tmpMap = new HashMap<>();
                             List<EndOfDay> unsyncedEndOfDay = endOfDayDao.unsyncedEndOfDay();
+                            tmpMap.put("end_of_day", GsonHelper.getGson().toJson(unsyncedEndOfDay));
                             List<CutOff> unsyncedCutOff = cutOffDao.unsyncedCutOff();
+                            tmpMap.put("cut_off", GsonHelper.getGson().toJson(unsyncedCutOff));
                             List<Transactions> unsyncedTransactions = transactionsDao.unsyncedTransactions();
+                            tmpMap.put("transactions", GsonHelper.getGson().toJson(unsyncedTransactions));
                             List<OrDetails> unsyncedOrDetails = orDetailsDao.unsyncedOrDetails();
+                            tmpMap.put("or_details", GsonHelper.getGson().toJson(unsyncedOrDetails));
                             List<PostedDiscounts> unsyncedPostedDiscounts = postedDiscountsDao.unsyncedPostedDiscounts();
+                            tmpMap.put("posted_discounts", GsonHelper.getGson().toJson(unsyncedPostedDiscounts));
                             List<Payments> unsynedPayments = paymentsDao.unsyncedPayments();
+                            tmpMap.put("payments", GsonHelper.getGson().toJson(unsynedPayments));
                             List<Orders> unsyncedOrders = ordersDao.unsyncedOrders();
+                            tmpMap.put("orders", GsonHelper.getGson().toJson(unsyncedOrders));
                             List<OrderDiscounts> unsyncedOrderDiscounts = orderDiscountsDao.unsyncedOrderDiscounts();
+                            tmpMap.put("order_discounts", GsonHelper.getGson().toJson(unsyncedOrderDiscounts));
 
-                            HashMap<String, String> wholeData = new HashMap<>();
+                            Map<String, Object> wholeData = new HashMap<>();
 
                             if (unsyncedEndOfDay.size() > 0) {
-                                wholeData.put("end_of_day", GsonHelper.getGson().toJson(unsyncedEndOfDay));
-                                wholeData.put("cut_off", GsonHelper.getGson().toJson(unsyncedCutOff));
-                                wholeData.put("transactions", GsonHelper.getGson().toJson(unsyncedTransactions));
-                                wholeData.put("or_details", GsonHelper.getGson().toJson(unsyncedOrDetails));
-                                wholeData.put("posted_discounts", GsonHelper.getGson().toJson(unsyncedPostedDiscounts));
-                                wholeData.put("payments", GsonHelper.getGson().toJson(unsynedPayments));
-                                wholeData.put("orders", GsonHelper.getGson().toJson(unsyncedOrders));
-                                wholeData.put("order_discounts", GsonHelper.getGson().toJson(unsyncedOrderDiscounts));
+                                wholeData.put("data", GsonHelper.getGson().toJson(tmpMap));
+//                                wholeData.put("cut_off", GsonHelper.getGson().toJson(unsyncedCutOff));
+//                                wholeData.put("transactions", GsonHelper.getGson().toJson(unsyncedTransactions));
+//                                wholeData.put("or_details", GsonHelper.getGson().toJson(unsyncedOrDetails));
+//                                wholeData.put("posted_discounts", GsonHelper.getGson().toJson(unsyncedPostedDiscounts));
+//                                wholeData.put("payments", GsonHelper.getGson().toJson(unsynedPayments));
+//                                wholeData.put("orders", GsonHelper.getGson().toJson(unsyncedOrders));
+//                                wholeData.put("order_discounts", GsonHelper.getGson().toJson(unsyncedOrderDiscounts));
+
+                                IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+                                SendDataRequest req = new SendDataRequest(wholeData);
+
+//                                Call<ResponseBody> call = iUsers.sendData(req.getMapValue());
+//
+//                                call.enqueue(new Callback<ResponseBody>() {
+//                                    @Override
+//                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//
+//                                    }
+//
+//                                    @Override
+//                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                                    }
+//                                });
+
 
 
                                 Log.d("SYNCDATA_ENDOFDAY", "SEND DATA TO SERVER");

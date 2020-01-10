@@ -11,12 +11,18 @@ import com.nerdvana.positiveoffline.apiresponses.VerifyMachineResponse;
 
 import java.util.Map;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.POST;
 
 public interface IUsers {
+
+    @POST("dioneIsPerfect")
+    @FormUrlEncoded
+    Call<ResponseBody> sendData(@FieldMap Map<String, Object> params);
+
     @POST("test")
     @FormUrlEncoded
     Call<TestResponse> sendTestRequest(@FieldMap Map<String, String> params);

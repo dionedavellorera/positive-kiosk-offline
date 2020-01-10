@@ -266,13 +266,25 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     }
 
     private void loadPrinter() {
+        Log.d("DIONE!!#@!#", SharedPreferenceManager.getString(MainActivity.this, AppConstants.SELECTED_PRINTER_MODEL));
         if (SharedPreferenceManager.getString(MainActivity.this, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.EPSON))) {
             try {
-                new SPrinter(
-                        dataSyncViewModel.getActivePrinterSeries().getModel_constant(),
-                        dataSyncViewModel.getActivePrinterLanguage().getLanguage_constant(),
-                        getApplicationContext()
-                );
+                if (SPrinter.getPrinter() != null) {
+                    SPrinter.getPrinter().disconnect();
+                    new SPrinter(
+                            dataSyncViewModel.getActivePrinterSeries().getModel_constant(),
+                            dataSyncViewModel.getActivePrinterLanguage().getLanguage_constant(),
+                            getApplicationContext()
+                    );
+                } else {
+                    new SPrinter(
+                            dataSyncViewModel.getActivePrinterSeries().getModel_constant(),
+                            dataSyncViewModel.getActivePrinterLanguage().getLanguage_constant(),
+                            getApplicationContext()
+                    );
+                }
+
+
             } catch (Exception e) {
             }
         } else if (SharedPreferenceManager.getString(MainActivity.this, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.STAR_PRINTER))){

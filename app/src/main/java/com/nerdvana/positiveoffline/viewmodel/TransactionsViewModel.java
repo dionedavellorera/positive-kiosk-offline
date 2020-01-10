@@ -144,19 +144,27 @@ public class TransactionsViewModel extends AndroidViewModel {
                     //region apply discounting
 
                     List<OrderDiscounts> sortedDiscounts = new ArrayList<>();
+
+                    int otherCounter = 0;
+
+
                     for (OrderDiscounts od : owd.orderWithDiscountList) {
                         if (!od.getIs_void()) {
-                            int specialCounter = 0;
+
                             if (od.getDiscount_name().equalsIgnoreCase("senior") ||
                                     od.getDiscount_name().equalsIgnoreCase("pwd")) {
-                                sortedDiscounts.add(0, od);
-                                specialCounter += 1;
+
+                                sortedDiscounts.add(otherCounter, od);
+
                             } else {
+
                                 if (od.getIs_percentage()) {
-                                    sortedDiscounts.add(specialCounter, od);
+                                    sortedDiscounts.add(0, od);
                                 } else {
                                     sortedDiscounts.add(od);
                                 }
+
+                                otherCounter += 1;
                             }
                         }
                     }

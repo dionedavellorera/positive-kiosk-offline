@@ -89,10 +89,25 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                 );
                 printer.addPulse(Printer.DRAWER_HIGH, Printer.PULSE_100);
             } catch (Epos2Exception e) {
+                try {
+                    printer.disconnect();
+                } catch (Epos2Exception e1) {
+                    e1.printStackTrace();
+                }
                 e.printStackTrace();
             } catch (InterruptedException e) {
+                try {
+                    printer.disconnect();
+                } catch (Epos2Exception e1) {
+                    e1.printStackTrace();
+                }
                 e.printStackTrace();
             } catch (ExecutionException e) {
+                try {
+                    printer.disconnect();
+                } catch (Epos2Exception e1) {
+                    e1.printStackTrace();
+                }
                 e.printStackTrace();
             }
             printer.setReceiveEventListener(new ReceiveListener() {
@@ -105,6 +120,11 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                                 printer.disconnect();
                                 asyncFinishCallBack.doneProcessing();
                             } catch (Epos2Exception e) {
+                                try {
+                                    printer.disconnect();
+                                } catch (Epos2Exception e1) {
+                                    e1.printStackTrace();
+                                }
                                 e.printStackTrace();
                             }
                         }
@@ -346,6 +366,11 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                 }
 
             } catch (Epos2Exception e) {
+                try {
+                    printer.disconnect();
+                } catch (Epos2Exception e1) {
+                    e1.printStackTrace();
+                }
                 e.printStackTrace();
             }
 

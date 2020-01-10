@@ -49,7 +49,11 @@ public class PrinterUtils {
                     printer.connect(SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY), Printer.PARAM_DEFAULT);
                 }
             } catch (Epos2Exception e) {
-
+                try {
+                    printer.disconnect();
+                } catch (Epos2Exception e1) {
+                    e1.printStackTrace();
+                }
                 e.printStackTrace();
             }
         }
