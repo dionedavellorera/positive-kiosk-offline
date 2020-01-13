@@ -78,18 +78,24 @@ public class InsertProductAsync extends AsyncTask<Void, Void, Void> {
 
                 DownloadManager mgr = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
 
-                Uri downloadUri = Uri.parse("http://192.168.1.90/pos/uploads/company/product/" + r.getImageFile().toString());
-                DownloadManager.Request request = new DownloadManager.Request(
-                        downloadUri);
 
-                request.setAllowedNetworkTypes(
-                        DownloadManager.Request.NETWORK_WIFI
-                                | DownloadManager.Request.NETWORK_MOBILE)
-                        .setAllowedOverRoaming(false).setTitle(r.getProduct())
-//                        .setDescription(r.)
-                        .setDestinationInExternalPublicDir("/POS/PRODUCTS", String.valueOf(r.getCoreId()) + ".jpg");
+                File directory = Environment.getExternalStorageDirectory();
+                File file = new File(directory, "/POS/PRODUCTS/" + r.getCoreId() + ".jpg");
 
-                mgr.enqueue(request);
+                if (!file.exists()) {
+                    Uri downloadUri = Uri.parse("http://192.168.1.90/pos/uploads/company/product/" + r.getImageFile().toString());
+                    DownloadManager.Request request = new DownloadManager.Request(
+                            downloadUri);
+
+                    request.setAllowedNetworkTypes(
+                            DownloadManager.Request.NETWORK_WIFI
+                                    | DownloadManager.Request.NETWORK_MOBILE)
+                            .setAllowedOverRoaming(false).setTitle(r.getProduct())
+                            .setDestinationInExternalPublicDir("/POS/PRODUCTS", String.valueOf(r.getCoreId()) + ".jpg");
+
+                    mgr.enqueue(request);
+                }
+
             }
 
             productsList.add(product);

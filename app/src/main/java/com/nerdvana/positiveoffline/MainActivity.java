@@ -104,6 +104,8 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
         openFragment(R.id.bottomFrame, new BottomFrameFragment());
         openFragment(R.id.leftFrame, new LeftFrameFragment());
         openFragment(R.id.rightFrame, new RightFrameFragment());
@@ -114,6 +116,10 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         initDataSyncViewModel();
         initILocalizeReceipts();
         startTimerService();
+
+
+
+
     }
 
     private void setUserData() {
@@ -241,6 +247,9 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
+
+        Log.d("DIONEDATE", String.valueOf(buttonsModel.getId()));
+
         switch (buttonsModel.getId()) {
             case 997://LOGOUT
                 logoutUser();

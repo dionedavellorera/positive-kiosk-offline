@@ -59,20 +59,29 @@ public class InsertPaymentTypeAsync extends AsyncTask<Void, Void, Void> {
                     direct.mkdirs();
                 }
 
-                DownloadManager mgr = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+                File directory = Environment.getExternalStorageDirectory();
+                File file = new File(directory, "/POS/PAYMENT_TYPE/" + r.getCoreId() + ".jpg");
 
-                Uri downloadUri = Uri.parse("http://192.168.1.90/pos/uploads/icon/" + r.getImage());
-                DownloadManager.Request request = new DownloadManager.Request(
-                        downloadUri);
+                if (!file.exists()) {
 
-                request.setAllowedNetworkTypes(
-                        DownloadManager.Request.NETWORK_WIFI
-                                | DownloadManager.Request.NETWORK_MOBILE)
-                        .setAllowedOverRoaming(false).setTitle(r.getPaymentType())
+                    DownloadManager mgr = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+
+                    Uri downloadUri = Uri.parse("http://192.168.1.90/pos/uploads/icon/" + r.getImage());
+                    DownloadManager.Request request = new DownloadManager.Request(
+                            downloadUri);
+
+                    request.setAllowedNetworkTypes(
+                            DownloadManager.Request.NETWORK_WIFI
+                                    | DownloadManager.Request.NETWORK_MOBILE)
+                            .setAllowedOverRoaming(false).setTitle(r.getPaymentType())
 //                        .setDescription(r.)
-                        .setDestinationInExternalPublicDir("/POS/PAYMENT_TYPE", String.valueOf(r.getCoreId()) + ".jpg");
+                            .setDestinationInExternalPublicDir("/POS/PAYMENT_TYPE", String.valueOf(r.getCoreId()) + ".jpg");
 
-                mgr.enqueue(request);
+                    mgr.enqueue(request);
+
+
+                }
+
             }
 
 

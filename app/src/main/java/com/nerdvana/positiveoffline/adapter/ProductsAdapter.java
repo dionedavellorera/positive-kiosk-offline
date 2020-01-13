@@ -117,7 +117,10 @@ public class ProductsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         File direct = new File(Environment.getExternalStorageDirectory()
                 + "/POS/PRODUCTS/" + productsModel.getImage_file());
-        Picasso.get().load(direct).into(((ProductsViewHolder)holder).imageUrl);
+        Picasso.get()
+                .load(direct)
+                .placeholder(R.drawable.pos_logo_edited)
+                .into(((ProductsViewHolder)holder).imageUrl);
 
     }
 

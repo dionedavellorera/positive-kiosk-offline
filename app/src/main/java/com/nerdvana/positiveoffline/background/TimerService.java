@@ -68,8 +68,6 @@ public class TimerService extends Service {
                     BusProvider.getInstance().post(new ServerConnectionTest(""));
                 }
 
-                Log.d("DIONEDATA", String.valueOf(secsOfDate));
-
                 if (secsOfDate % 30 == 0) { //process sending of data to server
                     final PosDatabase posDatabase = DatabaseHelper.getDatabase(TimerService.this);
                     new AsyncTask<Void, Void, Void>() {
