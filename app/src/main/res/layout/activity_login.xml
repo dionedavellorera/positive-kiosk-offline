@@ -4,9 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".view.login.LoginActivity">
+    tools:context=".view.login.LoginActivity"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
 
     <androidx.cardview.widget.CardView
+
         android:id="@+id/cardLogin"
         app:cardCornerRadius="10dp"
         app:cardElevation="10dp"
@@ -17,6 +20,7 @@
         android:layout_width="450dp"
         android:layout_height="450dp">
         <RelativeLayout
+
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 

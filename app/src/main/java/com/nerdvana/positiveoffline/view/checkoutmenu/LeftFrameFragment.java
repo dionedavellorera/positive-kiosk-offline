@@ -44,6 +44,7 @@ import com.nerdvana.positiveoffline.view.dialog.PasswordDialog;
 import com.nerdvana.positiveoffline.view.dialog.PaymentDialog;
 import com.nerdvana.positiveoffline.view.dialog.TransactionDialog;
 import com.nerdvana.positiveoffline.view.resumetransaction.ResumeTransactionActivity;
+import com.nerdvana.positiveoffline.view.rooms.RoomsActivity;
 import com.nerdvana.positiveoffline.view.settings.SettingsActivity;
 import com.nerdvana.positiveoffline.viewmodel.CutOffViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
@@ -130,9 +131,6 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
         } catch (InterruptedException e) {
 
         }
-
-
-
     }
 
     private void initSettingsViewModel() {
@@ -306,6 +304,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 106://OPEN ROOM OR TABLES DEPENDING ON SYSTEM TYPE
+                startActivity(new Intent(getContext(), RoomsActivity.class));
+                break;
             case 996://OPEN VIEW RECEIPT
                 if (transactionDialog == null) {
                     transactionDialog = new TransactionDialog(getActivity(),

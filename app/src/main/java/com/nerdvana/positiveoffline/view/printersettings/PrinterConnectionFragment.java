@@ -42,8 +42,6 @@ public class PrinterConnectionFragment extends Fragment implements PrinterConnec
     private List<OtherPrinterModel> otherPrinterModelList;
     private RecyclerView listOtherPrinter;
 
-
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -104,7 +102,6 @@ public class PrinterConnectionFragment extends Fragment implements PrinterConnec
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(getContext(), deviceInfo.getTarget(), Toast.LENGTH_SHORT).show();
                     otherPrinterModelList.add(new OtherPrinterModel(deviceInfo.getTarget(), deviceInfo.getDeviceName(), OtherPrinterModel.EPSON));
                     if (otherPrinterAdapter != null) otherPrinterAdapter.notifyDataSetChanged();
                 }
@@ -124,5 +121,7 @@ public class PrinterConnectionFragment extends Fragment implements PrinterConnec
         }
 
         activePrinter.setText(otherPrinterModelList.get(position).getHead());
+
+        if (otherPrinterAdapter != null) otherPrinterAdapter.notifyDataSetChanged();
     }
 }

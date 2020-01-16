@@ -30,4 +30,7 @@ public class AppConstants {
     public static final int PRINTER_LANGUAGE = 11;
     public static final String SELECTED_PRINTER_MANUALLY = "selected_printer_manually";
     public static final String SELECTED_PRINTER_MODEL = "selected_printer_model";
+    public static final String SELECTED_SYSTEM_TYPE = "selected_system_type";
+
+    public static final String HAS_CHANGED = "has_changed";
 }

@@ -89,6 +89,9 @@ public class SettingsActivity extends AppCompatActivity implements SettingsMenuC
                     case 3://RECEIPT SETUP
                         openFragment(R.id.settingFrame, new ReceiptSetupFragment());
                         break;
+                    case 4://POS SYSTEM TYPE
+                        openFragment(R.id.settingFrame, new SystemTypeFragment());
+                        break;
                 }
                 smm.setActive(true);
             } else {

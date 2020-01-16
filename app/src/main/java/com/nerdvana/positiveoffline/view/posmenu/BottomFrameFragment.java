@@ -15,14 +15,17 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.adapter.ButtonsAdapter;
 import com.nerdvana.positiveoffline.background.ButtonsAsync;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.AsyncContract;
 import com.nerdvana.positiveoffline.intf.ButtonsContract;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
+import com.nerdvana.positiveoffline.model.RefreshViewModel;
 import com.nerdvana.positiveoffline.view.login.LoginActivity;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 import com.squareup.otto.Subscribe;
@@ -58,6 +61,12 @@ public class BottomFrameFragment extends Fragment implements ButtonsContract, As
 
         setButtonsAdapter();
 
+    }
+
+
+    @Subscribe
+    public void refreshView(RefreshViewModel refreshViewModel) {
+        setButtonsAdapter();
     }
 
     private void initializeViews() {

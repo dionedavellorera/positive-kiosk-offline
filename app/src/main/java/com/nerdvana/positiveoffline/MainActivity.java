@@ -39,6 +39,8 @@ import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.OtherPrinterModel;
 import com.nerdvana.positiveoffline.model.PrintJobModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
+import com.nerdvana.positiveoffline.model.RefreshViewModel;
+import com.nerdvana.positiveoffline.model.ReprintReceiptData;
 import com.nerdvana.positiveoffline.model.ServerConnectionTest;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.printer.EJFileCreator;
@@ -86,6 +88,9 @@ import retrofit2.Response;
 import static com.epson.epsonio.DevType.TCP;
 
 public class MainActivity extends AppCompatActivity implements AsyncFinishCallBack {
+
+    boolean hasError = false;
+
     private ImageView onlineImageIndicator;
     private TextView onlineTextIndicator;
     private TextView user;
@@ -104,7 +109,6 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
         openFragment(R.id.bottomFrame, new BottomFrameFragment());
         openFragment(R.id.leftFrame, new LeftFrameFragment());
@@ -248,8 +252,6 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
 
-        Log.d("DIONEDATE", String.valueOf(buttonsModel.getId()));
-
         switch (buttonsModel.getId()) {
             case 997://LOGOUT
                 logoutUser();
@@ -272,10 +274,21 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         super.onResume();
         BusProvider.getInstance().register(this);
         loadPrinter();
+
+        if (!TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.HAS_CHANGED))) {
+            if (SharedPreferenceManager.getString(null, AppConstants.HAS_CHANGED).equalsIgnoreCase("1")) {
+                refreshBottomSelection();
+                SharedPreferenceManager.saveString(null, "0", AppConstants.HAS_CHANGED);
+            }
+        }
+    }
+
+    private void refreshBottomSelection() {
+        BusProvider.getInstance().post(new RefreshViewModel(""));
     }
 
     private void loadPrinter() {
-        Log.d("DIONE!!#@!#", SharedPreferenceManager.getString(MainActivity.this, AppConstants.SELECTED_PRINTER_MODEL));
+
         if (SharedPreferenceManager.getString(MainActivity.this, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.EPSON))) {
             try {
                 if (SPrinter.getPrinter() != null) {
@@ -292,9 +305,8 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                             getApplicationContext()
                     );
                 }
-
-
             } catch (Exception e) {
+
             }
         } else if (SharedPreferenceManager.getString(MainActivity.this, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.STAR_PRINTER))){
 
@@ -365,6 +377,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
             writer.flush();
             writer.close();
         } catch (IOException e) {
+
         }
 
 
@@ -459,10 +472,8 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         }
     }
 
-
-    @Override
-    public void doneProcessing() {
-        myPrintJobs.remove(0);
+    private void reprintExistingData() {
+        hasError = false;
         if (myPrintJobs.size() > 0) {
             if (myPrintJobs.get(0).getTaskName().equalsIgnoreCase("print_receipt") ||
                     myPrintJobs.get(0).getTaskName().equalsIgnoreCase("print_receipt_spec")) {
@@ -482,12 +493,29 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                         runTask(myPrintJobs.get(0).getTaskName(), myPrintJobs.get(0).getAsyncTask());
                     }
                 }, 2000);
-
-
             }
+        }
+    }
 
 
+    @Override
+    public void doneProcessing() {
+        hasError = false;
+        myPrintJobs.remove(0);
+        reprintExistingData();
+    }
 
+    @Override
+    public void retryProcessing() {
+        hasError = true;
+        myPrintJobs.get(0).getAsyncTask().cancel(true);
+//        reprintExistingData();
+    }
+
+    @Subscribe
+    public void reprintReceipt(ReprintReceiptData reprintReceiptData) {
+        if (hasError) {
+            reprintExistingData();
         }
     }
 

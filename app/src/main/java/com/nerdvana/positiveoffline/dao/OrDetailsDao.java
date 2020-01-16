@@ -4,10 +4,12 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.Transactions;
+import com.nerdvana.positiveoffline.entities.User;
 
 import java.util.List;
 
@@ -16,6 +18,9 @@ public interface OrDetailsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(OrDetails orDetailsList);
+
+    @Update
+    void update(OrDetails orDetails);
 
     @Query("SELECT * FROM OrDetails WHERE transaction_id = :transaction_id")
     OrDetails orDetails(String transaction_id);

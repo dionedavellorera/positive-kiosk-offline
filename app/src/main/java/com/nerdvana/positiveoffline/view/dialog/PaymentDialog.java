@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -114,6 +115,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setDialogLayout(R.layout.dialog_payment, "PAYMENT");
+
         initViews();
         setPaymentTypeAdapter();
         setCancelable(false);
@@ -258,8 +260,11 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             int width = ViewGroup.LayoutParams.MATCH_PARENT;
             int height = ViewGroup.LayoutParams.MATCH_PARENT;
             dialog.getWindow().setLayout(width, height);
+//            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         }
     }
+
+
 
     @Override
     public void clicked(PaymentTypes paymentTypes) {

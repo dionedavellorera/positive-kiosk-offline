@@ -2,7 +2,11 @@ package com.nerdvana.positiveoffline.background;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.text.TextUtils;
 
+import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.intf.AsyncContract;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
 
@@ -44,7 +48,19 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
         buttonsModelList.add(new ButtonsModel(996,"VIEW RECEIPT", "",11));
         buttonsModelList.add(new ButtonsModel(129,"SETTINGS", "",12));
 
-        buttonsModelList.add(new ButtonsModel(997,"LOGOUT", "",1));
+        buttonsModelList.add(new ButtonsModel(997,"LOGOUT", "",13));
+
+        if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
+
+        } else {
+            if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+
+            } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                buttonsModelList.add(new ButtonsModel(106,"ROOMS", "",1));
+            } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+                buttonsModelList.add(new ButtonsModel(106,"TABLES", "",1));
+            }
+        }
 //        buttonsModelList.add(new ButtonsModel(997,"LOGOUT", "",13));
 
 

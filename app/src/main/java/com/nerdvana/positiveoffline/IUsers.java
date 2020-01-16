@@ -5,6 +5,8 @@ import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchRoomResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchRoomStatusResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
 import com.nerdvana.positiveoffline.apiresponses.TestResponse;
 import com.nerdvana.positiveoffline.apiresponses.VerifyMachineResponse;
@@ -58,5 +60,13 @@ public interface IUsers {
     @POST("fetchDiscount")
     @FormUrlEncoded
     Call<FetchDiscountResponse> fetchDiscountRequest(@FieldMap Map<String, String> params);
+
+    @POST("fetchRoom")
+    @FormUrlEncoded
+    Call<FetchRoomResponse> fetchRoomRequest(@FieldMap Map<String, String> params);
+
+    @POST("fetchRoomStatus")
+    @FormUrlEncoded
+    Call<FetchRoomStatusResponse> fetchRoomStatusRequest(@FieldMap Map<String, String> params);
 
 }

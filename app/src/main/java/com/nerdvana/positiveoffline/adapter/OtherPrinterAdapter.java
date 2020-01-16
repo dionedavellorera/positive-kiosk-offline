@@ -10,7 +10,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.intf.PrinterConnection;
 import com.nerdvana.positiveoffline.model.OtherPrinterModel;
 
@@ -60,24 +62,23 @@ public class OtherPrinterAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 }
             });
 
-//            String printerSelected = "";
-//
-//            if (!SharedPreferenceManager.getString(context, ApplicationConstants.SELECTED_PRINTER_MANUALLY).isEmpty()) {
-//                printerSelected = SharedPreferenceManager.getString(context, ApplicationConstants.SELECTED_PRINTER_MANUALLY);
-//            } else {
-//                if (!SharedPreferenceManager.getString(context, ApplicationConstants.SELECTED_PORT).isEmpty()) {
-//                    printerSelected = SharedPreferenceManager.getString(context, ApplicationConstants.SELECTED_PORT);
-//                } else {
-//                    printerSelected = "N/A";
-//                }
-//
-//            }
+            String printerSelected = "";
 
-//            if (printerSelected.equalsIgnoreCase(otherPrinterModelList.get(i).getHead())) {
-//                ((OtherPrinterViewHolder)holder).activeText.setVisibility(View.VISIBLE);
-//            } else {
-//                ((OtherPrinterViewHolder)holder).activeText.setVisibility(View.GONE);
-//            }
+            if (!SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY).isEmpty()) {
+                printerSelected = SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY);
+            } else {
+                if (!SharedPreferenceManager.getString(context, AppConstants.SELECTED_PORT).isEmpty()) {
+                    printerSelected = SharedPreferenceManager.getString(context, AppConstants.SELECTED_PORT);
+                } else {
+                    printerSelected = "N/A";
+                }
+            }
+
+            if (printerSelected.equalsIgnoreCase(otherPrinterModelList.get(i).getHead())) {
+                ((OtherPrinterViewHolder)holder).activeText.setVisibility(View.VISIBLE);
+            } else {
+                ((OtherPrinterViewHolder)holder).activeText.setVisibility(View.GONE);
+            }
 
             ((OtherPrinterViewHolder)holder).head.setText(otherPrinterModelList.get(i).getHead());
             ((OtherPrinterViewHolder)holder).sub.setText(otherPrinterModelList.get(i).getSub());

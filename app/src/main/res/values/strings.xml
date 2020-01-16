@@ -95,7 +95,8 @@
     <string name="lang_korean">KOREAN</string>
     <string name="lang_thai">THAI</string>
     <string name="lang_southasia">SOUTH ASIA</string>
-    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_rooms">Rooms</string>
     <string name="error_select_card">Please select type of card</string>
     <string name="label_date_from">Starting Date</string>
     <string name="label_date_to">Ending Date</string>

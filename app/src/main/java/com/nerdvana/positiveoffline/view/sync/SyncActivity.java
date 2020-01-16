@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,6 +24,8 @@ import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchRoomResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchRoomStatusResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
 import com.nerdvana.positiveoffline.background.InserUserAsync;
 import com.nerdvana.positiveoffline.background.InsertCashDenominationAsync;
@@ -32,6 +35,8 @@ import com.nerdvana.positiveoffline.background.InsertPaymentTypeAsync;
 import com.nerdvana.positiveoffline.background.InsertPrinterLanguageAsync;
 import com.nerdvana.positiveoffline.background.InsertPrinterSeriesAsync;
 import com.nerdvana.positiveoffline.background.InsertProductAsync;
+import com.nerdvana.positiveoffline.background.InsertRoomAsync;
+import com.nerdvana.positiveoffline.background.InsertRoomStatusAsync;
 import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.intf.SyncCallback;
 import com.nerdvana.positiveoffline.intf.SyncDataAdapterListener;
@@ -74,7 +79,8 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         initCreditCardListener();
         initCashDenoListener();
         initDiscountListener();
-
+        initFetchRoomListener();
+        initRoomStatusListener();
     }
 
     private void initDiscountListener() {
@@ -95,6 +101,24 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+    }
+
+    private void initRoomStatusListener() {
+        dataSyncViewModel.getRoomStatusLiveData().observe(this, new Observer<FetchRoomStatusResponse>() {
+            @Override
+            public void onChanged(FetchRoomStatusResponse fetchRoomStatusResponse) {
+                new InsertRoomStatusAsync(fetchRoomStatusResponse.getResult(), SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+            }
+        });
+    }
+
+    private void initFetchRoomListener() {
+        dataSyncViewModel.getFetchRoomLiveData().observe(this, new Observer<FetchRoomResponse>() {
+            @Override
+            public void onChanged(FetchRoomResponse fetchRoomResponse) {
+                new InsertRoomAsync(fetchRoomResponse.getResult(), SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+            }
+        });
     }
 
     private void initPaymentTypeListener() {
@@ -129,6 +153,19 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                     syncModelList.add(new DataSync("Discount with settings", false));
                     syncModelList.add(new DataSync("Printer Series", false));
                     syncModelList.add(new DataSync("Printer Language", false));
+                    syncModelList.add(new DataSync("Rooms", false));
+                    syncModelList.add(new DataSync("Room Status", false));
+
+//                    syncModelList.add(new DataSync("End of Day", true));
+//                    syncModelList.add(new DataSync("Posted Discounts", true));
+//                    syncModelList.add(new DataSync("Payments", true));
+//                    syncModelList.add(new DataSync("Orders", true));
+//                    syncModelList.add(new DataSync("Order Discounts", true));
+//                    syncModelList.add(new DataSync("Transactions", true));
+//                    syncModelList.add(new DataSync("OR Details", true));
+//                    syncModelList.add(new DataSync("Cut Off", true));
+
+//                    syncModelList.add(new DataSync("Printer Language", false));
                     dataSyncViewModel.insertData(syncModelList);
                 } else {
                     syncModelList = dataSyncList;
@@ -164,6 +201,14 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
 
                     if (!syncModelList.get(7).getSynced()) {
                         new InsertPrinterLanguageAsync(SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+                    }
+
+                    if (!syncModelList.get(8).getSynced()) {
+                        dataSyncViewModel.requestRoomsOrTables();
+                    }
+
+                    if (!syncModelList.get(9).getSynced()) {
+                        dataSyncViewModel.fetchRoomStatus();
                     }
                 }
 
@@ -278,6 +323,14 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 syncModelList.get(7).setSynced(true);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(7));
                 break;
+            case "rooms":
+                syncModelList.get(8).setSynced(true);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(8));
+                break;
+            case "room_status":
+                syncModelList.get(9).setSynced(true);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(9));
+                break;
         }
     }
 
@@ -345,6 +398,14 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 dataSyncViewModel.truncatePrinterLanguage();
                 syncModelList.get(7).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(7));
+                break;
+            case "rooms":
+                syncModelList.get(8).setSynced(false);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(8));
+                break;
+            case "room status":
+                syncModelList.get(9).setSynced(false);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(9));
                 break;
         }
     }

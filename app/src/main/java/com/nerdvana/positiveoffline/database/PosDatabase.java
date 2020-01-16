@@ -19,6 +19,9 @@ import com.nerdvana.positiveoffline.dao.PostedDiscountsDao;
 import com.nerdvana.positiveoffline.dao.PrinterLanguageDao;
 import com.nerdvana.positiveoffline.dao.PrinterSeriesDao;
 import com.nerdvana.positiveoffline.dao.ProductsDao;
+import com.nerdvana.positiveoffline.dao.RoomRatesDao;
+import com.nerdvana.positiveoffline.dao.RoomStatusDao;
+import com.nerdvana.positiveoffline.dao.RoomsDao;
 import com.nerdvana.positiveoffline.dao.TransactionsDao;
 import com.nerdvana.positiveoffline.dao.UserDao;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
@@ -37,6 +40,9 @@ import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.PrinterLanguage;
 import com.nerdvana.positiveoffline.entities.PrinterSeries;
 import com.nerdvana.positiveoffline.entities.Products;
+import com.nerdvana.positiveoffline.entities.RoomRates;
+import com.nerdvana.positiveoffline.entities.RoomStatus;
+import com.nerdvana.positiveoffline.entities.Rooms;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 
@@ -48,8 +54,10 @@ import com.nerdvana.positiveoffline.entities.User;
                         DiscountSettings.class, OrderDiscounts.class,
                         PostedDiscounts.class, CutOff.class,
                         EndOfDay.class, PrinterSeries.class,
-                        PrinterLanguage.class, OrDetails.class},
-          version = 84)
+                        PrinterLanguage.class, OrDetails.class,
+                        Rooms.class, RoomRates.class,
+                        RoomStatus.class},
+          version = 89)
 
 public abstract class PosDatabase extends RoomDatabase {
     public abstract UserDao userDao();
@@ -68,6 +76,9 @@ public abstract class PosDatabase extends RoomDatabase {
     public abstract CutOffDao cutOffDao();
     public abstract EndOfDayDao endOfDayDao();
     public abstract PrinterSeriesDao printerSeriesDao();
+    public abstract RoomStatusDao roomStatusDao();
     public abstract PrinterLanguageDao printerLanguageDao();
     public abstract OrDetailsDao orDetailsDao();
+    public abstract RoomsDao roomsDao();
+    public abstract RoomRatesDao roomRatesDao();
 }

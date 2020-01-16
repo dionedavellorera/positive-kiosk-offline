@@ -31,4 +31,9 @@ public class HidingEditText extends AppCompatEditText {
         setTextIsSelectable(true);
     }
 
+//    @Override
+//    public boolean onCheckIsTextEditor() {
+//        return false;
+//    }
+
 }

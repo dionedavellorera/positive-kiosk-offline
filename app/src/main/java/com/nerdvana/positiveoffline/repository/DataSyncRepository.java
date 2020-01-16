@@ -20,6 +20,8 @@ import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchRoomResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchRoomStatusResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
 import com.nerdvana.positiveoffline.dao.CashDenominationDao;
 import com.nerdvana.positiveoffline.dao.CreditCardsDao;
@@ -29,6 +31,9 @@ import com.nerdvana.positiveoffline.dao.DiscountsDao;
 import com.nerdvana.positiveoffline.dao.PaymentTypeDao;
 import com.nerdvana.positiveoffline.dao.PrinterLanguageDao;
 import com.nerdvana.positiveoffline.dao.PrinterSeriesDao;
+import com.nerdvana.positiveoffline.dao.RoomRatesDao;
+import com.nerdvana.positiveoffline.dao.RoomStatusDao;
+import com.nerdvana.positiveoffline.dao.RoomsDao;
 import com.nerdvana.positiveoffline.dao.UserDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
@@ -40,6 +45,9 @@ import com.nerdvana.positiveoffline.entities.Discounts;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
 import com.nerdvana.positiveoffline.entities.PrinterLanguage;
 import com.nerdvana.positiveoffline.entities.PrinterSeries;
+import com.nerdvana.positiveoffline.entities.RoomRates;
+import com.nerdvana.positiveoffline.entities.RoomStatus;
+import com.nerdvana.positiveoffline.entities.Rooms;
 import com.nerdvana.positiveoffline.entities.User;
 
 import java.lang.ref.WeakReference;
@@ -60,10 +68,13 @@ public class DataSyncRepository {
     private PaymentTypeDao paymentTypeDao;
     private CreditCardsDao creditCardsDao;
     private CashDenominationDao cashDenominationDao;
+    private RoomsDao roomsDao;
+    private RoomRatesDao roomRatesDao;
     private DiscountsDao discountsDao;
     private DiscountSettingsDao discountSettingsDao;
     private PrinterSeriesDao printerSeriesDao;
     private PrinterLanguageDao printerLanguageDao;
+    private RoomStatusDao roomStatusDao;
     private LiveData<List<DataSync>> allSyncList;
     private List<DataSync> syncList = new ArrayList<>();
 
@@ -71,16 +82,21 @@ public class DataSyncRepository {
     private MutableLiveData<FetchCreditCardResponse> fetchCreditCarDLiveData;
     private MutableLiveData<FetchCashDenominationResponse> fetchCashDenominationLiveData;
     private MutableLiveData<FetchDiscountResponse> fetchDiscountLiveData;
+    private MutableLiveData<FetchRoomResponse> fetchRoomLiveData;
+    private MutableLiveData<FetchRoomStatusResponse> fetchRoomStatusLiveData;
 
     public DataSyncRepository(Application application) {
         PosDatabase posDatabase = DatabaseHelper.getDatabase(application);
         dataSyncDao = posDatabase.dataSyncDao();
+        roomsDao = posDatabase.roomsDao();
+        roomRatesDao = posDatabase.roomRatesDao();
         paymentTypeDao = posDatabase.paymentTypeDao();
         creditCardsDao = posDatabase.creditCardsDao();
         cashDenominationDao = posDatabase.cashDenominationDao();
         discountsDao = posDatabase.discountsDao();
         discountSettingsDao = posDatabase.discountSettingsDao();
         printerSeriesDao = posDatabase.printerSeriesDao();
+        roomStatusDao = posDatabase.roomStatusDao();
         printerLanguageDao = posDatabase.printerLanguageDao();
         allSyncList = dataSyncDao.syncList();
 
@@ -88,8 +104,17 @@ public class DataSyncRepository {
         fetchCreditCarDLiveData = new MutableLiveData<>();
         fetchCashDenominationLiveData = new MutableLiveData<>();
         fetchDiscountLiveData = new MutableLiveData<>();
+        fetchRoomLiveData = new MutableLiveData<>();
+        fetchRoomStatusLiveData = new MutableLiveData<>();
     }
 
+    public MutableLiveData<FetchRoomStatusResponse> getFetchRoomStatusLiveData() {
+        return fetchRoomStatusLiveData;
+    }
+
+    public MutableLiveData<FetchRoomResponse> getFetchRoomLiveData() {
+        return fetchRoomLiveData;
+    }
 
     public MutableLiveData<FetchPaymentTypeResponse> getFetchPaymentTypeLiveData() {
         return fetchPaymentTypeLiveData;
@@ -223,12 +248,24 @@ public class DataSyncRepository {
         new DataSyncRepository.insertPaymentTypeAsyncTask(paymentTypeDao).execute(paymentTypes);
     }
 
+    public void insertRoomStatus(List<RoomStatus> roomStatusList) {
+        new DataSyncRepository.insertRoomStatusAsync(roomStatusDao).execute(roomStatusList);
+    }
+
     public void insertCreditCard(List<CreditCards> creditCards) {
         new DataSyncRepository.insertCreditCardAsync(creditCardsDao).execute(creditCards);
     }
 
     public void insertCashDenomination(List<CashDenomination> cashDenominationList) {
         new DataSyncRepository.insertCashDenominationAsync(cashDenominationDao).execute(cashDenominationList);
+    }
+
+    public void insertRoom(Rooms rooms) {
+        new DataSyncRepository.insertRoomAsync(roomsDao).execute(rooms);
+    }
+
+    public void insertRoomRates(RoomRates roomRates) {
+        new DataSyncRepository.insertRoomRateAsync(roomRatesDao).execute(roomRates);
     }
 
     public void insertDiscountWithSettings(List<Discounts> discountsList, List<DiscountSettings> discountSettingsList) {
@@ -384,6 +421,36 @@ public class DataSyncRepository {
         }
     }
 
+    private static class insertRoomAsync extends AsyncTask<Rooms, Void, Void> {
+
+        private RoomsDao mAsyncTaskDao;
+
+        insertRoomAsync(RoomsDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final Rooms... params) {
+            mAsyncTaskDao.insert(params[0]);
+            return null;
+        }
+    }
+
+    private static class insertRoomRateAsync extends AsyncTask<RoomRates, Void, Void> {
+
+        private RoomRatesDao mAsyncTaskDao;
+
+        insertRoomRateAsync(RoomRatesDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final RoomRates... params) {
+            mAsyncTaskDao.insert(params[0]);
+            return null;
+        }
+    }
+
     private static class insertCreditCardAsync extends AsyncTask<List<CreditCards>, Void, Void> {
 
         private CreditCardsDao mAsyncTaskDao;
@@ -409,6 +476,21 @@ public class DataSyncRepository {
 
         @Override
         protected Void doInBackground(final List<PaymentTypes>... params) {
+            mAsyncTaskDao.insert(params[0]);
+            return null;
+        }
+    }
+
+    private static class insertRoomStatusAsync extends AsyncTask<List<RoomStatus>, Void, Void> {
+
+        private RoomStatusDao mAsyncTaskDao;
+
+        insertRoomStatusAsync(RoomStatusDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final List<RoomStatus>... params) {
             mAsyncTaskDao.insert(params[0]);
             return null;
         }
@@ -451,6 +533,45 @@ public class DataSyncRepository {
             super.onPostExecute(aVoid);
         }
     }
+
+    public void fetchRoomStatus() {
+        IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+        FetchDiscountRequest req = new FetchDiscountRequest();
+
+        Call<FetchRoomStatusResponse> call = iUsers.fetchRoomStatusRequest(req.getMapValue());
+        call.enqueue(new Callback<FetchRoomStatusResponse>() {
+            @Override
+            public void onResponse(Call<FetchRoomStatusResponse> call, Response<FetchRoomStatusResponse> response) {
+                fetchRoomStatusLiveData.postValue(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<FetchRoomStatusResponse> call, Throwable t) {
+
+            }
+        });
+
+    }
+
+    public void fetchRoom() {
+        IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+        FetchDiscountRequest req = new FetchDiscountRequest();
+
+        Call<FetchRoomResponse> call = iUsers.fetchRoomRequest(req.getMapValue());
+        call.enqueue(new Callback<FetchRoomResponse>() {
+            @Override
+            public void onResponse(Call<FetchRoomResponse> call, Response<FetchRoomResponse> response) {
+                fetchRoomLiveData.postValue(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<FetchRoomResponse> call, Throwable t) {
+
+            }
+        });
+
+    }
+
 
 
     public void fetchDiscounts() {

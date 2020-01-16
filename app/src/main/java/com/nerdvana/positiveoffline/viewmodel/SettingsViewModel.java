@@ -21,6 +21,7 @@ public class SettingsViewModel extends AndroidViewModel {
        list.add(new SettingsMenuModel(1, "PRINTER SETUP", true));
        list.add(new SettingsMenuModel(2, "PRINTER CONNECTION", false));
        list.add(new SettingsMenuModel(3, "RECEIPT SETUP", false));
+       list.add(new SettingsMenuModel(4, "SYSTEM TYPE", false));
        return list;
     }
 }

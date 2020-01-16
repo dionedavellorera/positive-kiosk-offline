@@ -10,6 +10,8 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 
+import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
@@ -83,7 +85,7 @@ public class InsertProductAsync extends AsyncTask<Void, Void, Void> {
                 File file = new File(directory, "/POS/PRODUCTS/" + r.getCoreId() + ".jpg");
 
                 if (!file.exists()) {
-                    Uri downloadUri = Uri.parse("http://192.168.1.90/pos/uploads/company/product/" + r.getImageFile().toString());
+                    Uri downloadUri = Uri.parse(SharedPreferenceManager.getString(null, AppConstants.HOST) + "/uploads/company/product/" + r.getImageFile().toString());
                     DownloadManager.Request request = new DownloadManager.Request(
                             downloadUri);
 

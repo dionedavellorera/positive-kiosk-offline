@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/firstLabel"
+        android:textSize="17sp"
+        android:layout_margin="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SYSTEM TYPE SELECTION"/>
+
+    <View
+        android:id="@+id/topSeparator"
+        android:layout_marginLeft="10dp"
+        android:layout_below="@id/firstLabel"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorLtGrey" />
+
+    <RadioGroup
+        android:id="@+id/rgSystemType"
+        android:layout_margin="5dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <RadioButton
+            android:layout_margin="5dp"
+            android:id="@+id/rbQuickServe"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="QUICK SERVE"/>
+        <RadioButton
+            android:layout_margin="5dp"
+            android:id="@+id/rbMotel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MOTEL/HOTEL"/>
+        <RadioButton
+            android:layout_margin="5dp"
+            android:id="@+id/rbRestaurant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RESTAURANT"/>
+    </RadioGroup>
+</LinearLayout>

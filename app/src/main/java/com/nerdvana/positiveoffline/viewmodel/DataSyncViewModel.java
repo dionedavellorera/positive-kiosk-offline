@@ -13,6 +13,8 @@ import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchRoomResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchRoomStatusResponse;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.entities.CreditCards;
 import com.nerdvana.positiveoffline.entities.DataSync;
@@ -22,6 +24,9 @@ import com.nerdvana.positiveoffline.entities.PaymentTypes;
 import com.nerdvana.positiveoffline.entities.PrinterLanguage;
 import com.nerdvana.positiveoffline.entities.PrinterSeries;
 import com.nerdvana.positiveoffline.entities.Products;
+import com.nerdvana.positiveoffline.entities.RoomRates;
+import com.nerdvana.positiveoffline.entities.RoomStatus;
+import com.nerdvana.positiveoffline.entities.Rooms;
 import com.nerdvana.positiveoffline.repository.DataSyncRepository;
 
 import java.util.List;
@@ -79,6 +84,13 @@ public class DataSyncViewModel extends AndroidViewModel {
         mRepository.fetchDiscounts();
     }
 
+    public void requestRoomsOrTables() {
+        mRepository.fetchRoom();
+    }
+
+    public void fetchRoomStatus() {
+        mRepository.fetchRoomStatus();
+    }
 
     public MutableLiveData<FetchDiscountResponse> getDiscountLiveData() {
         return mRepository.getFetchDiscountLiveData();
@@ -104,6 +116,10 @@ public class DataSyncViewModel extends AndroidViewModel {
         return mRepository.getFetchCashDenominationLiveData();
     }
 
+    public MutableLiveData<FetchRoomStatusResponse> getRoomStatusLiveData() {
+        return mRepository.getFetchRoomStatusLiveData();
+    }
+
     public List<CashDenomination> getCashDeno() throws ExecutionException, InterruptedException {
         return mRepository.getCashDenoList();
     }
@@ -115,6 +131,10 @@ public class DataSyncViewModel extends AndroidViewModel {
 
     public void requestCreditCards() {
         mRepository.fetchCreditCardRequest();
+    }
+
+    public MutableLiveData<FetchRoomResponse> getFetchRoomLiveData() {
+        return mRepository.getFetchRoomLiveData();
     }
 
     public MutableLiveData<FetchPaymentTypeResponse> getPaymentTypeLiveData() {
@@ -138,6 +158,10 @@ public class DataSyncViewModel extends AndroidViewModel {
         mRepository.insertPaymentType(list);
     }
 
+    public void insertRoomStatus(List<RoomStatus> list) {
+        mRepository.insertRoomStatus(list);
+    }
+
     public void insertCreditCard(List<CreditCards> list) {
         mRepository.insertCreditCard(list);
     }
@@ -152,6 +176,14 @@ public class DataSyncViewModel extends AndroidViewModel {
 
     public void insertCashDenomination(List<CashDenomination> list) {
         mRepository.insertCashDenomination(list);
+    }
+
+    public void insertRoom(Rooms rooms) {
+        mRepository.insertRoom(rooms);
+    }
+
+    public void insertRoomRate(RoomRates roomRates) {
+        mRepository.insertRoomRates(roomRates);
     }
 
     public void insertDiscountWithSettings(List<Discounts> list, List<DiscountSettings> discountSettingsList) {

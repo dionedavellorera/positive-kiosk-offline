@@ -7,6 +7,8 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 
+import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
@@ -66,7 +68,7 @@ public class InsertPaymentTypeAsync extends AsyncTask<Void, Void, Void> {
 
                     DownloadManager mgr = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
 
-                    Uri downloadUri = Uri.parse("http://192.168.1.90/pos/uploads/icon/" + r.getImage());
+                    Uri downloadUri = Uri.parse(SharedPreferenceManager.getString(null, AppConstants.HOST) + "/uploads/icon/" + r.getImage());
                     DownloadManager.Request request = new DownloadManager.Request(
                             downloadUri);
 

@@ -133,7 +133,27 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
             });
 
 
-            PrinterUtils.connect(context, printer);
+//            PrinterUtils.connect(context, printer);
+
+            if (!TextUtils.isEmpty(SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY))) {
+                try {
+                    if (printer != null) {
+                        printer.connect(SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY), Printer.PARAM_DEFAULT);
+                    }
+                } catch (Epos2Exception e) {
+                    try {
+                        asyncFinishCallBack.retryProcessing();
+                        printer.disconnect();
+                    } catch (Epos2Exception e1) {
+                        asyncFinishCallBack.retryProcessing();
+                        e1.printStackTrace();
+                    }
+                    asyncFinishCallBack.retryProcessing();
+                    e.printStackTrace();
+                }
+            }
+
+
 
             PrinterUtils.addHeader(printModel, printer);
             addPrinterSpace(1, printer);
@@ -360,10 +380,10 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
             try {
 
                 printer.addCut(Printer.CUT_FEED);
-                if (printer.getStatus().getConnection() == 1) {
-                    printer.sendData(Printer.PARAM_DEFAULT);
-                    printer.clearCommandBuffer();
-                }
+
+                printer.sendData(Printer.PARAM_DEFAULT);
+                printer.clearCommandBuffer();
+
 
             } catch (Epos2Exception e) {
                 try {
