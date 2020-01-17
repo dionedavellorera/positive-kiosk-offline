@@ -27,16 +27,14 @@ public interface OrdersDao {
     @Query("SELECT * FROM Orders WHERE is_sent_to_server = 0")
     List<Orders> unsyncedOrders();
 
+    @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id AND is_void = 0 AND is_room_rate = 1")
+    List<Orders> roomRateList(String transaction_id);
 
     @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id AND is_void = 0")
     List<Orders> orderList(String transaction_id);
 
     @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id AND is_void = 0 AND is_editing = 1")
     List<Orders> editingOrderList(String transaction_id);
-
-//    @Query("SELECT * FROM Orders o LEFT JOIN OrderDiscounts od on o.core_id = od.product_id WHERE transaction_id = :transaction_id AND is_void = 0")
-//    List<OrderWithDiscounts> orderWithDiscountList(String transaction_id);
-
 
     @Update()
     void update(Orders order);

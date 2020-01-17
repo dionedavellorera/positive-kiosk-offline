@@ -3,10 +3,8 @@ package com.nerdvana.positiveoffline.view.dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
@@ -270,7 +268,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         for (CutOff cutOff : cutOffViewModel.getUnCutOffData()) {
                             orNumberArray.add(cutOff.getBegOrNo());
                             orNumberArray.add(cutOff.getEndOrNo());
-                            cutOff.setCreated_at(Utils.getDateTimeToday());
+                            cutOff.setTreg(Utils.getDateTimeToday());
                             cutOff.setZ_read_id((int) end_of_day_id);
                             cutOffViewModel.update(cutOff);
                             void_amount += cutOff.getVoid_amount();

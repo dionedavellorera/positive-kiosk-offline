@@ -41,6 +41,10 @@ public class Orders {
     private int machine_id;
     private int branch_id;
 
+    private String treg;
+
+    private int is_room_rate;
+
     public Orders(int transaction_id, int core_id,
                   int qty, @NonNull Double amount,
                   @NonNull Double original_amount,
@@ -49,7 +53,10 @@ public class Orders {
                   Double vatExempt, Double discountAmount,
                   String departmentName, String categoryName,
                   int categoryId, int is_sent_to_server,
-                  int machine_id, int branch_id) {
+                  int machine_id, int branch_id,
+                  String treg, int is_room_rate) {
+        this.is_room_rate = is_room_rate;
+        this.treg = treg;
         this.is_sent_to_server = is_sent_to_server;
         this.branch_id = branch_id;
         this.machine_id = machine_id;
@@ -67,6 +74,22 @@ public class Orders {
         this.vatable = vatable;
         this.vatExempt = vatExempt;
         this.discountAmount = discountAmount;
+    }
+
+    public int getIs_room_rate() {
+        return is_room_rate;
+    }
+
+    public void setIs_room_rate(int is_room_rate) {
+        this.is_room_rate = is_room_rate;
+    }
+
+    public String getTreg() {
+        return treg;
+    }
+
+    public void setTreg(String treg) {
+        this.treg = treg;
     }
 
     public int getIs_sent_to_server() {

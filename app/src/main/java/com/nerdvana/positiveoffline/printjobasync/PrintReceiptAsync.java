@@ -3,17 +3,14 @@ package com.nerdvana.positiveoffline.printjobasync;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
 import com.epson.epos2.printer.PrinterStatusInfo;
 import com.epson.epos2.printer.ReceiveListener;
-import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
-import com.nerdvana.positiveoffline.MainActivity;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.entities.Orders;
@@ -27,7 +24,6 @@ import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.printer.EJFileCreator;
 import com.nerdvana.positiveoffline.printer.PrinterUtils;
-import com.nerdvana.positiveoffline.printer.SPrinter;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
@@ -192,7 +188,7 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                     ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             addTextToPrinter(printer, twoColumns(
                     "DATE",
-                    transactionCompleteDetails.transactions.getCreated_at(),
+                    transactionCompleteDetails.transactions.getTreg(),
                     40,
                     2,
                     context)

@@ -10,18 +10,12 @@ import com.epson.epos2.printer.ReceiveListener;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
-import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.entities.CutOff;
-import com.nerdvana.positiveoffline.entities.EndOfDay;
-import com.nerdvana.positiveoffline.entities.Orders;
-import com.nerdvana.positiveoffline.entities.Payments;
-import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.functions.PrinterFunctions;
 import com.nerdvana.positiveoffline.intf.AsyncFinishCallBack;
 import com.nerdvana.positiveoffline.localizereceipts.ILocalizeReceipts;
 import com.nerdvana.positiveoffline.model.OtherPrinterModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
-import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.printer.EJFileCreator;
 import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
@@ -30,8 +24,6 @@ import com.starmicronics.stario.StarIOPortException;
 import com.starmicronics.stario.StarPrinterStatus;
 import com.starmicronics.starioextension.StarIoExt;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static com.nerdvana.positiveoffline.printer.PrinterUtils.addPrinterSpace;
@@ -120,7 +112,7 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
 
             addPrinterSpace(1, printer);
 
-            addTextToPrinter(printer, "POSTING DATE:" + cutOff.getCreated_at(), Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+            addTextToPrinter(printer, "POSTING DATE:" + cutOff.getTreg(), Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
             addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             addTextToPrinter(printer, "DESCRIPTION               VALUE", Printer.TRUE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);

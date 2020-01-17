@@ -19,7 +19,7 @@ public interface EndOfDayDao {
     @Query("SELECT * FROM EndOfDay WHERE id = :end_of_day_id")
     EndOfDay endOfDayData(long end_of_day_id);
 
-    @Query("SELECT * FROM EndOfDay WHERE DATE(created_at) BETWEEN :startDate AND :endDate")
+    @Query("SELECT * FROM EndOfDay WHERE DATE(treg) BETWEEN :startDate AND :endDate")
     List<EndOfDay> getEndOfDayViaDate(String startDate, String endDate);
 
     @Query("SELECT * FROM EndOfDay ORDER BY id DESC")

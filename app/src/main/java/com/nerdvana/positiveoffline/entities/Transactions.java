@@ -2,11 +2,8 @@ package com.nerdvana.positiveoffline.entities;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
-
-import org.joda.time.DateTime;
 
 @Entity(tableName = "Transactions")
 public class Transactions {
@@ -30,7 +27,7 @@ public class Transactions {
     private String is_cut_off_by = "";
     private String is_cut_off_at = "";
     private String trans_name;
-    private String created_at;
+    private String treg;
     private String receipt_number = "";
 
 
@@ -55,13 +52,16 @@ public class Transactions {
     private int machine_id;
     private int branch_id;
 
+    private int room_id = 0;
+    private String room_number = "";
+
     public Transactions(@NonNull String control_number,
-                        String user_id, String created_at,
+                        String user_id, String treg,
                         int is_sent_to_server,
                         int machine_id, int branch_id) {
         this.control_number = control_number;
         this.user_id = user_id;
-        this.created_at = created_at;
+        this.treg = treg;
 
         this.is_sent_to_server = is_sent_to_server;
         this.machine_id = machine_id;
@@ -75,7 +75,7 @@ public class Transactions {
                         String is_completed_by, Boolean is_saved,
                         String is_saved_by, Boolean is_cut_off,
                         String is_cut_off_by, String trans_name,
-                        String created_at, String receipt_number,
+                        String treg, String receipt_number,
                         Double gross_sales, Double net_sales,
                         Double vatable_sales, Double vat_exempt_sales,
                         Double vat_amount, Double discountAmount,
@@ -104,7 +104,7 @@ public class Transactions {
         this.is_cut_off = is_cut_off;
         this.is_cut_off_by = is_cut_off_by;
         this.trans_name = trans_name;
-        this.created_at = created_at;
+        this.treg = treg;
         this.receipt_number = receipt_number;
         this.gross_sales = gross_sales;
         this.net_sales = net_sales;
@@ -113,6 +113,22 @@ public class Transactions {
         this.vat_amount = vat_amount;
         this.discount_amount = discountAmount;
         this.change = change;
+    }
+
+    public int getRoom_id() {
+        return room_id;
+    }
+
+    public void setRoom_id(int room_id) {
+        this.room_id = room_id;
+    }
+
+    public String getRoom_number() {
+        return room_number;
+    }
+
+    public void setRoom_number(String room_number) {
+        this.room_number = room_number;
     }
 
     public int getIs_sent_to_server() {
@@ -372,12 +388,12 @@ public class Transactions {
         this.is_cut_off_by = is_cut_off_by;
     }
 
-    public String getCreated_at() {
-        return created_at;
+    public String getTreg() {
+        return treg;
     }
 
-    public void setCreated_at(String created_at) {
-        this.created_at = created_at;
+    public void setTreg(String treg) {
+        this.treg = treg;
     }
 
     public long getCut_off_id() {

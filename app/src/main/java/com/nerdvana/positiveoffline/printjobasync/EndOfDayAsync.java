@@ -11,7 +11,6 @@ import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
-import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.functions.PrinterFunctions;
 import com.nerdvana.positiveoffline.intf.AsyncFinishCallBack;
@@ -114,7 +113,7 @@ public class EndOfDayAsync extends AsyncTask<Void, Void, Void> {
 
             addPrinterSpace(1, printer);
 
-            addTextToPrinter(printer, "POSTING DATE:" + endOfDay.getCreated_at(), Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+            addTextToPrinter(printer, "POSTING DATE:" + endOfDay.getTreg(), Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
             addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             addTextToPrinter(printer, "DESCRIPTION               VALUE", Printer.TRUE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);

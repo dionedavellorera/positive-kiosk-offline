@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,6 +29,9 @@ import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.CheckoutAdapter;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Products;
+import com.nerdvana.positiveoffline.entities.RoomRates;
+import com.nerdvana.positiveoffline.entities.RoomStatus;
+import com.nerdvana.positiveoffline.entities.Rooms;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.OrdersContract;
@@ -49,6 +51,7 @@ import com.nerdvana.positiveoffline.view.settings.SettingsActivity;
 import com.nerdvana.positiveoffline.viewmodel.CutOffViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DiscountViewModel;
+import com.nerdvana.positiveoffline.viewmodel.RoomsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.SettingsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
@@ -71,6 +74,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     //endregion
 
     //regionview models
+    private RoomsViewModel roomsViewModel;
     private TransactionsViewModel transactionsViewModel;
     private UserViewModel userViewModel;
     private DataSyncViewModel dataSyncViewModel;
@@ -80,8 +84,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     //endregion
 
     private final int RESUME_TRANS_RETURN = 100;
+    private final int ROOM_SELECTED_RETURN = 101;
 
     private Products selectedProduct;
+    private RoomRates selectedRoomRate;
 
     private View view;
     private TextView subTotalValue;
@@ -115,6 +121,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initUserViewModel();
+        initRoomViewModel();
         initTransactionsViewModel();
         initTransactionsViewModelListener();
         initDiscountViewModel();
@@ -131,6 +138,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
         } catch (InterruptedException e) {
 
         }
+    }
+
+    private void initRoomViewModel() {
+        roomsViewModel = new ViewModelProvider(this).get(RoomsViewModel.class);
     }
 
     private void initSettingsViewModel() {
@@ -168,6 +179,23 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                             if (selectedProduct != null) {
                                 insertSelectedOrder();
                                 selectedProduct = null;
+                            }
+
+                            if (selectedRoomRate != null) {
+
+                                Rooms rooms = roomsViewModel.getRoomViaId(selectedRoomRate.getRoom_id());
+                                rooms.setTransaction_id(transactionId);
+                                roomsViewModel.update(rooms);
+
+
+                                Transactions tmpTr = transactionsViewModel.loadedTransactionList(String.valueOf(transactionId)).get(0);
+                                tmpTr.setId(Integer.valueOf(transactionId));
+                                tmpTr.setRoom_id(rooms.getRoom_id());
+                                tmpTr.setRoom_number(rooms.getRoom_name());
+                                transactionsViewModel.update(tmpTr);
+
+                                insertSelectedRoomRate();
+
                             }
                             setOrderAdapter(transactionsViewModel.orderList(transactionId));
                         } else {
@@ -267,7 +295,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     transactions.getIs_cut_off(),
                     transactions.getIs_cut_off_by(),
                     name,
-                    transactions.getCreated_at(),
+                    transactions.getTreg(),
                     transactions.getReceipt_number(),
                     transactions.getGross_sales() == null ? 0.00 : transactions.getGross_sales(),
                     transactions.getNet_sales() == null ? 0.00 : transactions.getNet_sales(),
@@ -285,7 +313,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     transactions.getIs_cancelled_at(),
                     transactions.getTin_number()
             );
-
+            tr.setRoom_id(transactions.getRoom_id());
+            tr.setRoom_number(transactions.getRoom_number());
             tr.setMachine_id(transactions.getMachine_id());
             tr.setIs_sent_to_server(transactions.getIs_sent_to_server());
             tr.setBranch_id(transactions.getBranch_id());
@@ -299,13 +328,56 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
         transactionsViewModel.update(tr);
     }
 
+    private void changeRoomStatus(Rooms room, int status_id, boolean is_transfer) {
+        try {
+
+            RoomStatus roomStatus = roomsViewModel.getRoomStatusViaId(status_id);
+            room.setStatus_id(roomStatus.getCore_id());
+            room.setStatus_description(roomStatus.getRoom_status());
+            room.setHex_color(roomStatus.getHex_color());
+
+            if (is_transfer) {
+                room.setTransaction_id("");
+            }
+            roomsViewModel.update(room);
+        } catch (Exception e) {
+
+        }
+    }
+
+
 
 
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 107://TRANSFER ROOM
+                if (transactionsViewModel.loadedTransactionList(transactionId).size() > 0) {
+                    Transactions currentTrans = transactionsViewModel.loadedTransactionList(transactionId).get(0);
+                    if (currentTrans.getRoom_id() != 0) {
+                        Rooms rooms = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
+                        if (rooms != null) {
+                            Intent roomsActivityIntent = new Intent(getContext(), RoomsActivity.class);
+                            roomsActivityIntent.putExtra(AppConstants.TRANS_ID, TextUtils.isEmpty(transactionId) ? 0 : Integer.valueOf(transactionId));
+                            roomsActivityIntent.putExtra(AppConstants.TRANSFER, "y");
+                            startActivityForResult(roomsActivityIntent, ROOM_SELECTED_RETURN);
+                        } else {
+                            Helper.showDialogMessage(getContext(), "No room attached to orders", getString(R.string.header_message));
+                        }
+                    } else {
+                        Helper.showDialogMessage(getActivity(), "No room attached to transaction", getString(R.string.header_message));
+                    }
+                } else {
+                    Helper.showDialogMessage(getActivity(), "No room attached to transaction", getString(R.string.header_message));
+                }
+
+
+                break;
             case 106://OPEN ROOM OR TABLES DEPENDING ON SYSTEM TYPE
-                startActivity(new Intent(getContext(), RoomsActivity.class));
+                Intent roomsActivityIntent = new Intent(getContext(), RoomsActivity.class);
+                roomsActivityIntent.putExtra(AppConstants.TRANS_ID, TextUtils.isEmpty(transactionId) ? 0 : Integer.valueOf(transactionId));
+                roomsActivityIntent.putExtra(AppConstants.TRANSFER, "n");
+                startActivityForResult(roomsActivityIntent, ROOM_SELECTED_RETURN);
                 break;
             case 996://OPEN VIEW RECEIPT
                 if (transactionDialog == null) {
@@ -420,7 +492,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                         if (paymentDialog == null) {
                             paymentDialog = new PaymentDialog(getActivity(), dataSyncViewModel,
                                     transactionsViewModel, transactionId,
-                                    userViewModel) {
+                                    userViewModel, roomsViewModel) {
                                 @Override
                                 public void completed(String receiptNumber) {
 
@@ -488,16 +560,32 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                             public void success() {
 
                                 try {
+
+
                                     for (Orders order : getEditingOrderList()) {
                                         order.setIs_void(true);
                                         order.setIs_editing(false);
                                         transactionsViewModel.updateOrder(order);
+                                    }
+
+
+                                    Transactions currentTrans = transactionsViewModel.loadedTransactionList(transactionId).get(0);
+                                    if (currentTrans.getRoom_id() != 0) {
+                                        List<Orders> currentPunchedRoomRate = transactionsViewModel.roomRateList(transactionId);
+                                        if (currentPunchedRoomRate.size() < 1) {
+                                            currentTrans.setRoom_number("");
+                                            currentTrans.setRoom_id(0);
+                                            transactionsViewModel.update(currentTrans);
+                                            changeRoomStatus(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)), 3, true);
+                                        }
                                     }
                                 } catch (ExecutionException e) {
                                     e.printStackTrace();
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
+
+
 
 
                             }
@@ -655,6 +743,73 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
+            case ROOM_SELECTED_RETURN:
+                if (resultCode == Activity.RESULT_OK) {
+
+                    selectedRoomRate = GsonHelper.getGson().fromJson(data.getExtras().getString("selected_room"), RoomRates.class);
+
+                    try {
+                        if (!TextUtils.isEmpty(transactionId)) {
+
+                            Rooms rooms = roomsViewModel.getRoomViaId(selectedRoomRate.getRoom_id());
+                            rooms.setTransaction_id(transactionId);
+                            roomsViewModel.update(rooms);
+
+                            insertSelectedRoomRate();
+                        } else {
+                            if (transactionsList().size() > 0) {
+
+                                Rooms rooms = roomsViewModel.getRoomViaId(selectedRoomRate.getRoom_id());
+                                rooms.setTransaction_id(transactionId);
+                                roomsViewModel.update(rooms);
+
+
+                                insertSelectedRoomRate();
+                            } else {
+                                String controlNumber = "";
+                                try {
+                                    if (transactionsViewModel.lastTransactionId() == null) {
+                                        controlNumber = Utils.getCtrlNumberFormat("1");
+                                    } else {
+                                        if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
+                                            controlNumber = Utils.getCtrlNumberFormat("1");
+                                        } else {
+                                            controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                        }
+
+                                    }
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+
+
+                                List<Transactions> tr = new ArrayList<>();
+
+                                tr.add(new Transactions(
+                                        controlNumber,
+                                        getUser().getUsername(),
+                                        Utils.getDateTimeToday(),
+                                        0,
+                                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                ));
+
+                                transactionsViewModel.insert(tr);
+
+
+                            }
+                        }
+
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+                break;
             case RESUME_TRANS_RETURN:
                 if (resultCode == Activity.RESULT_OK) {
                     try {
@@ -751,6 +906,38 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
         }
     }
 
+    private void insertSelectedRoomRate() {
+        List<Orders> orderList = new ArrayList<>();
+        if (!TextUtils.isEmpty(transactionId)) {
+            orderList.add(new Orders(
+                    Integer.valueOf(transactionId),
+                    selectedRoomRate.getRoom_rate_price_id(),
+                    1,
+                    selectedRoomRate.getAmount(),
+                    selectedRoomRate.getAmount(),
+                    selectedRoomRate.getRoom_rate_description(),
+                    selectedRoomRate.getRoom_type_id(),
+                    Utils.roundedOffTwoDecimal((selectedRoomRate.getAmount() / 1.12) * .12),
+                    Utils.roundedOffTwoDecimal(selectedRoomRate.getAmount() / 1.12),
+                    0.00,
+                    0.00,
+                    "ROOM RATE",
+                    "ROOM RATE",
+                    0,
+                    0,
+                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                    Utils.getDateTimeToday(),
+                    1
+            ));
+            transactionsViewModel.insertOrder(orderList);
+        }
+
+        selectedRoomRate = null;
+    }
+
+
+
     private void insertSelectedOrder() {
         List<Orders> orderList = new ArrayList<>();
         if (!TextUtils.isEmpty(transactionId)) {
@@ -771,7 +958,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     selectedProduct.getCategoryId(),
                     0,
                     Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                    Utils.getDateTimeToday(),
+                    0
             ));
             transactionsViewModel.insertOrder(orderList);
         }
@@ -796,5 +985,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private User getUser() throws ExecutionException, InterruptedException {
         return userViewModel.searchLoggedInUser().get(0);
     }
+
+
 
 }

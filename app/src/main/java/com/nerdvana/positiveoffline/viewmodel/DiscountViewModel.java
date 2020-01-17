@@ -10,6 +10,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
+import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.entities.DiscountSettings;
 import com.nerdvana.positiveoffline.entities.OrderDiscounts;
@@ -103,7 +104,8 @@ public class DiscountViewModel extends AndroidViewModel {
                         amount,
                         0,
                         Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))
+                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                        Utils.getDateTimeToday()
                 );
                 if (last_inserted_id == 0) {
                     last_inserted_id = insertPostedDiscount(postedDiscounts);
@@ -123,7 +125,8 @@ public class DiscountViewModel extends AndroidViewModel {
                         false,
                         0,
                         Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))));
+                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                        Utils.getDateTimeToday()));
 
                 insertOrderDiscount(orderDiscountsList);
             } catch (ExecutionException e) {
@@ -184,7 +187,8 @@ public class DiscountViewModel extends AndroidViewModel {
                                 percentage,
                                 0,
                                 Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                                Utils.getDateTimeToday()
 
                         );
 
@@ -202,7 +206,8 @@ public class DiscountViewModel extends AndroidViewModel {
                             false,
                             0,
                             Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))));
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                            Utils.getDateTimeToday()));
                     insertOrderDiscount(orderDiscountsList);
                 } catch (ExecutionException e) {
                     e.printStackTrace();

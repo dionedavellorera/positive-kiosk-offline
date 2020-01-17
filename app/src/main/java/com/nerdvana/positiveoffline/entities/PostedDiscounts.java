@@ -33,12 +33,15 @@ public class PostedDiscounts {
     private int machine_id;
     private int branch_id;
 
+    private String treg;
     public PostedDiscounts(int transaction_id, int discount_id,
                            String discount_name, Boolean is_void,
                            String card_number, String name,
                            String address, Boolean is_percentage,
                            Double discount_value, int is_sent_to_server,
-                           int machine_id, int branch_id) {
+                           int machine_id, int branch_id,
+                           String treg) {
+        this.treg = treg;
         this.is_sent_to_server = is_sent_to_server;
         this.machine_id = machine_id;
         this.branch_id = branch_id;
@@ -51,6 +54,14 @@ public class PostedDiscounts {
         this.address = address;
         this.is_percentage = is_percentage;
         this.discount_value = discount_value;
+    }
+
+    public String getTreg() {
+        return treg;
+    }
+
+    public void setTreg(String treg) {
+        this.treg = treg;
     }
 
     public int getIs_sent_to_server() {

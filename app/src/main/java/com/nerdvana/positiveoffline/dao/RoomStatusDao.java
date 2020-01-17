@@ -18,4 +18,7 @@ public interface RoomStatusDao {
 
     @Query("SELECT * FROM RoomStatus")
     List<RoomStatus> getRoomStatus();
+
+    @Query("SELECT * FROM RoomStatus WHERE core_id = :core_id")
+    RoomStatus getRoomStatusViaId(int core_id);
 }

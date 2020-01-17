@@ -5,10 +5,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -18,7 +16,6 @@ import android.widget.TextView;
 
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -36,6 +33,8 @@ import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
 import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.RoomStatus;
+import com.nerdvana.positiveoffline.entities.Rooms;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.PaymentTypeContract;
@@ -43,6 +42,7 @@ import com.nerdvana.positiveoffline.intf.PaymentsContract;
 import com.nerdvana.positiveoffline.view.HidingEditText;
 import com.nerdvana.positiveoffline.view.ProgressButton;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
+import com.nerdvana.positiveoffline.viewmodel.RoomsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 
@@ -91,6 +91,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     private RadioGroup rgCards;
 
     private DataSyncViewModel dataSyncViewModel;
+    private RoomsViewModel roomsViewModel;
     private TransactionsViewModel transactionsViewModel;
     private UserViewModel userViewModel;
     private String transactionId;
@@ -102,13 +103,14 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
     public PaymentDialog(Context context, DataSyncViewModel dataSyncViewModel,
                          TransactionsViewModel transactionsViewModel, String transactionId,
-                         UserViewModel userViewModel) {
+                         UserViewModel userViewModel, RoomsViewModel roomsViewModel) {
         super(context);
         this.context = context;
         this.dataSyncViewModel = dataSyncViewModel;
         this.transactionsViewModel = transactionsViewModel;
         this.transactionId =transactionId;
         this.userViewModel = userViewModel;
+        this.roomsViewModel = roomsViewModel;
     }
 
     @Override
@@ -389,7 +391,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                 tmp.getIs_cut_off(),
                                 tmp.getIs_cut_off_by(),
                                 tmp.getTrans_name(),
-                                tmp.getCreated_at(),
+                                tmp.getTreg(),
                                 receiptNumber,
                                 tmp.getGross_sales(),
                                 tmp.getNet_sales(),
@@ -408,7 +410,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                 tmp.getTin_number()
                         );
 
-
+                        transactions.setRoom_id(tmp.getRoom_id());
+                        transactions.setRoom_number(tmp.getRoom_number());
                         transactions.setMachine_id(tmp.getMachine_id());
                         transactions.setIs_sent_to_server(tmp.getIs_sent_to_server());
                         transactions.setBranch_id(tmp.getBranch_id());
@@ -418,6 +421,17 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                         transactions.setHas_special(tmp.getHas_special());
                         transactionsViewModel.update(transactions);
                         dismiss();
+
+                        RoomStatus roomStatus = roomsViewModel.getRoomStatusViaId(3);
+
+                        Rooms rooms = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
+                        if (rooms != null) {
+                            rooms.setStatus_id(roomStatus.getCore_id());
+                            rooms.setHex_color(roomStatus.getHex_color());
+                            rooms.setStatus_description(roomStatus.getRoom_status());
+                            rooms.setTransaction_id("");
+                            roomsViewModel.update(rooms);
+                        }
                         completed(receiptNumber);
                         pay.stopLoading(pay);
                     } else {
@@ -445,7 +459,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                     Double.valueOf(cashAmount.getText().toString()), paymentTypes.getPayment_type(),
                                     0,
                                     Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))));
+                                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                                    Utils.getDateTimeToday()));
                             transactionsViewModel.insertPayment(cashPayment);
                         }
                     }
@@ -475,7 +490,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                     Double.valueOf(creditCardAmount.getText().toString()), paymentTypes.getPayment_type(),
                                     0,
                                     Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)));
+                                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                                    Utils.getDateTimeToday());
                             p.setOther_data(GsonHelper.getGson().toJson(cardMap));
                             cardPayment.add(p);
                             transactionsViewModel.insertPayment(cardPayment);
@@ -509,6 +525,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                         orDetails.setMachine_id(Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)));
                         orDetails.setBranch_id(Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)));
                         orDetails.setIs_sent_to_server(0);
+                        orDetails.setTreg(Utils.getDateTimeToday());
 
                         transactionsViewModel.insertOrDetails(orDetails);
 

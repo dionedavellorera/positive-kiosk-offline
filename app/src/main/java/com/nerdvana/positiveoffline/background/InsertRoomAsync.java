@@ -132,9 +132,9 @@ public class InsertRoomAsync extends AsyncTask<Void, Void, Void> {
         for (RoomTableModel rtm : productsModelList) {
             Rooms rooms = new Rooms(rtm.getRoomId(), rtm.getAreaName(),
                     rtm.getAreaId(), rtm.getName(),
-                    rtm.getRoomType(), rtm.getRoomTypeId(), 1,
+                    rtm.getRoomType(), rtm.getRoomTypeId(), rtm.getPrice().size() > 0 ? 1 : 0,
                     Integer.valueOf(rtm.getStatus()), rtm.getStatusDescription(),
-                    rtm.getHexColor()
+                    rtm.getHexColor(), ""
                     );
             dataSyncViewModel.insertRoom(rooms);
             for (RoomRateMain rrm : rtm.getPrice()) {

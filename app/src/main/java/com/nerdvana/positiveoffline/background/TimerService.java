@@ -78,7 +78,7 @@ public class TimerService extends Service {
                     BusProvider.getInstance().post(new ReprintReceiptData(""));
                 }
 
-                if (secsOfDate % 30 == 0) { //process sending of data to server
+                if (secsOfDate % 10000000 == 0) { //process sending of data to server
                     final PosDatabase posDatabase = DatabaseHelper.getDatabase(TimerService.this);
                     new AsyncTask<Void, Void, Void>() {
 
@@ -121,10 +121,10 @@ public class TimerService extends Service {
 
                                 Call<ResponseBody> call = iUsers.sendData(req.getMapValue());
 
-//                                call.enqueue(new Callback<ResponseBody>() {
-//                                    @Override
-//                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-//                                        String message = "";
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        String message = "";
 //                                        if (unsyncedEndOfDay.size() > 0) {
 //                                            for (EndOfDay endOfDay : unsyncedEndOfDay) {
 //                                                message += "END OF DAY ID - " + endOfDay.getId() + "PROCESSED\n";
@@ -205,13 +205,13 @@ public class TimerService extends Service {
 //                                            saveToTextFile(message);
 //                                            message = "";
 //                                        }
-//                                    }
-//
-//                                    @Override
-//                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
 //                                        saveToTextFile(t.getLocalizedMessage());
-//                                    }
-//                                });
+                                    }
+                                });
 
                             } else {
 

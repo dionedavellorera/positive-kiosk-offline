@@ -18,12 +18,15 @@ public class Rooms {
     private int status_id;
     private String status_description;
     private String hex_color;
+    private String transaction_id;
 
     public Rooms(int room_id, String area_name,
                  int area_id, String room_name,
                  String room_type, int room_type_id,
                  int is_available, int status_id,
-                 String status_description, String hex_color) {
+                 String status_description, String hex_color,
+                 String transaction_id) {
+        this.transaction_id = transaction_id;
         this.hex_color = hex_color;
         this.status_id = status_id;
         this.status_description = status_description;
@@ -34,6 +37,10 @@ public class Rooms {
         this.room_type = room_type;
         this.room_type_id = room_type_id;
         this.is_available = is_available;
+    }
+
+    public String getTransaction_id() {
+        return transaction_id;
     }
 
     public String getHex_color() {
@@ -87,5 +94,9 @@ public class Rooms {
 
     public void setStatus_description(String status_description) {
         this.status_description = status_description;
+    }
+
+    public void setTransaction_id(String transaction_id) {
+        this.transaction_id = transaction_id;
     }
 }

@@ -25,6 +25,7 @@ public class AppConstants {
     public static final String ACTIVITY_LOGIN = "login";
     public static final String MAIN_ACTIVITY = "main_activity";
     public static final String TRANS_ID = "trans_id";
+    public static final String TRANSFER = "transfer";
 
     public static final int PRINTER_SERIES = 10;
     public static final int PRINTER_LANGUAGE = 11;

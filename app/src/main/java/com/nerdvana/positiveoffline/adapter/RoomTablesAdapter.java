@@ -104,6 +104,13 @@ public class RoomTablesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             }
         });
 
+        ((ProductsViewHolder)holder).rel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                roomContract.showRates(rooms.getRoom_id());
+            }
+        });
+
 //        ((ProductsViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View v) {

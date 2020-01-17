@@ -1,23 +1,17 @@
 package com.nerdvana.positiveoffline.view.resumetransaction;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -26,10 +20,13 @@ import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.ResumeTransactionAdapter;
+import com.nerdvana.positiveoffline.entities.RoomStatus;
+import com.nerdvana.positiveoffline.entities.Rooms;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.TransactionsContract;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
+import com.nerdvana.positiveoffline.viewmodel.RoomsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 
@@ -46,6 +43,7 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
 
     private ResumeTransactionAdapter resumeTransactionAdapter;
     private TransactionsViewModel transactionsViewModel;
+    private RoomsViewModel roomsViewModel;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +54,7 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
         initUserViewModel();
         initTransViewModel();
         initTransViewModelListener();
+        initRoomsViewModel();
         setTitle();
 
     }
@@ -79,6 +78,11 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
             }
         });
     }
+
+    private void initRoomsViewModel() {
+        roomsViewModel = new ViewModelProvider(this).get(RoomsViewModel.class);
+    }
+
 
     private void initTransViewModel() {
         transactionsViewModel = new ViewModelProvider(this).get(TransactionsViewModel.class);
@@ -164,7 +168,7 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
                 transactions.getIs_cut_off(),
                 transactions.getIs_cut_off_by(),
                 transactions.getTrans_name(),
-                transactions.getCreated_at(),
+                transactions.getTreg(),
                 transactions.getReceipt_number(),
                 transactions.getGross_sales() == null ? 0.00 : transactions.getGross_sales(),
                 transactions.getNet_sales() == null ? 0.00 : transactions.getNet_sales(),
@@ -182,10 +186,20 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
                 Utils.getDateTimeToday(),
                 transactions.getTin_number()
         );
-
+        tr.setRoom_id(transactions.getRoom_id());
+        tr.setRoom_number(transactions.getRoom_number());
         tr.setMachine_id(transactions.getMachine_id());
         tr.setIs_sent_to_server(transactions.getIs_sent_to_server());
         tr.setBranch_id(transactions.getBranch_id());
+
+        try {
+            Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(transactions.getId());
+            changeRoomStatus(tmpRm, 3, true);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
 
         transactionsViewModel.update(tr);
@@ -202,5 +216,22 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
 
     private void initUserViewModel() {
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+    }
+
+    private void changeRoomStatus(Rooms room, int status_id, boolean is_transfer) {
+        try {
+
+            RoomStatus roomStatus = roomsViewModel.getRoomStatusViaId(status_id);
+            room.setStatus_id(roomStatus.getCore_id());
+            room.setStatus_description(roomStatus.getRoom_status());
+            room.setHex_color(roomStatus.getHex_color());
+
+            if (is_transfer) {
+                room.setTransaction_id("");
+            }
+            roomsViewModel.update(room);
+        } catch (Exception e) {
+
+        }
     }
 }

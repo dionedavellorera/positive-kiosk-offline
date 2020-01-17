@@ -33,13 +33,15 @@ public class OrderDiscounts {
     private int machine_id;
     private int branch_id;
 
+    private String treg;
+
 
     public OrderDiscounts(int product_id, @NonNull Boolean is_percentage,
                           @NonNull Double value, @NonNull int transaction_id,
                           int order_id, String discount_name,
                           long posted_discount_id, Boolean is_void,
                           int is_sent_to_server, int machine_id,
-                          int branch_id) {
+                          int branch_id, String treg) {
         this.is_sent_to_server = is_sent_to_server;
         this.machine_id = machine_id;
         this.branch_id = branch_id;
@@ -51,6 +53,15 @@ public class OrderDiscounts {
         this.discount_name = discount_name;
         this.posted_discount_id = posted_discount_id;
         this.is_void = is_void;
+        this.treg = treg;
+    }
+
+    public String getTreg() {
+        return treg;
+    }
+
+    public void setTreg(String treg) {
+        this.treg = treg;
     }
 
     public int getIs_sent_to_server() {

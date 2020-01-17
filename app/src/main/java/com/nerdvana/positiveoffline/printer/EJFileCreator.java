@@ -1,9 +1,7 @@
 package com.nerdvana.positiveoffline.printer;
 
 import android.content.Context;
-import android.util.Log;
 
-import com.epson.epos2.printer.Printer;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
@@ -19,10 +17,6 @@ import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.nerdvana.positiveoffline.printer.PrinterUtils.addPrinterSpace;
-import static com.nerdvana.positiveoffline.printer.PrinterUtils.addTextToPrinter;
-import static com.nerdvana.positiveoffline.printer.PrinterUtils.twoColumns;
 
 public class EJFileCreator {
 
@@ -46,7 +40,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString("", "", context, true);
 
-        finalString += PrinterUtils.receiptString("POSTING DATE:", cutOff.getCreated_at(), context, true);
+        finalString += PrinterUtils.receiptString("POSTING DATE:", cutOff.getTreg(), context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
         finalString += PrinterUtils.receiptString("DESCRIPTION               VALUE", "", context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
@@ -189,22 +183,22 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "POSTING DATE:",
-                endOfDay.getCreated_at(),
+                endOfDay.getTreg(),
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
                 new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"),
-                endOfDay.getCreated_at(),
+                endOfDay.getTreg(),
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
                 "DESCRIPTION               VALUE",
-                endOfDay.getCreated_at(),
+                endOfDay.getTreg(),
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
                 new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"),
-                endOfDay.getCreated_at(),
+                endOfDay.getTreg(),
                 context,
                 true);
 
@@ -479,7 +473,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString("", "", context, true);
         finalString += PrinterUtils.receiptString("OR NO", transactionCompleteDetails.transactions.getReceipt_number(), context, false);
-        finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getCreated_at(), context, false);
+        finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
         finalString += PrinterUtils.receiptString("", "", context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
         finalString += PrinterUtils.receiptString("QTY  DESCRIPTION          AMOUNT", "", context, true);

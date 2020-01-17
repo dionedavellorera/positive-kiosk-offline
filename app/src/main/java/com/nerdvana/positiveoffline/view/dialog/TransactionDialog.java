@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -167,7 +166,7 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                         reference.getIs_cut_off(),
                         reference.getIs_cut_off_by(),
                         reference.getTrans_name(),
-                        reference.getCreated_at(),
+                        reference.getTreg(),
                         reference.getReceipt_number(),
                         reference.getGross_sales(),
                         reference.getNet_sales(),
@@ -185,7 +184,8 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                         reference.getIs_cancelled_at(),
                         reference.getTin_number()
                 );
-
+                transactions.setRoom_id(reference.getRoom_id());
+                transactions.setRoom_number(reference.getRoom_number());
                 transactions.setMachine_id(reference.getMachine_id());
                 transactions.setIs_sent_to_server(reference.getIs_sent_to_server());
                 transactions.setBranch_id(reference.getBranch_id());

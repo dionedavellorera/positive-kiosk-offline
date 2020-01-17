@@ -22,7 +22,7 @@ public class EndOfDay {
     private Double total_cash_payments = 0.00;
     private Double total_card_payments = 0.00;
     private Double total_change = 0.00;
-    private String created_at;
+    private String treg;
 
     private int seniorCount = 0;
     private Double seniorAmount = 0.00;
@@ -46,7 +46,7 @@ public class EndOfDay {
                     Double net_sales, Double vatable_sales,
                     Double vat_exempt_sales, Double vat_amount,
                     Double void_amount, Double total_cash_amount,
-                    String created_at, String begOrNo, String endOrNo,
+                    String treg, String begOrNo, String endOrNo,
                     Double begSales, Double endSales,
                     int is_sent_to_server, int machine_id,
                     int branch_id) {
@@ -63,7 +63,7 @@ public class EndOfDay {
         this.vat_amount = vat_amount;
         this.void_amount = void_amount;
         this.total_cash_amount = total_cash_amount;
-        this.created_at = created_at;
+        this.treg = treg;
         this.begOrNo = begOrNo;
         this.endOrNo = endOrNo;
     }
@@ -268,11 +268,11 @@ public class EndOfDay {
         this.total_cash_amount = total_cash_amount;
     }
 
-    public String getCreated_at() {
-        return created_at;
+    public String getTreg() {
+        return treg;
     }
 
-    public void setCreated_at(String created_at) {
-        this.created_at = created_at;
+    public void setTreg(String treg) {
+        this.treg = treg;
     }
 }

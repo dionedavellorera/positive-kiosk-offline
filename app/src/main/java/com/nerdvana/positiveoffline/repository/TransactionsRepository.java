@@ -136,7 +136,17 @@ public class TransactionsRepository {
         return future.get();
     }
 
+    public List<Orders> getRoomRateList(final String transactionId) throws ExecutionException, InterruptedException {
+        Callable<List<Orders>> callable = new Callable<List<Orders>>() {
+            @Override
+            public List<Orders> call() throws Exception {
+                return ordersDao.roomRateList(transactionId);
+            }
+        };
 
+        Future<List<Orders>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
     public List<Orders> getOrderList(final String transactionId) throws ExecutionException, InterruptedException {
         Callable<List<Orders>> callable = new Callable<List<Orders>>() {
             @Override

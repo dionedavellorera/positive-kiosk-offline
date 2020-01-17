@@ -22,7 +22,7 @@ public class CutOff {
     private Double total_card_payments = 0.00;
     private Double total_change;
     private int z_read_id = 0;
-    private String created_at;
+    private String treg;
     private int seniorCount = 0;
     private Double seniorAmount = 0.00;
     private int pwdCount = 0;
@@ -41,7 +41,7 @@ public class CutOff {
                   Double net_sales, Double vatable_sales,
                   Double vat_exempt_sales, Double vat_amount,
                   Double void_amount, Double total_cash_amount,
-                  int z_read_id, String created_at,
+                  int z_read_id, String treg,
                   String begOrNo, String endOrNo,
                   int is_sent_to_server, int machine_id,
                   int branch_id) {
@@ -57,7 +57,7 @@ public class CutOff {
         this.void_amount = void_amount;
         this.total_cash_amount = total_cash_amount;
         this.z_read_id = z_read_id;
-        this.created_at = created_at;
+        this.treg = treg;
         this.begOrNo = begOrNo;
         this.endOrNo = endOrNo;
     }
@@ -174,12 +174,12 @@ public class CutOff {
         this.total_change = total_change;
     }
 
-    public String getCreated_at() {
-        return created_at;
+    public String getTreg() {
+        return treg;
     }
 
-    public void setCreated_at(String created_at) {
-        this.created_at = created_at;
+    public void setTreg(String treg) {
+        this.treg = treg;
     }
 
     public int getZ_read_id() {

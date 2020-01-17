@@ -29,12 +29,14 @@ public class Payments {
     private int machine_id;
     private int branch_id;
 
+    private String treg;
+
 
 
     public Payments(int transaction_id, int core_id,
                     @NonNull Double amount, @NonNull String name,
                     int is_sent_to_server, int machine_id,
-                    int branch_id) {
+                    int branch_id, String treg) {
         this.is_sent_to_server = is_sent_to_server;
         this.machine_id = machine_id;
         this.branch_id = branch_id;
@@ -42,6 +44,15 @@ public class Payments {
         this.core_id = core_id;
         this.amount = amount;
         this.name = name;
+        this.treg = treg;
+    }
+
+    public String getTreg() {
+        return treg;
+    }
+
+    public void setTreg(String treg) {
+        this.treg = treg;
     }
 
     public int getIs_sent_to_server() {

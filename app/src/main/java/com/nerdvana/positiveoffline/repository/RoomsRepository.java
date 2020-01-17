@@ -18,6 +18,7 @@ import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.entities.DataSync;
+import com.nerdvana.positiveoffline.entities.RoomRates;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
 import com.nerdvana.positiveoffline.model.RoomWithRates;
@@ -99,7 +100,18 @@ public class RoomsRepository {
             super.onPostExecute(aVoid);
         }
     }
+//getRoomStatusViaId
+    public RoomStatus getRoomStatusViaId(final int core_id) throws ExecutionException, InterruptedException {
+        Callable<RoomStatus> callable = new Callable<RoomStatus>() {
+            @Override
+            public RoomStatus call() throws Exception {
+                return roomStatusDao.getRoomStatusViaId(core_id);
+            }
+        };
 
+        Future<RoomStatus> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
     public List<RoomStatus> getRoomStatus() throws ExecutionException, InterruptedException {
         Callable<List<RoomStatus>> callable = new Callable<List<RoomStatus>>() {
             @Override
@@ -109,6 +121,42 @@ public class RoomsRepository {
         };
 
         Future<List<RoomStatus>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public List<RoomRates> getRoomRates(final int room_id) throws ExecutionException, InterruptedException {
+        Callable<List<RoomRates>> callable = new Callable<List<RoomRates>>() {
+            @Override
+            public List<RoomRates> call() throws Exception {
+                return roomRatesDao.getRoomRates(room_id);
+            }
+        };
+
+        Future<List<RoomRates>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public Rooms getRoomViaTransactionId(final int transaction_id) throws ExecutionException, InterruptedException {
+        Callable<Rooms> callable = new Callable<Rooms>() {
+            @Override
+            public Rooms call() throws Exception {
+                return roomsDao.getRoomViaTransactionId(transaction_id);
+            }
+        };
+
+        Future<Rooms> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public Rooms getRoomViaId(final int room_id) throws ExecutionException, InterruptedException {
+        Callable<Rooms> callable = new Callable<Rooms>() {
+            @Override
+            public Rooms call() throws Exception {
+                return roomsDao.getRoomViaId(room_id);
+            }
+        };
+
+        Future<Rooms> future = Executors.newSingleThreadExecutor().submit(callable);
         return future.get();
     }
 

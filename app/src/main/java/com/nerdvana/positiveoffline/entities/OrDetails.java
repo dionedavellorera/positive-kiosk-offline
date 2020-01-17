@@ -24,6 +24,16 @@ public class OrDetails {
     private int machine_id;
     private int branch_id;
 
+    private String treg;
+
+    public String getTreg() {
+        return treg;
+    }
+
+    public void setTreg(String treg) {
+        this.treg = treg;
+    }
+
     public int getIs_sent_to_server() {
         return is_sent_to_server;
     }

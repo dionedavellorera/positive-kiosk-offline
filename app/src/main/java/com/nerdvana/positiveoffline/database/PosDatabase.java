@@ -57,7 +57,7 @@ import com.nerdvana.positiveoffline.entities.User;
                         PrinterLanguage.class, OrDetails.class,
                         Rooms.class, RoomRates.class,
                         RoomStatus.class},
-          version = 89)
+          version = 97)
 
 public abstract class PosDatabase extends RoomDatabase {
     public abstract UserDao userDao();

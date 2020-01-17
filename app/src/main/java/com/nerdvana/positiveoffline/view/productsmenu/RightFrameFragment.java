@@ -194,7 +194,9 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
                                 products.getCategoryId(),
                                 0,
                                 Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                                Utils.getDateTimeToday(),
+                                0
                         ));
                         transactionsViewModel.insertOrder(orderList);
                     }

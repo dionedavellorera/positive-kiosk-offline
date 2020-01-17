@@ -209,7 +209,9 @@ public class TransactionsViewModel extends AndroidViewModel {
                             owd.orders.getCategoryId(),
                             0,
                             Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                            Utils.getDateTimeToday(),
+                            owd.orders.getIs_room_rate()
 
                     );
                     ord.setId(owd.orders.getId());
@@ -265,7 +267,9 @@ public class TransactionsViewModel extends AndroidViewModel {
                             selectedProduct.getCategoryId(),
                             0,
                             Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID))
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                            Utils.getDateTimeToday(),
+                            selectedProduct.getIs_room_rate()
                     );
                     ord.setId(selectedProduct.getId());
                     updateOrder(ord);
@@ -369,6 +373,9 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.getPaymentList(transactionId);
     }
 
+    public List<Orders> roomRateList(String transactionId) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getRoomRateList(transactionId);
+    }
 
     public List<Orders> orderList(String transactionId) throws ExecutionException, InterruptedException {
         return transactionsRepository.getOrderList(transactionId);

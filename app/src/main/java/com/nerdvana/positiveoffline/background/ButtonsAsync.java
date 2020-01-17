@@ -57,6 +57,7 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
 
             } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
                 buttonsModelList.add(new ButtonsModel(106,"ROOMS", "",1));
+                buttonsModelList.add(new ButtonsModel(107,"TRANSFER ROOM", "",1));
             } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
                 buttonsModelList.add(new ButtonsModel(106,"TABLES", "",1));
             }
