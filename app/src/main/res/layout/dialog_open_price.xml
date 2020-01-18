@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <include layout="@layout/partial_header"
+        android:id="@+id/header"/>
+    <TextView
+        android:textSize="17sp"
+        android:textColor="@color/colorBlack"
+        android:padding="15dp"
+        android:text="@string/info_no_data"
+        android:id="@+id/tvMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <EditText
+        android:padding="10dp"
+        android:inputType="numberDecimal"
+        android:id="@+id/etNewPrice"
+        android:layout_margin="15dp"
+        android:background="@drawable/edittext_round"
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+
+    <Button
+        android:layout_margin="15dp"
+        android:textColor="@color/colorWhite"
+        android:background="@drawable/button_selector"
+        android:id="@+id/btnConfirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/button_label_confirm"/>
+</LinearLayout>

@@ -63,6 +63,15 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int i) {
         final Orders productsModel = checkoutList.get(i);
+
+        ((CheckoutAdapter.ViewHolder)holder).rootView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                ordersContract.longClicked(productsModel);
+                return true;
+            }
+        });
+
         ((CheckoutAdapter.ViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -42,6 +42,7 @@ import com.nerdvana.positiveoffline.view.dialog.ChangeQtyDialog;
 import com.nerdvana.positiveoffline.view.dialog.CutOffMenuDialog;
 import com.nerdvana.positiveoffline.view.dialog.DiscountMenuDialog;
 import com.nerdvana.positiveoffline.view.dialog.InputDialog;
+import com.nerdvana.positiveoffline.view.dialog.OpenPriceDialog;
 import com.nerdvana.positiveoffline.view.dialog.PasswordDialog;
 import com.nerdvana.positiveoffline.view.dialog.PaymentDialog;
 import com.nerdvana.positiveoffline.view.dialog.TransactionDialog;
@@ -71,6 +72,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private InputDialog inputDialog;
     private CutOffMenuDialog cutOffMenuDialog;
     private TransactionDialog transactionDialog;
+    private OpenPriceDialog openPriceDialog;
     //endregion
 
     //regionview models
@@ -236,6 +238,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
                 try {
                     setOrderAdapter(transactionsViewModel.orderList(transactionId));
+
                     transactionsViewModel.recomputeTransaction(transactionsViewModel.orderList(transactionId), transactionId);
                 } catch (ExecutionException e) {
                     e.printStackTrace();
@@ -965,6 +968,34 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
             transactionsViewModel.insertOrder(orderList);
         }
 
+    }
+
+    @Override
+    public void longClicked(Orders orders) {
+        if (openPriceDialog == null) {
+            openPriceDialog = new OpenPriceDialog(getActivity(), transactionsViewModel, orders) {
+                @Override
+                public void openPriceSuccess(Orders orders) {
+                    transactionsViewModel.recomputeTransactionWithDiscount(transactionId, discountViewModel);
+                }
+            };
+
+            openPriceDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialogInterface) {
+                    openPriceDialog = null;
+                }
+            });
+
+            openPriceDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialogInterface) {
+                    openPriceDialog = null;
+                }
+            });
+
+            openPriceDialog.show();
+        }
     }
 
     @Override

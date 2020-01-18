@@ -258,7 +258,7 @@ public class TransactionsViewModel extends AndroidViewModel {
                             selectedProduct.getOriginal_amount(),
                             selectedProduct.getName(),
                             selectedProduct.getDepartmentId(),
-                            Utils.roundedOffTwoDecimal(selectedProduct.getOriginal_amount() * .12),
+                            Utils.roundedOffTwoDecimal((selectedProduct.getOriginal_amount()/1.12) * .12),
                             Utils.roundedOffTwoDecimal( selectedProduct.getOriginal_amount() / 1.12),
                             0.00,
                             0.00,
@@ -283,16 +283,19 @@ public class TransactionsViewModel extends AndroidViewModel {
                 }
             }
 
-            Transactions tr = loadedTransactionList(transactionId).get(0);
-            tr.setId(Integer.valueOf(transactionId));
-            tr.setGross_sales(Utils.roundedOffTwoDecimal(grossSales));
-            tr.setNet_sales(Utils.roundedOffTwoDecimal(netSales));
-            tr.setVatable_sales(Utils.roundedOffTwoDecimal(vatableSales));
-            tr.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vatExemptSales));
-            tr.setVat_amount(Utils.roundedOffTwoDecimal(vatAmount));
-            tr.setDiscount_amount(Utils.roundedOffTwoDecimal(discountAmount));
-            tr.setHas_special(hasSpecial);
-            update(tr);
+            if (loadedTransactionList(transactionId).size() > 0) {
+                Transactions tr = loadedTransactionList(transactionId).get(0);
+                tr.setId(Integer.valueOf(transactionId));
+                tr.setGross_sales(Utils.roundedOffTwoDecimal(grossSales));
+                tr.setNet_sales(Utils.roundedOffTwoDecimal(netSales));
+                tr.setVatable_sales(Utils.roundedOffTwoDecimal(vatableSales));
+                tr.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vatExemptSales));
+                tr.setVat_amount(Utils.roundedOffTwoDecimal(vatAmount));
+                tr.setDiscount_amount(Utils.roundedOffTwoDecimal(discountAmount));
+                tr.setHas_special(hasSpecial);
+                update(tr);
+            }
+
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
