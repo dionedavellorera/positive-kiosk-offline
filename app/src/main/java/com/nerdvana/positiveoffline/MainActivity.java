@@ -1,38 +1,37 @@
 package com.nerdvana.positiveoffline;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.epson.epos2.Epos2Exception;
-import com.epson.epos2.printer.Printer;
 import com.nerdvana.positiveoffline.apirequests.TestRequest;
 import com.nerdvana.positiveoffline.apiresponses.TestResponse;
+import com.nerdvana.positiveoffline.printjobasync.BackoutAsync;
+import com.nerdvana.positiveoffline.background.CheatAsync;
+import com.nerdvana.positiveoffline.printjobasync.PostVoidAsync;
 import com.nerdvana.positiveoffline.background.TimerService;
 import com.nerdvana.positiveoffline.entities.CutOff;
-import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.entities.User;
-import com.nerdvana.positiveoffline.functions.PrinterFunctions;
 import com.nerdvana.positiveoffline.intf.AsyncFinishCallBack;
 import com.nerdvana.positiveoffline.localizereceipts.ILocalizeReceipts;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
@@ -44,12 +43,12 @@ import com.nerdvana.positiveoffline.model.ReprintReceiptData;
 import com.nerdvana.positiveoffline.model.ServerConnectionTest;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.printer.EJFileCreator;
-import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.printer.SPrinter;
 import com.nerdvana.positiveoffline.printer.SStarPort;
 import com.nerdvana.positiveoffline.printjobasync.CutOffAsync;
 import com.nerdvana.positiveoffline.printjobasync.EndOfDayAsync;
 import com.nerdvana.positiveoffline.printjobasync.PrintReceiptAsync;
+import com.nerdvana.positiveoffline.printjobasync.SoaAsync;
 import com.nerdvana.positiveoffline.view.checkoutmenu.LeftFrameFragment;
 import com.nerdvana.positiveoffline.view.login.LoginActivity;
 import com.nerdvana.positiveoffline.view.posmenu.BottomFrameFragment;
@@ -58,21 +57,12 @@ import com.nerdvana.positiveoffline.view.sync.SyncActivity;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 import com.squareup.otto.Subscribe;
-import com.starmicronics.stario.PortInfo;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
-import com.starmicronics.stario.StarPrinterStatus;
 import com.starmicronics.stario.StarResultCode;
 import com.starmicronics.starioextension.ConnectionCallback;
 import com.starmicronics.starioextension.ICommandBuilder;
-import com.starmicronics.starioextension.StarIoExt;
-import com.starmicronics.starioextension.StarIoExtManager;
 import com.starmicronics.starioextension.StarIoExtManagerListener;
-
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -84,8 +74,6 @@ import java.util.concurrent.ExecutionException;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-import static com.epson.epsonio.DevType.TCP;
 
 public class MainActivity extends AppCompatActivity implements AsyncFinishCallBack {
 
@@ -314,16 +302,14 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
             try {
                 if (StarIOPort.searchPrinter("BT:").size() > 0) {
-//                    if (starIoPort == null) {
-//                        Log.d("PEKPEK", "GERE");
+                    if (starIoPort == null) {
+                        Log.d("PEKPEK", "GERE");
 //                        starIoPort = SStarPort.getStarIOPort();
-//                    }
+                    }
                 }
             } catch (StarIOPortException e) {
 
             }
-
-
 
         } else {
             Toast.makeText(MainActivity.this, "No printer set", Toast.LENGTH_SHORT).show();
@@ -353,6 +339,14 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         String finalString = "";
         try {
             switch (printModel.getType()) {
+                case "POST_VOID":
+                    TransactionCompleteDetails postVoidDetails = GsonHelper.getGson().fromJson(printModel.getData(), TransactionCompleteDetails.class);
+                    finalString = EJFileCreator.postVoidString(postVoidDetails, MainActivity.this, false, printModel);
+                    break;
+                case "BACKOUT":
+                    TransactionCompleteDetails backoutDetails = GsonHelper.getGson().fromJson(printModel.getData(), TransactionCompleteDetails.class);
+                    finalString = EJFileCreator.backoutString(backoutDetails, MainActivity.this, false, printModel);
+                    break;
                 case "PRINT_RECEIPT":
                     TransactionCompleteDetails transactionCompleteDetails = GsonHelper.getGson().fromJson(printModel.getData(), TransactionCompleteDetails.class);
                     finalString = EJFileCreator.orString(transactionCompleteDetails, MainActivity.this, false, printModel);
@@ -386,6 +380,26 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void print(PrintModel printModel) {
         switch (printModel.getType()) {
+            case "SOA":
+                addAsync(new SoaAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "soa");
+                break;
+            case "CHEAT":
+                addAsync(new CheatAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "cheat");
+                break;
+            case "POST_VOID":
+                addAsync(new PostVoidAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "post_void");
+                break;
+            case "BACKOUT":
+                addAsync(new BackoutAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "backout");
+                break;
             case "PRINT_RECEIPT_SPEC":
                 addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
@@ -405,7 +419,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                 saveEjFile(printModel);
                 addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_receipt");
+                        iLocalizeReceipts, null, false), "print_receipt");
                 break;
             case "REPRINT_XREAD":
                 addAsync(new CutOffAsync(printModel, MainActivity.this,
@@ -445,6 +459,22 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     private void runTask(String taskName, AsyncTask asyncTask) {
 
         switch (taskName) {
+            case "soa":
+                SoaAsync soaAsync = (SoaAsync) asyncTask;
+                soaAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                break;
+            case "cheat":
+                CheatAsync cheatAsync = (CheatAsync) asyncTask;
+                cheatAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                break;
+            case "post_void":
+                PostVoidAsync postVoidAsync = (PostVoidAsync) asyncTask;
+                postVoidAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                break;
+            case "backout":
+                BackoutAsync backoutAsync = (BackoutAsync) asyncTask;
+                backoutAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                break;
             case "reprint_receipt_spec":
                 PrintReceiptAsync reprintAsync1 = (PrintReceiptAsync) asyncTask;
                 reprintAsync1.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
@@ -510,6 +540,16 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         hasError = true;
         myPrintJobs.get(0).getAsyncTask().cancel(true);
 //        reprintExistingData();
+    }
+
+    @Override
+    public void error(final String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Helper.showDialogMessage(MainActivity.this, message, getString(R.string.header_message));
+            }
+        });
     }
 
     @Subscribe
@@ -691,7 +731,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void onConnectionTest(ServerConnectionTest serverConnectionTest) {
         IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
-        TestRequest collectionRequest = new TestRequest();
+        TestRequest collectionRequest = new TestRequest("dionedata");
         Call<TestResponse> call = iUsers.sendTestRequest(
                 collectionRequest.getMapValue());
 

@@ -30,4 +30,7 @@ public interface EndOfDayDao {
 
     @Update
     void update(EndOfDay cutOff);
+
+    @Update
+    void update(List<EndOfDay> cutOff);
 }

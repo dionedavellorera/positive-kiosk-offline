@@ -30,7 +30,7 @@
             android:id="@+id/rbQuickServe"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="QUICK SERVE"/>
+            android:text="QUICK SERVICE"/>
         <RadioButton
             android:layout_margin="5dp"
             android:id="@+id/rbMotel"

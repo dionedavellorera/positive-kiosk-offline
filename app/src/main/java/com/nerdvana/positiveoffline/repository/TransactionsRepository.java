@@ -103,11 +103,11 @@ public class TransactionsRepository {
         return future.get();
     }
 
-    public List<TransactionWithOrders> getCompletedTransactions() throws ExecutionException, InterruptedException {
+    public List<TransactionWithOrders> getCompletedTransactions(final String startDate, final String endDate) throws ExecutionException, InterruptedException {
         Callable<List<TransactionWithOrders>> callable = new Callable<List<TransactionWithOrders>>() {
             @Override
             public List<TransactionWithOrders> call() throws Exception {
-                return transactionsDao.completedTransactionList();
+                return transactionsDao.completedTransactionList(startDate, endDate);
             }
         };
 
@@ -250,6 +250,20 @@ public class TransactionsRepository {
         return future.get();
     }
 
+
+    public TransactionCompleteDetails getTransactionViaTransactionId(final String transaction_id) throws ExecutionException, InterruptedException {
+        Callable<TransactionCompleteDetails> callable = new Callable<TransactionCompleteDetails>() {
+            @Override
+            public TransactionCompleteDetails call() throws Exception {
+                return transactionsDao.getTransactionViaTransactionId(transaction_id);
+            }
+        };
+
+        Future<TransactionCompleteDetails> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
     public TransactionCompleteDetails getTransaction(final String receiptNumber) throws ExecutionException, InterruptedException {
         Callable<TransactionCompleteDetails> callable = new Callable<TransactionCompleteDetails>() {
             @Override
@@ -274,6 +288,18 @@ public class TransactionsRepository {
         return future.get();
     }
 
+
+    public List<OrDetails> getAllSavedOr() throws ExecutionException, InterruptedException {
+        Callable<List<OrDetails>> callable = new Callable<List<OrDetails>>() {
+            @Override
+            public List<OrDetails> call() throws Exception {
+                return orDetailsDao.getAllSavedOr();
+            }
+        };
+
+        Future<List<OrDetails>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
 
     private static class updateOrderAsyncTask extends AsyncTask<Transactions, Void, Void> {
 
@@ -406,6 +432,8 @@ public class TransactionsRepository {
             return null;
         }
     }
+
+
 
 
 

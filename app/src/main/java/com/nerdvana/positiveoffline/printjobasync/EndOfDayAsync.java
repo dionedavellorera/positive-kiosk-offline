@@ -2,6 +2,8 @@ package com.nerdvana.positiveoffline.printjobasync;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
@@ -61,7 +63,7 @@ public class EndOfDayAsync extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... voids) {
 
-        EndOfDay endOfDay = GsonHelper.getGson().fromJson(printModel.getData(), EndOfDay.class);
+        final EndOfDay endOfDay = GsonHelper.getGson().fromJson(printModel.getData(), EndOfDay.class);
 
 
         if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.EPSON))) {
@@ -301,37 +303,47 @@ public class EndOfDayAsync extends AsyncTask<Void, Void, Void> {
             }
         } else if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.STAR_PRINTER))){
 
-            if (this.port != null) {
-                try {
-                    StarPrinterStatus status = port.beginCheckedBlock();
+            try {
+                final StarIOPort starIOPort =  StarIOPort.getPort(SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY), "", 2000, context);
+                final Handler handler = new Handler(Looper.getMainLooper());
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (starIOPort != null) {
+                            try {
+                                if (!starIOPort.retreiveStatus().offline) {
+                                    byte[] command = PrinterFunctions.createTextReceiptData(
+                                            StarIoExt.Emulation.StarPRNT,
+                                            iLocalizeReceipts,
+                                            false,
+                                            EJFileCreator.endOfDayString(endOfDay, context, isReprint),
+                                            false);
 
-                    byte[] command = PrinterFunctions.createTextReceiptData(
-                            StarIoExt.Emulation.StarPRNT,
-                            iLocalizeReceipts,
-                            false,
-                            EJFileCreator.endOfDayString(endOfDay, context, isReprint));
+                                    starIOPort.writePort(command, 0, command.length);
 
-                    port.writePort(command, 0, command.length);
+                                    starIOPort.endCheckedBlock();
 
-                    port.endCheckedBlock();
-
-                    asyncFinishCallBack.doneProcessing();
-
-                    if (status.offline == false) {
-
-                    } // Print successful end (Printer OnLine)
-
-                    else {
-                        // Printing is abnormal termination (no paper, printer cover open etc)
+                                    asyncFinishCallBack.doneProcessing();
+                                } else {
+                                    asyncFinishCallBack.doneProcessing();
+                                    asyncFinishCallBack.error("PRINTER IS OFFLINE");
+                                }
+                            } catch (StarIOPortException e) {
+                                asyncFinishCallBack.doneProcessing();
+                                asyncFinishCallBack.error("PRINTER IS OFFLINE");
+                            }
+                        } else {
+                            asyncFinishCallBack.doneProcessing();
+                            asyncFinishCallBack.error("PRINTER NOT CONNECTED");
+                        }
                     }
-
-                } // Notify user
-                catch (StarIOPortException e) {
-                    //Error
-                }
-
-
+                }, 500);
+            } catch (StarIOPortException e) {
+                asyncFinishCallBack.doneProcessing();
+                asyncFinishCallBack.error("PRINTER NOT CONNECTED");
             }
+
+
 
         }
 

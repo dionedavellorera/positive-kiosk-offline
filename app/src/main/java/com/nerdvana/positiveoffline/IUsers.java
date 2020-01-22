@@ -10,6 +10,14 @@ import com.nerdvana.positiveoffline.apiresponses.FetchRoomStatusResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
 import com.nerdvana.positiveoffline.apiresponses.TestResponse;
 import com.nerdvana.positiveoffline.apiresponses.VerifyMachineResponse;
+import com.nerdvana.positiveoffline.entities.CutOff;
+import com.nerdvana.positiveoffline.entities.EndOfDay;
+import com.nerdvana.positiveoffline.entities.OrDetails;
+import com.nerdvana.positiveoffline.entities.OrderDiscounts;
+import com.nerdvana.positiveoffline.entities.Orders;
+import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.PostedDiscounts;
+import com.nerdvana.positiveoffline.entities.Transactions;
 
 import java.util.Map;
 
@@ -24,6 +32,61 @@ public interface IUsers {
 
     @GET("getinfo")
     Call<ResponseBody> sirGelo();
+
+    //region fetch data for offline trans
+    @POST("fetchEndOfDayOffline")
+    @FormUrlEncoded
+    Call<EndOfDay> fetchEndOfDayOffline(@FieldMap Map<String, Object> params);
+    @POST("fetchPostedDiscountsOffline")
+    @FormUrlEncoded
+    Call<PostedDiscounts> fetchPostedDiscountsOffline(@FieldMap Map<String, Object> params);
+    @POST("fetchPaymentsOffline")
+    @FormUrlEncoded
+    Call<Payments> fetchPaymentsOffline(@FieldMap Map<String, Object> params);
+    @POST("fetchOrdersOffline")
+    @FormUrlEncoded
+    Call<Orders> fetchOrdersOffline(@FieldMap Map<String, Object> params);
+    @POST("fetchOrderDiscountsOffline")
+    @FormUrlEncoded
+    Call<OrderDiscounts> fetchOrderDiscountsOffline(@FieldMap Map<String, Object> params);
+    @POST("fetchTransactionsOffline")
+    @FormUrlEncoded
+    Call<Transactions> fetchTransactionsOffline(@FieldMap Map<String, Object> params);
+    @POST("fetchOrDetailsOffline")
+    @FormUrlEncoded
+    Call<OrDetails> fetchOrDetailsOffline(@FieldMap Map<String, Object> params);
+    @POST("fetchCutOffOffline")
+    @FormUrlEncoded
+    Call<CutOff> fetchCutOffOffline(@FieldMap Map<String, Object> params);
+    //endregion
+    //region submit data to server of offline transactions
+    @POST("addPostedDiscountsOffline")
+    @FormUrlEncoded
+    Call<ResponseBody> addPostedDiscountsOffline(@FieldMap Map<String, Object> params);
+    @POST("addPaymentsOffline")
+    @FormUrlEncoded
+    Call<ResponseBody> addPaymentsOffline(@FieldMap Map<String, Object> params);
+    @POST("addOrdersOffline")
+    @FormUrlEncoded
+    Call<ResponseBody> addOrdersOffline(@FieldMap Map<String, Object> params);
+    @POST("addOrderDiscountsOffline")
+    @FormUrlEncoded
+    Call<ResponseBody> addOrderDiscountsOffline(@FieldMap Map<String, Object> params);
+    @POST("addTransactionsOffline")
+    @FormUrlEncoded
+    Call<ResponseBody> addTransactionsOffline(@FieldMap Map<String, Object> params);
+    @POST("addOrDetailsOffline")
+    @FormUrlEncoded
+    Call<ResponseBody> addOrDetailsOffline(@FieldMap Map<String, Object> params);
+    @POST("addCutOffOffline")
+    @FormUrlEncoded
+    Call<ResponseBody> addCutOffOffline(@FieldMap Map<String, Object> params);
+    @POST("addEndOfDayOffline")
+    @FormUrlEncoded
+    Call<ResponseBody> addEndOfDayOffline(@FieldMap Map<String, Object> params);
+    //endregion
+
+
 
     @POST("dioneIsPerfect")
     @FormUrlEncoded

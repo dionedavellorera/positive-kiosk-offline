@@ -28,7 +28,7 @@ public class HidingEditText extends AppCompatEditText {
     }
 
     private void hideKeyboard() {
-        setTextIsSelectable(false);
+        setTextIsSelectable(true);
     }
 
 //    @Override

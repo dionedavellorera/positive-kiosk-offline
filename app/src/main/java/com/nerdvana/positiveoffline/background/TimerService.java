@@ -15,9 +15,14 @@ import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.IUsers;
 import com.nerdvana.positiveoffline.PosClient;
 import com.nerdvana.positiveoffline.Utils;
-import com.nerdvana.positiveoffline.apirequests.FetchDiscountRequest;
-import com.nerdvana.positiveoffline.apirequests.SendDataRequest;
-import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
+import com.nerdvana.positiveoffline.apirequests.AddCutOffOfflineRequest;
+import com.nerdvana.positiveoffline.apirequests.AddEndOfDayOfflineRequest;
+import com.nerdvana.positiveoffline.apirequests.AddOrDetailsOfflineRequest;
+import com.nerdvana.positiveoffline.apirequests.AddOrderDiscountsOfflineRequest;
+import com.nerdvana.positiveoffline.apirequests.AddOrdersOfflineRequest;
+import com.nerdvana.positiveoffline.apirequests.AddPaymentsOfflineRequest;
+import com.nerdvana.positiveoffline.apirequests.AddPostedDiscountsOfflineRequest;
+import com.nerdvana.positiveoffline.apirequests.AddTransactionsOfflineRequest;
 import com.nerdvana.positiveoffline.dao.CutOffDao;
 import com.nerdvana.positiveoffline.dao.EndOfDayDao;
 import com.nerdvana.positiveoffline.dao.OrDetailsDao;
@@ -38,7 +43,6 @@ import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.model.ReprintReceiptData;
 import com.nerdvana.positiveoffline.model.ServerConnectionTest;
-import com.nerdvana.positiveoffline.repository.TransactionsRepository;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -70,15 +74,15 @@ public class TimerService extends Service {
             public void onTick(int second) {
                 secsOfDate+= 1;
 
-                if (secsOfDate % 5 == 0) {
+                if (secsOfDate % 99999999 == 0) {
                     BusProvider.getInstance().post(new ServerConnectionTest(""));
                 }
 
-                if (secsOfDate % 20 == 0) {
+                if (secsOfDate % 99999999 == 0) {
                     BusProvider.getInstance().post(new ReprintReceiptData(""));
                 }
 
-                if (secsOfDate % 10000000 == 0) { //process sending of data to server
+                if (secsOfDate % 30 == 0) { //process sending of data to server
                     final PosDatabase posDatabase = DatabaseHelper.getDatabase(TimerService.this);
                     new AsyncTask<Void, Void, Void>() {
 
@@ -93,131 +97,309 @@ public class TimerService extends Service {
                             final OrdersDao ordersDao = posDatabase.ordersDao();
                             final OrderDiscountsDao orderDiscountsDao = posDatabase.orderDiscountsDao();
 
-                            Map<String, String> tmpMap = new HashMap<>();
                             final List<EndOfDay> unsyncedEndOfDay = endOfDayDao.unsyncedEndOfDay();
-                            tmpMap.put("end_of_day", GsonHelper.getGson().toJson(unsyncedEndOfDay));
                             final List<CutOff> unsyncedCutOff = cutOffDao.unsyncedCutOff();
-                            tmpMap.put("cut_off", GsonHelper.getGson().toJson(unsyncedCutOff));
                             final List<Transactions> unsyncedTransactions = transactionsDao.unsyncedTransactions();
-                            tmpMap.put("transactions", GsonHelper.getGson().toJson(unsyncedTransactions));
                             final List<OrDetails> unsyncedOrDetails = orDetailsDao.unsyncedOrDetails();
-                            tmpMap.put("or_details", GsonHelper.getGson().toJson(unsyncedOrDetails));
                             final List<PostedDiscounts> unsyncedPostedDiscounts = postedDiscountsDao.unsyncedPostedDiscounts();
-                            tmpMap.put("posted_discounts", GsonHelper.getGson().toJson(unsyncedPostedDiscounts));
                             final List<Payments> unsynedPayments = paymentsDao.unsyncedPayments();
-                            tmpMap.put("payments", GsonHelper.getGson().toJson(unsynedPayments));
                             final List<Orders> unsyncedOrders = ordersDao.unsyncedOrders();
-                            tmpMap.put("orders", GsonHelper.getGson().toJson(unsyncedOrders));
                             final List<OrderDiscounts> unsyncedOrderDiscounts = orderDiscountsDao.unsyncedOrderDiscounts();
-                            tmpMap.put("order_discounts", GsonHelper.getGson().toJson(unsyncedOrderDiscounts));
 
-                            Map<String, Object> wholeData = new HashMap<>();
 
-                            if (unsyncedEndOfDay.size() > 0) {
-                                wholeData.put("data", GsonHelper.getGson().toJson(tmpMap));
+                            IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
 
-                                IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
-                                SendDataRequest req = new SendDataRequest(wholeData);
+                            //region posted discounts
+                            if (unsyncedPostedDiscounts.size() > 0) {
+                                Map<String, String> postedDiscountMap = new HashMap<>();
+                                postedDiscountMap.put("posted_discounts", GsonHelper.getGson().toJson(unsyncedPostedDiscounts));
 
-                                Call<ResponseBody> call = iUsers.sendData(req.getMapValue());
+                                Map<String, Object> wholeData = new HashMap<>();
+                                wholeData.put("data", GsonHelper.getGson().toJson(postedDiscountMap));
+                                AddPostedDiscountsOfflineRequest req = new AddPostedDiscountsOfflineRequest(wholeData);
 
+                                Call<ResponseBody> call = iUsers.addPostedDiscountsOffline(req.getMapValue());
                                 call.enqueue(new Callback<ResponseBody>() {
                                     @Override
                                     public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                                         String message = "";
-//                                        if (unsyncedEndOfDay.size() > 0) {
-//                                            for (EndOfDay endOfDay : unsyncedEndOfDay) {
-//                                                message += "END OF DAY ID - " + endOfDay.getId() + "PROCESSED\n";
-//                                                endOfDay.setIs_sent_to_server(1);
-//                                                endOfDayDao.update(endOfDay);
-//                                            }
-//                                            saveToTextFile(message);
-//                                            message = "";
-//                                        }
-//
-//                                        if (unsyncedCutOff.size() > 0) {
-//                                            for (CutOff cutOff : unsyncedCutOff) {
-//                                                message += "CUTOFF ID - " + cutOff.getId() + "PROCESSED\n";
-//                                                cutOff.setIs_sent_to_server(1);
-//                                                cutOffDao.update(cutOff);
-//                                            }
-//                                            saveToTextFile(message);
-//                                            message = "";
-//                                        }
-//
-//                                        if (unsyncedTransactions.size() > 0) {
-//                                            for (Transactions transactions : unsyncedTransactions) {
-//                                                message += "TRANSACTIONS ID - " + transactions.getId() + "PROCESSED\n";
-//                                                transactions.setIs_sent_to_server(1);
-//                                                transactionsDao.update(transactions);
-//                                            }
-//                                            saveToTextFile(message);
-//                                            message = "";
-//                                        }
-//
-//
-//                                        if (unsyncedOrDetails.size() > 0) {
-//                                            for (OrDetails orDetails : unsyncedOrDetails) {
-//                                                message += "ORDETAILS TRANSID - " + orDetails.getTransaction_id() + "PROCESSED\n";
-//                                                orDetails.setIs_sent_to_server(1);
-//                                                orDetailsDao.update(orDetails);
-//                                            }
-//                                            saveToTextFile(message);
-//                                            message = "";
-//                                        }
-//
-//                                        if (unsyncedPostedDiscounts.size() > 0) {
-//                                            for (PostedDiscounts postedDiscounts : unsyncedPostedDiscounts) {
-//                                                message += "POSTED DISCOUNTS ID - " + postedDiscounts.getId() + "PROCESSED\n";
-//                                                postedDiscounts.setIs_sent_to_server(1);
-//                                                postedDiscountsDao.update(postedDiscounts);
-//                                            }
-//                                            saveToTextFile(message);
-//                                            message = "";
-//                                        }
-//
-//                                        if (unsynedPayments.size() > 0) {
-//                                            for (Payments payments : unsynedPayments) {
-//                                                message += "PAYMENTS ID - " + payments.getId() + "PROCESSED\n";
-//                                                payments.setIs_sent_to_server(1);
-//                                                paymentsDao.update(payments);
-//                                            }
-//                                            saveToTextFile(message);
-//                                            message = "";
-//                                        }
-//
-//                                        if (unsyncedOrders.size() > 0) {
-//                                            for (Orders orders : unsyncedOrders) {
-//                                                message += "ORDERS ID - " + orders.getId() + "PROCESSED\n";
-//                                                orders.setIs_sent_to_server(1);
-//                                                ordersDao.update(orders);
-//                                            }
-//                                            saveToTextFile(message);
-//                                            message = "";
-//                                        }
-//
-//                                        if (unsyncedOrderDiscounts.size() > 0) {
-//                                            for (OrderDiscounts orderDiscounts : unsyncedOrderDiscounts) {
-//                                                message += "ORDER DISCOUNTS ID - " + orderDiscounts.getId() + "PROCESSED\n";
-//                                                orderDiscounts.setIs_sent_to_server(1);
-//                                                orderDiscountsDao.update(orderDiscounts);
-//                                            }
-//                                            saveToTextFile(message);
-//                                            message = "";
-//                                        }
+                                        for (final PostedDiscounts postedDiscounts : unsyncedPostedDiscounts) {
+                                            message += "POSTED DISCOUNTS ID - " + postedDiscounts.getId() + "PROCESSED\n";
+                                            AsyncTask.execute(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    postedDiscounts.setIs_sent_to_server(1);
+                                                    postedDiscountsDao.update(postedDiscounts);
+                                                }
+                                            });
+                                        }
+                                        saveToTextFile(message);
+                                        message = "";
                                     }
 
                                     @Override
                                     public void onFailure(Call<ResponseBody> call, Throwable t) {
-//                                        saveToTextFile(t.getLocalizedMessage());
+
                                     }
                                 });
-
-                            } else {
-
-//                                saveToTextFile("NO DATA TO SEND");
-
                             }
+                            //endregion
+
+
+
+
+
+//                            //region end of day
+//                            if (unsyncedEndOfDay.size() > 0) {
+//                                Map<String, String> endOfDayMap = new HashMap<>();
+//                                endOfDayMap.put("end_of_day", GsonHelper.getGson().toJson(unsyncedEndOfDay));
+//
+//                                Map<String, Object> wholeData = new HashMap<>();
+//                                wholeData.put("data", GsonHelper.getGson().toJson(endOfDayMap));
+//                                AddEndOfDayOfflineRequest req = new AddEndOfDayOfflineRequest(wholeData);
+//
+//                                Call<ResponseBody> call = iUsers.addEndOfDayOffline(req.getMapValue());
+//                                call.enqueue(new Callback<ResponseBody>() {
+//                                    @Override
+//                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                                        String message = "";
+//
+//                                        for (final EndOfDay endOfDay : unsyncedEndOfDay) {
+//
+//                                            message += "END OF DAY ID - " + endOfDay.getId() + "PROCESSED\n";
+//                                            AsyncTask.execute(new Runnable() {
+//                                                @Override
+//                                                public void run() {
+//                                                    endOfDay.setIs_sent_to_server(1);
+//                                                    endOfDayDao.update(endOfDay);
+//                                                }
+//                                            });
+//
+//                                        }
+//                                        saveToTextFile(message);
+//                                        message = "";
+//                                    }
+//
+//                                    @Override
+//                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                                    }
+//                                });
+//                            } else {
+//                                Log.d("ASYNCDATA", "NO ENTRY FOR EOD");
+//                            }
+//                            //endregion
+//                            //region cutoff
+//                            if (unsyncedCutOff.size() > 0) {
+//                                Map<String, String> cutOffMap = new HashMap<>();
+//                                cutOffMap.put("cut_off", GsonHelper.getGson().toJson(unsyncedCutOff));
+//
+//                                Map<String, Object> wholeData = new HashMap<>();
+//                                wholeData.put("data", GsonHelper.getGson().toJson(cutOffMap));
+//                                AddCutOffOfflineRequest req = new AddCutOffOfflineRequest(wholeData);
+//
+//                                Call<ResponseBody> call = iUsers.addCutOffOffline(req.getMapValue());
+//                                call.enqueue(new Callback<ResponseBody>() {
+//                                    @Override
+//                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                                        String message = "";
+//                                        for (final CutOff cutOff : unsyncedCutOff) {
+//                                            message += "CUTOFF ID - " + cutOff.getId() + "PROCESSED\n";
+//                                            AsyncTask.execute(new Runnable() {
+//                                                @Override
+//                                                public void run() {
+//                                                    cutOff.setIs_sent_to_server(1);
+//                                                    cutOffDao.update(cutOff);
+//                                                }
+//                                            });
+//                                        }
+//                                            saveToTextFile(message);
+//                                            message = "";
+//                                    }
+//
+//                                    @Override
+//                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                                    }
+//                                });
+//                            }
+//                            //endregion
+//                            //region transactions
+//                            if (unsyncedTransactions.size() > 0) {
+//                                Map<String, String> transactionMap = new HashMap<>();
+//                                transactionMap.put("transactions", GsonHelper.getGson().toJson(unsyncedTransactions));
+//
+//                                Map<String, Object> wholeData = new HashMap<>();
+//                                wholeData.put("data", GsonHelper.getGson().toJson(transactionMap));
+//                                AddTransactionsOfflineRequest req = new AddTransactionsOfflineRequest(wholeData);
+//
+//                                Call<ResponseBody> call = iUsers.addTransactionsOffline(req.getMapValue());
+//                                call.enqueue(new Callback<ResponseBody>() {
+//                                    @Override
+//                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                                        String message = "";
+//                                        for (final Transactions transactions : unsyncedTransactions) {
+//                                            message += "TRANSACTIONS ID - " + transactions.getId() + "PROCESSED\n";
+//                                            AsyncTask.execute(new Runnable() {
+//                                                @Override
+//                                                public void run() {
+////                                                    transactions.setIs_sent_to_server(1);
+////                                                    transactionsDao.update(transactions);
+//                                                }
+//                                            });
+//                                        }
+//                                        saveToTextFile(message);
+//                                        message = "";
+//                                    }
+//
+//                                    @Override
+//                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                                    }
+//                                });
+//                            }
+//                            //endregion
+//                            //region or details
+//                            if (unsyncedOrDetails.size() > 0) {
+//                                Map<String, String> orDetailsMap = new HashMap<>();
+//                                orDetailsMap.put("or_details", GsonHelper.getGson().toJson(unsyncedOrDetails));
+//
+//                                Map<String, Object> wholeData = new HashMap<>();
+//                                wholeData.put("data", GsonHelper.getGson().toJson(orDetailsMap));
+//                                AddOrDetailsOfflineRequest req = new AddOrDetailsOfflineRequest(wholeData);
+//
+//                                Call<ResponseBody> call = iUsers.addOrDetailsOffline(req.getMapValue());
+//                                call.enqueue(new Callback<ResponseBody>() {
+//                                    @Override
+//                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                                        String message = "";
+//                                        for (final OrDetails orDetails : unsyncedOrDetails) {
+//                                            message += "ORDETAILS TRANSID - " + orDetails.getTransaction_id() + "PROCESSED\n";
+//                                            AsyncTask.execute(new Runnable() {
+//                                                @Override
+//                                                public void run() {
+//                                                    orDetails.setIs_sent_to_server(1);
+//                                                    orDetailsDao.update(orDetails);
+//                                                }
+//                                            });
+//                                        }
+//                                        saveToTextFile(message);
+//                                        message = "";
+//                                    }
+//
+//                                    @Override
+//                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                                    }
+//                                });
+//                            }
+//                            //endregion
+//                            //region payments
+//                            if (unsynedPayments.size() > 0) {
+//                                Map<String, String> paymentsMap = new HashMap<>();
+//                                paymentsMap.put("payments", GsonHelper.getGson().toJson(unsynedPayments));
+//
+//                                Map<String, Object> wholeData = new HashMap<>();
+//                                wholeData.put("data", GsonHelper.getGson().toJson(paymentsMap));
+//                                AddPaymentsOfflineRequest req = new AddPaymentsOfflineRequest(wholeData);
+//
+//                                Call<ResponseBody> call = iUsers.addPaymentsOffline(req.getMapValue());
+//                                call.enqueue(new Callback<ResponseBody>() {
+//                                    @Override
+//                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                                        String message = "";
+//                                        for (final Payments payments : unsynedPayments) {
+//                                            message += "PAYMENTS ID - " + payments.getId() + "PROCESSED\n";
+//                                            AsyncTask.execute(new Runnable() {
+//                                                @Override
+//                                                public void run() {
+//                                                    payments.setIs_sent_to_server(1);
+//                                                    paymentsDao.update(payments);
+//                                                }
+//                                            });
+//                                        }
+//                                        saveToTextFile(message);
+//                                        message = "";
+//                                    }
+//
+//                                    @Override
+//                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                                    }
+//                                });
+//                            }
+//                            //endregion
+//                            //region orders
+//                            if (unsyncedOrders.size() > 0) {
+//                                Map<String, String> ordersMap = new HashMap<>();
+//                                ordersMap.put("orders", GsonHelper.getGson().toJson(unsyncedOrders));
+//
+//                                Map<String, Object> wholeData = new HashMap<>();
+//                                wholeData.put("data", GsonHelper.getGson().toJson(ordersMap));
+//                                AddOrdersOfflineRequest req = new AddOrdersOfflineRequest(wholeData);
+//
+//                                Call<ResponseBody> call = iUsers.addOrdersOffline(req.getMapValue());
+//                                call.enqueue(new Callback<ResponseBody>() {
+//                                    @Override
+//                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                                        String message = "";
+//                                        for (final Orders orders : unsyncedOrders) {
+//                                            message += "ORDERS ID - " + orders.getId() + "PROCESSED\n";
+//                                            AsyncTask.execute(new Runnable() {
+//                                                @Override
+//                                                public void run() {
+//                                                    orders.setIs_sent_to_server(1);
+//                                                    ordersDao.update(orders);
+//                                                }
+//                                            });
+//                                        }
+//                                        saveToTextFile(message);
+//                                        message = "";
+//                                    }
+//
+//                                    @Override
+//                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                                    }
+//                                });
+//                            }
+//                            //endregion
+//                            //regionorder discounts
+//                            if (unsyncedOrderDiscounts.size() > 0) {
+//                                Map<String, String> orderDiscountMap = new HashMap<>();
+//                                orderDiscountMap.put("order_discounts", GsonHelper.getGson().toJson(unsyncedOrderDiscounts));
+//
+//                                Map<String, Object> wholeData = new HashMap<>();
+//                                wholeData.put("data", GsonHelper.getGson().toJson(orderDiscountMap));
+//                                AddOrderDiscountsOfflineRequest req = new AddOrderDiscountsOfflineRequest(wholeData);
+//
+//                                Call<ResponseBody> call = iUsers.addOrderDiscountsOffline(req.getMapValue());
+//                                call.enqueue(new Callback<ResponseBody>() {
+//                                    @Override
+//                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                                        String message = "";
+//                                        for (final OrderDiscounts orderDiscounts : unsyncedOrderDiscounts) {
+//                                            message += "ORDER DISCOUNTS ID - " + orderDiscounts.getId() + "PROCESSED\n";
+//                                            AsyncTask.execute(new Runnable() {
+//                                                @Override
+//                                                public void run() {
+//                                                    orderDiscounts.setIs_sent_to_server(1);
+//                                                    orderDiscountsDao.update(orderDiscounts);
+//                                                }
+//                                            });
+//                                        }
+//                                        saveToTextFile(message);
+//                                        message = "";
+//                                    }
+//
+//                                    @Override
+//                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                                    }
+//                                });
+//                            }
+//                            //endregion
+
 
                             return null;
                         }
@@ -236,7 +418,7 @@ public class TimerService extends Service {
         if (!root.exists()) {
             root.mkdirs();
         }
-        File gpxfile = new File(root, Utils.getCurrentDate() +"_error.txt");
+        File gpxfile = new File(root, Utils.getCurrentDate() +"_logs.txt");
         FileWriter writer = null;
         try {
             writer = new FileWriter(gpxfile, true);

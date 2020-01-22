@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -45,8 +47,10 @@ import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.RoomsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
+import com.whiteelephant.monthpicker.MonthPickerDialog;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +91,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     private TextView guestAddress;
     private TextView guestTin;
     private TextView displayBusinessStyle;
+    private TextView guestDetailsHeader;
 
     private RadioGroup rgCards;
 
@@ -119,6 +124,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         setDialogLayout(R.layout.dialog_payment, "PAYMENT");
 
         initViews();
+        setGuestDetailsClickListener();
         setPaymentTypeAdapter();
         setCancelable(false);
         showForm("1");
@@ -137,6 +143,30 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    private void setGuestDetailsClickListener() {
+        guestDetailsHeader.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                if(motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                    if(motionEvent.getRawX() >= guestDetailsHeader.getRight() - guestDetailsHeader.getTotalPaddingRight()) {
+                        OrDetailsSelectionDialog orDetailsSelectionDialog = new OrDetailsSelectionDialog(getContext(), transactionsViewModel) {
+                            @Override
+                            public void setOr(OrDetails or) {
+                                guestNameInput.setText(or.getName());
+                                guestAddressinput.setText(or.getAddress());
+                                guestTinInput.setText(or.getTin_number());
+                                guestBusinessStyle.setText(or.getBusiness_style());
+                            }
+                        };
+                        orDetailsSelectionDialog.show();
+                        return true;
+                    }
+                }
+                return true;
+            }
+        });
     }
 
     private void loadCreditCardTypes() {
@@ -218,10 +248,43 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
 
     private void initViews() {
+        guestDetailsHeader = findViewById(R.id.guestDetailsHeader);
         rgCards = findViewById(R.id.rgCards);
         cardNumber = findViewById(R.id.cardNumber);
         cardHoldersName = findViewById(R.id.cardHoldersName);
         expiration = findViewById(R.id.expiration);
+
+        expiration.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MonthPickerDialog.Builder builder = new MonthPickerDialog.Builder(getContext(), new MonthPickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(int selectedMonth, int selectedYear) {
+                        expiration.setText(String.format("%s/%s", String.valueOf(selectedMonth), String.valueOf(selectedYear)));
+                    }
+                }, 2020, 01);
+
+                builder.setActivatedMonth(Calendar.JULY)
+                        .setMinYear(1990)
+                        .setActivatedYear(2020)
+                        .setMaxYear(2040)
+                        .setTitle("CARD EXPIRATION")
+                        .setOnMonthChangedListener(new MonthPickerDialog.OnMonthChangedListener() {
+                            @Override
+                            public void onMonthChanged(int selectedMonth) {
+
+                            }
+                        })
+                        .setOnYearChangedListener(new MonthPickerDialog.OnYearChangedListener() {
+                            @Override
+                            public void onYearChanged(int year) {
+
+                            }
+                        })
+                        .build().show();
+
+            }
+        });
         authorization = findViewById(R.id.authorization);
         creditCardAmount = findViewById(R.id.creditCardAmount);
         remarks = findViewById(R.id.remarks);
@@ -454,13 +517,16 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                     if (!TextUtils.isEmpty(cashAmount.getText().toString())) {
                         if (Double.valueOf(cashAmount.getText().toString()) > 0) {
                             List<Payments> cashPayment = new ArrayList<>();
-                            cashPayment.add(new Payments(
+                            Payments p = new Payments(
                                     Integer.valueOf(transactionId), paymentTypes.getCore_id(),
                                     Double.valueOf(cashAmount.getText().toString()), paymentTypes.getPayment_type(),
                                     0,
                                     Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
                                     Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
-                                    Utils.getDateTimeToday()));
+                                    Utils.getDateTimeToday());
+                            p.setOther_data("");
+                            cashPayment.add(p);
+
                             transactionsViewModel.insertPayment(cashPayment);
                         }
                     }
@@ -576,6 +642,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                         guestAddress.setText(String.format("address:%s", orDetails.getAddress().toUpperCase()));
                         guestTin.setText(String.format("tin#:%s", orDetails.getTin_number().toUpperCase()));
                         displayBusinessStyle.setText(String.format("business style:%s", orDetails.getBusiness_style().toUpperCase()));
+                        guestNameInput.setText(orDetails.getName());
                         guestAddressinput.setText(orDetails.getAddress());
                         guestTinInput.setText(orDetails.getTin_number());
                         guestBusinessStyle.setText(orDetails.getBusiness_style());

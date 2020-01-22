@@ -30,10 +30,7 @@ public interface PaymentsDao {
     @Query("SELECT * FROM Payments WHERE transaction_id = :transaction_id AND is_void = 0")
     LiveData<List<Payments>> ldPaymentList(String transaction_id);
 
-
     @Update()
     void update(Payments payment);
-
-
 
 }

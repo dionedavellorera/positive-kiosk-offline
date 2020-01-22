@@ -90,6 +90,7 @@ public class TransactionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         private TextView controlNumberValue;
         private TextView receiptNumberValue;
         private TextView listItemTotal;
+        private TextView dateValue;
         private LinearLayout linOrders;
         private Button btnVoidTransaction;
 //        private ImageView close;
@@ -101,6 +102,7 @@ public class TransactionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             receiptNumberValue = itemView.findViewById(R.id.receiptNumberValue);
             linOrders = itemView.findViewById(R.id.linOrders);
             btnVoidTransaction = itemView.findViewById(R.id.btnVoidTransaction);
+            dateValue = itemView.findViewById(R.id.dateValue);
 //            rootView = itemView.findViewById(R.id.rootView);
 //            close = itemView.findViewById(R.id.close);
         }
@@ -112,6 +114,7 @@ public class TransactionsAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         final TransactionWithOrders model = transactionsFilteredList.get(holder.getAdapterPosition());
         ((ViewHolder)holder).controlNumberValue.setText(model.transactions.getControl_number());
         ((ViewHolder)holder).receiptNumberValue.setText(model.transactions.getReceipt_number());
+        ((ViewHolder)holder).dateValue.setText(model.transactions.getCompleted_at());
 
 
         LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 0.5f);

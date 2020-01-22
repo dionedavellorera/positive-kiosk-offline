@@ -30,8 +30,8 @@ public interface TransactionsDao {
     @Query("SELECT * FROM Transactions WHERE is_saved = 1 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 ORDER BY DATE(saved_at) ASC")
     LiveData<List<Transactions>> ldSavedTransactionsList();
 
-    @Query("SELECT * FROM Transactions WHERE is_completed = 1 AND is_void = 0 AND is_cut_off = 0 AND is_cancelled = 0")
-    List<TransactionWithOrders> completedTransactionList();
+    @Query("SELECT * FROM Transactions WHERE DATE(completed_at) BETWEEN :startDate AND :endDate AND is_completed = 1 AND is_void = 0 AND is_cut_off = 0 AND is_cancelled = 0")
+    List<TransactionWithOrders> completedTransactionList(String startDate, String endDate);
 
     @Query("SELECT * FROM Transactions WHERE is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0")
     List<Transactions> transactionsList();
@@ -56,6 +56,9 @@ public interface TransactionsDao {
 
     @Query("SELECT * FROM Transactions t WHERE t.receipt_number = :receipt_number LIMIT 1")
     TransactionCompleteDetails getTransactionViaReceiptNumber(String receipt_number);
+
+    @Query("SELECT * FROM Transactions t WHERE t.id = :transaction_id LIMIT 1")
+    TransactionCompleteDetails getTransactionViaTransactionId(String transaction_id);
 
     @Update()
     void update(Transactions transaction);

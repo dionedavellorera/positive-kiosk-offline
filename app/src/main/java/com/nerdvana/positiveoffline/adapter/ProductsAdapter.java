@@ -59,7 +59,8 @@ public class ProductsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         for (Products pm : productsModelList) {
                             if (pm.getProduct().toLowerCase().contains(charSting.toLowerCase()) ||
                                     String.valueOf(pm.getAmount()).contains(charSting.toLowerCase()) ||
-                                    pm.getDepartment().toLowerCase().contains(charSting.toLowerCase())) {
+                                    pm.getDepartment().toLowerCase().contains(charSting.toLowerCase()) ||
+                                    String.valueOf(pm.getProduct_barcode()).contains(charSting.toLowerCase())) {
                                 filteredList.add(pm);
                             }
                         }

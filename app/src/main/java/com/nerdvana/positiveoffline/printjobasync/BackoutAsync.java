@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
@@ -41,8 +40,7 @@ import static com.nerdvana.positiveoffline.printer.PrinterUtils.addPrinterSpace;
 import static com.nerdvana.positiveoffline.printer.PrinterUtils.addTextToPrinter;
 import static com.nerdvana.positiveoffline.printer.PrinterUtils.twoColumns;
 
-public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
-
+public class BackoutAsync extends AsyncTask<Void, Void, Void> {
     private PrintModel printModel;
     private Context context;;
     private AsyncFinishCallBack asyncFinishCallBack;
@@ -54,7 +52,7 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
     private boolean isReprint = false;
 
 
-    public PrintReceiptAsync(PrintModel printModel, Context context,
+    public BackoutAsync(PrintModel printModel, Context context,
                              AsyncFinishCallBack asyncFinishCallBack,
                              DataSyncViewModel dataSyncViewModel,
                              ILocalizeReceipts iLocalizeReceipts,
@@ -74,7 +72,6 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... voids) {
 
 
-        Log.d("PRINTER_STATUS", "START_00");
 
         final TransactionCompleteDetails transactionCompleteDetails = GsonHelper.getGson().fromJson(printModel.getData(), TransactionCompleteDetails.class);
 
@@ -157,39 +154,12 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
 
             PrinterUtils.addHeader(printModel, printer);
             addPrinterSpace(1, printer);
+            addTextToPrinter(printer, "BACKOUT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
 
-            if (transactionCompleteDetails.transactions.getHas_special() == 1) {
-
-                if (printModel.getType().equalsIgnoreCase("PRINT_RECEIPT")) {
-                    addTextToPrinter(printer, "OFFICIAL RECEIPT(STORE COPY)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
-//                    BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT_SPEC", GsonHelper.getGson().toJson(transactionCompleteDetails)));
-                } else if (printModel.getType().equalsIgnoreCase("REPRINT_RECEIPT")) {
-                    addTextToPrinter(printer, "OFFICIAL RECEIPT(STORE COPY)\nREPRINT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
-                    BusProvider.getInstance().post(new PrintModel("REPRINT_RECEIPT_SPEC", GsonHelper.getGson().toJson(transactionCompleteDetails)));
-                }
-
-                if (printModel.getType().equalsIgnoreCase("PRINT_RECEIPT_SPEC")) {
-                    addTextToPrinter(printer, "OFFICIAL RECEIPT(CUSTOMER COPY)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
-                } else if (printModel.getType().equalsIgnoreCase("REPRINT_RECEIPT_SPEC")) {
-                    addTextToPrinter(printer, "OFFICIAL RECEIPT(CUSTOMER COPY)\nREPRINT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
-                }
-            } else {
-                if (isReprint) {
-                    addTextToPrinter(printer, "OFFICIAL RECEIPT(REPRINT)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
-                } else {
-                    addTextToPrinter(printer, "OFFICIAL RECEIPT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
-                }
-            }
 
 
             addPrinterSpace(1, printer);
-            addTextToPrinter(printer, twoColumns(
-                    "OR NO",
-                    transactionCompleteDetails.transactions.getReceipt_number(),
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+
             addTextToPrinter(printer, twoColumns(
                     "DATE",
                     transactionCompleteDetails.transactions.getTreg(),
@@ -369,11 +339,6 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
 
 
             addPrinterSpace(1, printer);
-            addTextToPrinter(printer, "THIS SERVES AS YOUR", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "OFFICIAL RECEIPT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-
-            addTextToPrinter(printer, "THANK YOU COME AGAIN", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-
 
             PrinterUtils.addFooterToPrinter(printer);
 
@@ -394,7 +359,9 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                 e.printStackTrace();
             }
 
+
         } else if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.STAR_PRINTER))){
+
             try {
                 final StarIOPort starIOPort =  StarIOPort.getPort(SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY), "", 2000, context);
                 final Handler handler = new Handler(Looper.getMainLooper());
@@ -408,10 +375,13 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                                             StarIoExt.Emulation.StarPRNT,
                                             iLocalizeReceipts,
                                             false,
-                                            EJFileCreator.orString(transactionCompleteDetails, context, isReprint, printModel),
-                                            true);
+                                            EJFileCreator.backoutString(transactionCompleteDetails, context, isReprint, printModel),
+                                            false);
+
                                     starIOPort.writePort(command, 0, command.length);
+
                                     starIOPort.endCheckedBlock();
+
                                     asyncFinishCallBack.doneProcessing();
                                 } else {
                                     asyncFinishCallBack.doneProcessing();
@@ -431,6 +401,10 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                 asyncFinishCallBack.doneProcessing();
                 asyncFinishCallBack.error("PRINTER NOT CONNECTED");
             }
+
+
+
+
         }
 
 

@@ -77,12 +77,15 @@
 
 
                     <TextView
+                        android:id="@+id/guestDetailsHeader"
                         android:layout_margin="10dp"
                         android:textSize="16sp"
                         android:textColor="@color/colorBlack"
                         android:text="Guest details"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:drawableRight="@mipmap/baseline_list_black_24"/>
+
 
                     <View
                         android:layout_marginLeft="10dp"
@@ -280,8 +283,9 @@
                                 android:layout_height="wrap_content" />
 
                             <com.nerdvana.positiveoffline.view.HidingEditText
+                                android:editable="false"
                                 android:layout_margin="5dp"
-                                android:inputType="text"
+                                android:inputType="none"
                                 android:background="@drawable/edittext_round"
                                 android:padding="10dp"
                                 android:maxLines="1"

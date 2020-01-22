@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -17,6 +18,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.BusProvider;
+import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.ResumeTransactionAdapter;
@@ -25,6 +28,7 @@ import com.nerdvana.positiveoffline.entities.Rooms;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.TransactionsContract;
+import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.viewmodel.RoomsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
@@ -203,6 +207,25 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
 
 
         transactionsViewModel.update(tr);
+
+        final String receiptNumber = tr.getReceipt_number();
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    BusProvider.getInstance().post(new PrintModel("BACKOUT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }, 300);
+
+
+
     }
 
     @Override

@@ -97,7 +97,7 @@ public class SStarPort {
 
                 @Override
                 protected void onPostExecute(StarIOPort port) {
-                    Log.d("PORT", "TAPOS NA");
+                    Toast.makeText(context, "SUCCESSFULLY CONNECTED TO PRINTER", Toast.LENGTH_SHORT).show();
                 }
             }.execute();
 

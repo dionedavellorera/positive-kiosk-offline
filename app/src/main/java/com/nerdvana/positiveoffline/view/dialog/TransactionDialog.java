@@ -7,8 +7,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -30,13 +32,15 @@ import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class TransactionDialog extends BaseDialog implements TransactionsContract {
+public class TransactionDialog extends BaseDialog implements TransactionsContract, View.OnClickListener {
 
     private TransactionsAdapter transactionsAdapter;
 
     private String header;
+    private Button btnSearch;
     private EditText search;
     private TextView tvNoData;
     private RecyclerView rvTransactionList;
@@ -63,8 +67,9 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
         setDialogLayout(R.layout.dialog_transactions, header);
         initViews();
 
-        setTransactionsAdapter();
-
+        setTransactionsAdapter(Utils.getCurrentDate(), Utils.getCurrentDate());
+        btnSearch.setVisibility(View.VISIBLE);
+        btnSearch.setText("SELECT DATE");
         search.setVisibility(View.VISIBLE);
 
         progressDialog = new ProgressDialog(getContext());
@@ -75,6 +80,8 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
 
 
     private void initViews() {
+        btnSearch = findViewById(R.id.btnSearch);
+        btnSearch.setOnClickListener(this);
         search = findViewById(R.id.search);
         initSearch();
         tvNoData = findViewById(R.id.tvNoData);
@@ -102,15 +109,16 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
         });
     }
 
-    private void setTransactionsAdapter() {
+    private void setTransactionsAdapter(String dateStart, String dateEnd) {
         try {
-            if (transactionsViewModel.completedTransactions().size() > 0) {
+            List<TransactionWithOrders> transactionWithOrdersList = transactionsViewModel.completedTransactions(dateStart, dateEnd);
+            if (transactionWithOrdersList.size() > 0) {
                 showList();
             } else {
                 showNoData();
             }
             transactionsAdapter = new TransactionsAdapter(
-                    transactionsViewModel.completedTransactions(),
+                    transactionWithOrdersList,
                     getContext(),
                     this,
                     forVoid);
@@ -153,7 +161,7 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                 progressDialog.show();
                 //FOR VOID
                 Transactions reference = transactionsViewModel.loadedTransactionListViaControlNumber(transactionWithOrders.transactions.getControl_number()).get(0);
-                Transactions transactions = new Transactions(
+                final Transactions transactions = new Transactions(
                         reference.getId(),
                         reference.getControl_number(),
                         reference.getUser_id(),
@@ -195,12 +203,21 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        setTransactionsAdapter();
+                        setTransactionsAdapter(Utils.getCurrentDate(), Utils.getCurrentDate());
                         progressDialog.dismiss();
                         Helper.showDialogMessage(getContext(), "VOID SUCCESS", getContext().getString(R.string.header_message));
+
+                        try {
+                            BusProvider.getInstance().post(new PrintModel("POST_VOID", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(transactions.getReceipt_number()))));
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }, 500);
                 search.setText("");
+
             } else {
                 progressDialog.setMessage("REPRINTING ...");
                 progressDialog.show();
@@ -237,5 +254,19 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
         }
     }
 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.btnSearch:
+                DateRangeDialog dateRangeDialog = new DateRangeDialog(getContext()) {
+                    @Override
+                    void dateConfirmed(String dateFrom, String dateTo) {
+                        setTransactionsAdapter(dateFrom, dateTo);
+                    }
+                };
+                dateRangeDialog.show();
+                break;
+        }
+    }
 }
 

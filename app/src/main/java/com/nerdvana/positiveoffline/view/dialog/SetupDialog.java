@@ -123,7 +123,7 @@ public abstract class SetupDialog extends BaseDialog implements View.OnClickList
                 );
                 progressDialog.show();
                 IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
-                TestRequest collectionRequest = new TestRequest();
+                TestRequest collectionRequest = new TestRequest("test");
                 Call<TestResponse> request = iUsers.sendTestRequest(collectionRequest.getMapValue());
                 request.enqueue(new Callback<TestResponse>() {
                     @Override

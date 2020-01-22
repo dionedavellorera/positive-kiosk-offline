@@ -28,6 +28,9 @@ public interface OrDetailsDao {
     @Query("SELECT * FROM OrDetails WHERE is_sent_to_server = 0")
     List<OrDetails> unsyncedOrDetails();
 
+    @Query("SELECT * FROM OrDetails")
+    List<OrDetails> getAllSavedOr();
+
 
 
 

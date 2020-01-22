@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
@@ -41,8 +40,7 @@ import static com.nerdvana.positiveoffline.printer.PrinterUtils.addPrinterSpace;
 import static com.nerdvana.positiveoffline.printer.PrinterUtils.addTextToPrinter;
 import static com.nerdvana.positiveoffline.printer.PrinterUtils.twoColumns;
 
-public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
-
+public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
     private PrintModel printModel;
     private Context context;;
     private AsyncFinishCallBack asyncFinishCallBack;
@@ -54,7 +52,7 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
     private boolean isReprint = false;
 
 
-    public PrintReceiptAsync(PrintModel printModel, Context context,
+    public PostVoidAsync(PrintModel printModel, Context context,
                              AsyncFinishCallBack asyncFinishCallBack,
                              DataSyncViewModel dataSyncViewModel,
                              ILocalizeReceipts iLocalizeReceipts,
@@ -74,7 +72,6 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... voids) {
 
 
-        Log.d("PRINTER_STATUS", "START_00");
 
         final TransactionCompleteDetails transactionCompleteDetails = GsonHelper.getGson().fromJson(printModel.getData(), TransactionCompleteDetails.class);
 
@@ -157,6 +154,9 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
 
             PrinterUtils.addHeader(printModel, printer);
             addPrinterSpace(1, printer);
+
+            addTextToPrinter(printer, "VOID", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+
 
             if (transactionCompleteDetails.transactions.getHas_special() == 1) {
 
@@ -394,7 +394,9 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                 e.printStackTrace();
             }
 
+
         } else if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.STAR_PRINTER))){
+
             try {
                 final StarIOPort starIOPort =  StarIOPort.getPort(SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY), "", 2000, context);
                 final Handler handler = new Handler(Looper.getMainLooper());
@@ -408,8 +410,9 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                                             StarIoExt.Emulation.StarPRNT,
                                             iLocalizeReceipts,
                                             false,
-                                            EJFileCreator.orString(transactionCompleteDetails, context, isReprint, printModel),
-                                            true);
+                                            EJFileCreator.postVoidString(transactionCompleteDetails, context, isReprint, printModel),
+                                            false);
+
                                     starIOPort.writePort(command, 0, command.length);
                                     starIOPort.endCheckedBlock();
                                     asyncFinishCallBack.doneProcessing();
@@ -431,6 +434,10 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                 asyncFinishCallBack.doneProcessing();
                 asyncFinishCallBack.error("PRINTER NOT CONNECTED");
             }
+
+
+
+
         }
 
 

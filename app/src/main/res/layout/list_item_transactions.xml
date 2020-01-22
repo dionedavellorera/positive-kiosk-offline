@@ -54,9 +54,33 @@
                 android:text="VCITD-01-00000000001"/>
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_below="@id/lin02"
+            android:id="@+id/lin03"
+            android:layout_width="400dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:padding="3dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:text="Date"/>
+
+            <TextView
+                android:padding="3dp"
+                android:gravity="right"
+                android:id="@+id/dateValue"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:text="VCITD-01-00000000001"/>
+        </LinearLayout>
+
+
         <View
             android:id="@+id/view01"
-            android:layout_below="@id/lin02"
+            android:layout_below="@id/lin03"
             android:layout_width="400dp"
             android:layout_height="1dp"
             android:background="@color/colorLtGrey"

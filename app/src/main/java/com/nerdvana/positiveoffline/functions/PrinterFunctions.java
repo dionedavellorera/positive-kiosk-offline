@@ -50,13 +50,15 @@ public class PrinterFunctions {
 
     }
 
-    public static byte[] createTextReceiptData(Emulation emulation, ILocalizeReceipts localizeReceipts, boolean utf8, String data) {
+    public static byte[] createTextReceiptData(Emulation emulation, ILocalizeReceipts localizeReceipts,
+                                               boolean utf8, String data,
+                                               boolean openCashDrawer) {
         ICommandBuilder builder = StarIoExt.createCommandBuilder(emulation);
 
         builder.beginDocument();
 
 
-        builder.appendPeripheral(ICommandBuilder.PeripheralChannel.No1);
+        if (openCashDrawer) builder.appendPeripheral(ICommandBuilder.PeripheralChannel.No1);
 
         builder.append(data.getBytes());
 

@@ -359,8 +359,8 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.getUnCutOffTransactionsByUser(userId);
     }
 
-    public List<TransactionWithOrders> completedTransactions() throws ExecutionException, InterruptedException {
-        return transactionsRepository.getCompletedTransactions();
+    public List<TransactionWithOrders> completedTransactions(String startDate, String endDate) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getCompletedTransactions(startDate, endDate);
     }
 
     public LiveData<List<Orders>> ordersLiveData() {
@@ -405,6 +405,13 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.getTransaction(receiptNumber);
     }
 
+    public TransactionCompleteDetails getTransactionViaTransactionId(String transaction_id) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getTransactionViaTransactionId(transaction_id);
+    }
+
+    public List<OrDetails> getAllSavedOr() throws ExecutionException, InterruptedException {
+        return transactionsRepository.getAllSavedOr();
+    }
 
 
 }

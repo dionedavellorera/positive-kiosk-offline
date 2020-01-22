@@ -31,7 +31,6 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
 
         buttonsModelList.add(new ButtonsModel(105,"PAYMENT", "",1));
         buttonsModelList.add(new ButtonsModel(115,"DISCOUNT", "",2));
-        buttonsModelList.add(new ButtonsModel(108,"OPEN PRICE", "",2));
 
         buttonsModelList.add(new ButtonsModel(99,"CHANGE QTY", "",3));
         buttonsModelList.add(new ButtonsModel(101,"ITEM CANCEL", "",4));
@@ -59,8 +58,10 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
             } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
                 buttonsModelList.add(new ButtonsModel(106,"ROOMS", "",1));
                 buttonsModelList.add(new ButtonsModel(107,"TRANSFER ROOM", "",1));
+                buttonsModelList.add(new ButtonsModel(109,"SOA", "",4));
             } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
                 buttonsModelList.add(new ButtonsModel(106,"TABLES", "",1));
+                buttonsModelList.add(new ButtonsModel(109,"SOA", "",4));
             }
         }
 //        buttonsModelList.add(new ButtonsModel(997,"LOGOUT", "",13));

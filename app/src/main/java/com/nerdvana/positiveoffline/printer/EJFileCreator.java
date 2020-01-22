@@ -765,4 +765,918 @@ public class EJFileCreator {
         return finalString;
     }
 
+    public static String backoutString(TransactionCompleteDetails transactionCompleteDetails, Context context, boolean isReprint, PrintModel printModel) {
+        String finalString = "";
+
+        finalString += PrinterUtils.receiptString("ABC COMPANY", "", context, true);
+        finalString += PrinterUtils.receiptString("1 ABC ST. DE AVE", "", context, true);
+        finalString += PrinterUtils.receiptString("PASIG CITY 1600", "", context, true);
+        finalString += PrinterUtils.receiptString("TEL NO: 8123-4567", "", context, true);
+        finalString += PrinterUtils.receiptString("MIN NO: *****************", "", context, true);
+        finalString += PrinterUtils.receiptString("SERIAL NO: ********", "", context, true);
+        finalString += PrinterUtils.receiptString("", "", context, true);
+
+
+        finalString += PrinterUtils.receiptString("BACKOUT", "", context, true);
+        finalString += PrinterUtils.receiptString("", "", context, true);
+        finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
+        finalString += PrinterUtils.receiptString("", "", context, true);
+        finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
+        finalString += PrinterUtils.receiptString("QTY  DESCRIPTION          AMOUNT", "", context, true);
+        finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
+
+        Double amountDue = 0.00;
+        for (Orders orders : transactionCompleteDetails.ordersList) {
+
+            String qty = "";
+
+            qty += orders.getQty();
+
+            if (String.valueOf(orders.getQty()).length() < 4) {
+                for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
+                    qty += " ";
+                }
+            }
+
+            finalString += PrinterUtils.receiptString(qty +  " " + orders.getName(), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount())), context, false);
+
+
+            if (orders.getVatExempt() <= 0) {
+                amountDue += orders.getOriginal_amount();
+            } else {
+                amountDue += orders.getAmount();
+            }
+        }
+
+
+
+        if (transactionCompleteDetails.postedDiscountsList.size() > 0) {
+            finalString += PrinterUtils.receiptString("", "", context, false);
+            finalString += PrinterUtils.receiptString("DISCOUNT LIST", "", context, false);
+
+            for (PostedDiscounts postedDiscounts : transactionCompleteDetails.postedDiscountsList) {
+                if (!postedDiscounts.getIs_void()) {
+                    finalString += PrinterUtils.receiptString(
+                            postedDiscounts.getDiscount_name(),
+                            postedDiscounts.getCard_number(),
+                            context,
+                            false);
+                }
+            }
+
+
+        }
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "VATABLE SALES",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVatable_sales()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "VAT AMOUNT",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_amount()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "VAT-EXEMPT SALES",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_exempt_sales()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "ZERO-RATED SALES",
+                "0.00",
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "SUB TOTAL",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getGross_sales()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "AMOUNT DUE",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue)),
+                context,
+                false);
+
+        Double payments = 0.00;
+        List<Integer> tmpArray = new ArrayList<>();
+        String pymntType = "";
+        for (Payments pym : transactionCompleteDetails.paymentsList) {
+            if (!tmpArray.contains(pym.getCore_id())) {
+                tmpArray.add(pym.getCore_id());
+                pymntType = pym.getName();
+            }
+            payments += Utils.roundedOffTwoDecimal(pym.getAmount());
+        }
+
+        finalString += PrinterUtils.receiptString(
+                "TENDERED",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(payments))),
+                context,
+                false);
+        finalString += PrinterUtils.receiptString(
+                "CHANGE",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getChange()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+        finalString += PrinterUtils.receiptString(
+                "PAYMENT TYPE",
+                tmpArray.size() > 1 ? "MULTIPLE" : pymntType,
+                context,
+                false);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "SOLD TO",
+                "",
+                context,
+                false);
+
+        if (transactionCompleteDetails.orDetails != null) {
+            finalString += PrinterUtils.receiptString(
+                    "NAME:" + transactionCompleteDetails.orDetails.getName(),
+                    "",
+                    context,
+                    true);
+
+            finalString += PrinterUtils.receiptString(
+                    "ADDRESS:" + transactionCompleteDetails.orDetails.getAddress(),
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "TIN#:" + transactionCompleteDetails.orDetails.getTin_number(),
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "BUSINESS STYLE:" + transactionCompleteDetails.orDetails.getBusiness_style(),
+                    "",
+                    context,
+                    true);
+
+        } else {
+            finalString += PrinterUtils.receiptString(
+                    "NAME:___________________________",
+                    "",
+                    context,
+                    true);
+
+            finalString += PrinterUtils.receiptString(
+                    "ADDRESS:________________________",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "TIN#:___________________________",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "BUSINESS STYLE:_________________",
+                    "",
+                    context,
+                    true);
+        }
+
+
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+
+
+
+        finalString += PrinterUtils.receiptString(
+                "POS PROVIDER : NERDVANA CORP.",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "ADDRESS : 1 CANLEY ROAD BRGY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "BAGONG ILOG PASIG CITY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VAT REG TIN: 009-772-500-00000",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "ACCRED NO:**********************",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "DATE ISSUED : " + "TODAY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VALID UNTIL : " + "TODAY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "PERMIT NO: ********-***-*******-*****",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "DATE ISSUED : " + "TODAY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VALID UNTIL : " + "TODAY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "THIS RECEIPT SHALL BE VALID FOR",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "FIVE(5) YEARS FROM THE DATE OF",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "THE PERMIT TO USE",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+        return finalString;
+    }
+
+    public static String postVoidString(TransactionCompleteDetails transactionCompleteDetails, Context context, boolean isReprint, PrintModel printModel) {
+        String finalString = "";
+
+        finalString += PrinterUtils.receiptString("ABC COMPANY", "", context, true);
+        finalString += PrinterUtils.receiptString("1 ABC ST. DE AVE", "", context, true);
+        finalString += PrinterUtils.receiptString("PASIG CITY 1600", "", context, true);
+        finalString += PrinterUtils.receiptString("TEL NO: 8123-4567", "", context, true);
+        finalString += PrinterUtils.receiptString("MIN NO: *****************", "", context, true);
+        finalString += PrinterUtils.receiptString("SERIAL NO: ********", "", context, true);
+        finalString += PrinterUtils.receiptString("", "", context, true);
+
+        finalString += PrinterUtils.receiptString("VOID", "", context, true);
+
+        if (transactionCompleteDetails.transactions.getHas_special() == 1) {
+
+            if (printModel.getType().equalsIgnoreCase("PRINT_RECEIPT")) {
+                finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(STORE COPY)", "", context, true);
+                BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT_SPEC", GsonHelper.getGson().toJson(transactionCompleteDetails)));
+            } else if (printModel.getType().equalsIgnoreCase("REPRINT_RECEIPT")) {
+                finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(STORE COPY)\nREPRINT", "", context, true);
+                BusProvider.getInstance().post(new PrintModel("REPRINT_RECEIPT_SPEC", GsonHelper.getGson().toJson(transactionCompleteDetails)));
+            }
+            if (printModel.getType().equalsIgnoreCase("PRINT_RECEIPT_SPEC")) {
+                finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(CUSTOMER COPY)", "", context, true);
+            } else if (printModel.getType().equalsIgnoreCase("REPRINT_RECEIPT_SPEC")) {
+                finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(CUSTOMER COPY)\nREPRINT", "", context, true);
+            }
+        } else {
+            if (isReprint) {
+                finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(REPRINT)", "", context, true);
+            } else {
+                finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT", "", context, true);
+            }
+        }
+
+        finalString += PrinterUtils.receiptString("", "", context, true);
+        finalString += PrinterUtils.receiptString("OR NO", transactionCompleteDetails.transactions.getReceipt_number(), context, false);
+        finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
+        finalString += PrinterUtils.receiptString("", "", context, true);
+        finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
+        finalString += PrinterUtils.receiptString("QTY  DESCRIPTION          AMOUNT", "", context, true);
+        finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
+
+        Double amountDue = 0.00;
+        for (Orders orders : transactionCompleteDetails.ordersList) {
+
+            String qty = "";
+
+            qty += orders.getQty();
+
+            if (String.valueOf(orders.getQty()).length() < 4) {
+                for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
+                    qty += " ";
+                }
+            }
+
+            finalString += PrinterUtils.receiptString(qty +  " " + orders.getName(), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount())), context, false);
+
+
+            if (orders.getVatExempt() <= 0) {
+                amountDue += orders.getOriginal_amount();
+            } else {
+                amountDue += orders.getAmount();
+            }
+        }
+
+
+
+        if (transactionCompleteDetails.postedDiscountsList.size() > 0) {
+            finalString += PrinterUtils.receiptString("", "", context, false);
+            finalString += PrinterUtils.receiptString("DISCOUNT LIST", "", context, false);
+
+            for (PostedDiscounts postedDiscounts : transactionCompleteDetails.postedDiscountsList) {
+                if (!postedDiscounts.getIs_void()) {
+                    finalString += PrinterUtils.receiptString(
+                            postedDiscounts.getDiscount_name(),
+                            postedDiscounts.getCard_number(),
+                            context,
+                            false);
+                }
+            }
+
+
+        }
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "VATABLE SALES",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVatable_sales()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "VAT AMOUNT",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_amount()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "VAT-EXEMPT SALES",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_exempt_sales()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "ZERO-RATED SALES",
+                "0.00",
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "SUB TOTAL",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getGross_sales()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "AMOUNT DUE",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue)),
+                context,
+                false);
+
+        Double payments = 0.00;
+        List<Integer> tmpArray = new ArrayList<>();
+        String pymntType = "";
+        for (Payments pym : transactionCompleteDetails.paymentsList) {
+            if (!tmpArray.contains(pym.getCore_id())) {
+                tmpArray.add(pym.getCore_id());
+                pymntType = pym.getName();
+            }
+            payments += Utils.roundedOffTwoDecimal(pym.getAmount());
+        }
+
+        finalString += PrinterUtils.receiptString(
+                "TENDERED",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(payments))),
+                context,
+                false);
+        finalString += PrinterUtils.receiptString(
+                "CHANGE",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getChange()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+        finalString += PrinterUtils.receiptString(
+                "PAYMENT TYPE",
+                tmpArray.size() > 1 ? "MULTIPLE" : pymntType,
+                context,
+                false);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "SOLD TO",
+                "",
+                context,
+                false);
+
+        if (transactionCompleteDetails.orDetails != null) {
+            finalString += PrinterUtils.receiptString(
+                    "NAME:" + transactionCompleteDetails.orDetails.getName(),
+                    "",
+                    context,
+                    true);
+
+            finalString += PrinterUtils.receiptString(
+                    "ADDRESS:" + transactionCompleteDetails.orDetails.getAddress(),
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "TIN#:" + transactionCompleteDetails.orDetails.getTin_number(),
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "BUSINESS STYLE:" + transactionCompleteDetails.orDetails.getBusiness_style(),
+                    "",
+                    context,
+                    true);
+
+        } else {
+            finalString += PrinterUtils.receiptString(
+                    "NAME:___________________________",
+                    "",
+                    context,
+                    true);
+
+            finalString += PrinterUtils.receiptString(
+                    "ADDRESS:________________________",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "TIN#:___________________________",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "BUSINESS STYLE:_________________",
+                    "",
+                    context,
+                    true);
+        }
+
+
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "THIS SERVES AS YOUR",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "OFFICIAL RECEIPT",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "THANK YOU COME AGAIN",
+                "",
+                context,
+                true);
+
+
+        finalString += PrinterUtils.receiptString(
+                "POS PROVIDER : NERDVANA CORP.",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "ADDRESS : 1 CANLEY ROAD BRGY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "BAGONG ILOG PASIG CITY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VAT REG TIN: 009-772-500-00000",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "ACCRED NO:**********************",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "DATE ISSUED : " + "TODAY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VALID UNTIL : " + "TODAY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "PERMIT NO: ********-***-*******-*****",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "DATE ISSUED : " + "TODAY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VALID UNTIL : " + "TODAY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "THIS RECEIPT SHALL BE VALID FOR",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "FIVE(5) YEARS FROM THE DATE OF",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "THE PERMIT TO USE",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+        return finalString;
+    }
+
+    public static String soaString(TransactionCompleteDetails transactionCompleteDetails, Context context, boolean isReprint, PrintModel printModel) {
+        String finalString = "";
+
+        finalString += PrinterUtils.receiptString("ABC COMPANY", "", context, true);
+        finalString += PrinterUtils.receiptString("1 ABC ST. DE AVE", "", context, true);
+        finalString += PrinterUtils.receiptString("PASIG CITY 1600", "", context, true);
+        finalString += PrinterUtils.receiptString("TEL NO: 8123-4567", "", context, true);
+        finalString += PrinterUtils.receiptString("MIN NO: *****************", "", context, true);
+        finalString += PrinterUtils.receiptString("SERIAL NO: ********", "", context, true);
+        finalString += PrinterUtils.receiptString("", "", context, true);
+
+        finalString += PrinterUtils.receiptString("STATEMENT OF ACCOUNT", "", context, true);
+
+
+        finalString += PrinterUtils.receiptString("", "", context, true);
+        finalString += PrinterUtils.receiptString("OR NO", "NA", context, false);
+        finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
+        finalString += PrinterUtils.receiptString("", "", context, true);
+        finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
+        finalString += PrinterUtils.receiptString("QTY  DESCRIPTION          AMOUNT", "", context, true);
+        finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
+
+        Double amountDue = 0.00;
+        for (Orders orders : transactionCompleteDetails.ordersList) {
+
+            String qty = "";
+
+            qty += orders.getQty();
+
+            if (String.valueOf(orders.getQty()).length() < 4) {
+                for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
+                    qty += " ";
+                }
+            }
+
+            finalString += PrinterUtils.receiptString(qty +  " " + orders.getName(), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount())), context, false);
+
+
+            if (orders.getVatExempt() <= 0) {
+                amountDue += orders.getOriginal_amount();
+            } else {
+                amountDue += orders.getAmount();
+            }
+        }
+
+
+
+        if (transactionCompleteDetails.postedDiscountsList.size() > 0) {
+            finalString += PrinterUtils.receiptString("", "", context, false);
+            finalString += PrinterUtils.receiptString("DISCOUNT LIST", "", context, false);
+
+            for (PostedDiscounts postedDiscounts : transactionCompleteDetails.postedDiscountsList) {
+                if (!postedDiscounts.getIs_void()) {
+                    finalString += PrinterUtils.receiptString(
+                            postedDiscounts.getDiscount_name(),
+                            postedDiscounts.getCard_number(),
+                            context,
+                            false);
+                }
+            }
+
+
+        }
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "VATABLE SALES",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVatable_sales()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "VAT AMOUNT",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_amount()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "VAT-EXEMPT SALES",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_exempt_sales()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "ZERO-RATED SALES",
+                "0.00",
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "SUB TOTAL",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getGross_sales()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "AMOUNT DUE",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue)),
+                context,
+                false);
+
+        Double payments = 0.00;
+        List<Integer> tmpArray = new ArrayList<>();
+        String pymntType = "";
+        for (Payments pym : transactionCompleteDetails.paymentsList) {
+            if (!tmpArray.contains(pym.getCore_id())) {
+                tmpArray.add(pym.getCore_id());
+                pymntType = pym.getName();
+            }
+            payments += Utils.roundedOffTwoDecimal(pym.getAmount());
+        }
+
+        finalString += PrinterUtils.receiptString(
+                "TENDERED",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(payments))),
+                context,
+                false);
+        finalString += PrinterUtils.receiptString(
+                "CHANGE",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getChange()))),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+        finalString += PrinterUtils.receiptString(
+                "PAYMENT TYPE",
+                tmpArray.size() > 1 ? "MULTIPLE" : pymntType,
+                context,
+                false);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "SOLD TO",
+                "",
+                context,
+                false);
+
+        if (transactionCompleteDetails.orDetails != null) {
+            finalString += PrinterUtils.receiptString(
+                    "NAME:" + transactionCompleteDetails.orDetails.getName(),
+                    "",
+                    context,
+                    true);
+
+            finalString += PrinterUtils.receiptString(
+                    "ADDRESS:" + transactionCompleteDetails.orDetails.getAddress(),
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "TIN#:" + transactionCompleteDetails.orDetails.getTin_number(),
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "BUSINESS STYLE:" + transactionCompleteDetails.orDetails.getBusiness_style(),
+                    "",
+                    context,
+                    true);
+
+        } else {
+            finalString += PrinterUtils.receiptString(
+                    "NAME:___________________________",
+                    "",
+                    context,
+                    true);
+
+            finalString += PrinterUtils.receiptString(
+                    "ADDRESS:________________________",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "TIN#:___________________________",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "BUSINESS STYLE:_________________",
+                    "",
+                    context,
+                    true);
+        }
+
+
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                false);
+
+
+
+
+        finalString += PrinterUtils.receiptString(
+                "POS PROVIDER : NERDVANA CORP.",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "ADDRESS : 1 CANLEY ROAD BRGY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "BAGONG ILOG PASIG CITY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VAT REG TIN: 009-772-500-00000",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "ACCRED NO:**********************",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "DATE ISSUED : " + "TODAY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VALID UNTIL : " + "TODAY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "PERMIT NO: ********-***-*******-*****",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "DATE ISSUED : " + "TODAY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VALID UNTIL : " + "TODAY",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "THIS RECEIPT SHALL BE VALID FOR",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "FIVE(5) YEARS FROM THE DATE OF",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "THE PERMIT TO USE",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+        return finalString;
+    }
+
 }

@@ -354,6 +354,26 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 109://PRINT SOA
+                if (transactionsViewModel.loadedTransactionList(transactionId).size() > 0) {
+                    Transactions currentTrans = transactionsViewModel.loadedTransactionList(transactionId).get(0);
+                    if (currentTrans.getRoom_id() != 0) {
+                        Rooms rooms = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
+                        if (rooms != null) {
+                            BusProvider.getInstance().post(new PrintModel("SOA", GsonHelper.getGson().toJson(transactionsViewModel.getTransactionViaTransactionId(rooms.getTransaction_id()))));
+                        } else {
+                            Helper.showDialogMessage(getContext(), "No room/table attached to orders", getString(R.string.header_message));
+                        }
+                    } else {
+                        Helper.showDialogMessage(getActivity(), "No room/table attached to transaction", getString(R.string.header_message));
+                    }
+                } else {
+                    Helper.showDialogMessage(getActivity(), "No room/table attached to transaction", getString(R.string.header_message));
+                }
+
+
+
+                break;
             case 107://TRANSFER ROOM
                 if (transactionsViewModel.loadedTransactionList(transactionId).size() > 0) {
                     Transactions currentTrans = transactionsViewModel.loadedTransactionList(transactionId).get(0);
@@ -502,6 +522,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
                                     try {
                                         BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
+//                                        BusProvider.getInstance().post(new PrintModel("CHEAT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
                                     } catch (ExecutionException e) {
                                         e.printStackTrace();
                                     } catch (InterruptedException e) {

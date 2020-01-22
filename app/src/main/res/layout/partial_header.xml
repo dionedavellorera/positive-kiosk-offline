@@ -18,7 +18,21 @@
         android:src="@mipmap/sharp_close_white_24"
         android:tint="@color/colorWhite"/>
 
+    <Button
+        android:layout_margin="10dp"
+        android:textColor="@color/colorAccent"
+        android:id="@+id/btnSearch"
+        android:visibility="gone"
+        android:text="test"
+        android:layout_toLeftOf="@id/search"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
     <EditText
+        android:imeOptions="actionDone"
+        android:maxLines="1"
+        android:singleLine="true"
         android:id="@+id/search"
         android:visibility="gone"
         android:background="@null"
