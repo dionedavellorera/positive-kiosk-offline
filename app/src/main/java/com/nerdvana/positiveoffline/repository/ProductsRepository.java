@@ -55,6 +55,18 @@ public class ProductsRepository {
     public MutableLiveData<FetchProductsResponse> getFetchProductLiveData() {
         return fetchProductLiveData;
     }
+    //findProductViaBarcode
+    public Products findProductViaBarcode(final String barcode) throws ExecutionException, InterruptedException {
+        Callable<Products> callable = new Callable<Products>() {
+            @Override
+            public Products call() throws Exception {
+                return productsDao.productViaBarCode(barcode);
+            }
+        };
+
+        Future<Products> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
 
     public List<Products> getProductsList() throws ExecutionException, InterruptedException {
         Callable<List<Products>> callable = new Callable<List<Products>>() {

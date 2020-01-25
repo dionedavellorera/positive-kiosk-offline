@@ -37,14 +37,27 @@
             <com.nerdvana.positiveoffline.view.HidingEditText
                 android:background="@android:color/transparent"
                 android:maxLines="1"
-                android:imeOptions="actionDone"
+                android:inputType="text"
                 android:singleLine="true"
                 android:layout_toRightOf="@id/srchImage"
+                android:layout_toLeftOf="@id/clearText"
                 android:paddingLeft="10dp"
                 android:id="@+id/search"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:hint="Search product here"/>
+
+            <ImageView
+                android:layout_margin="5dp"
+                android:layout_centerVertical="true"
+                android:tint="@color/colorLtGrey"
+                android:layout_marginLeft="20dp"
+                android:layout_alignParentRight="true"
+                android:id="@+id/clearText"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@mipmap/sharp_close_white_24"/>
+            //
         </RelativeLayout>
 
 

@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.adapter;
 
 import android.content.Context;
 import android.os.Environment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,27 +50,36 @@ public class ProductsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return new Filter() {
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
-                String charSting = constraint.toString();
-                productsFilteredList = new ArrayList<>();
-                if (productsModelList.size() > 0) {
-                    if (charSting.isEmpty()) {
-                        productsFilteredList = productsModelList;
-                    } else {
-                        List<Products> filteredList = new ArrayList<>();
-                        for (Products pm : productsModelList) {
-                            if (pm.getProduct().toLowerCase().contains(charSting.toLowerCase()) ||
-                                    String.valueOf(pm.getAmount()).contains(charSting.toLowerCase()) ||
-                                    pm.getDepartment().toLowerCase().contains(charSting.toLowerCase()) ||
-                                    String.valueOf(pm.getProduct_barcode()).contains(charSting.toLowerCase())) {
-                                filteredList.add(pm);
+                FilterResults filterResults = new FilterResults();
+
+                synchronized (filterResults) {
+                    if (constraint != null) {
+                        String charSting = constraint.toString();
+
+                        productsFilteredList = new ArrayList<>();
+                        if (productsModelList.size() > 0) {
+                            if (charSting.isEmpty()) {
+                                productsFilteredList = productsModelList;
+                            } else {
+                                List<Products> filteredList = new ArrayList<>();
+                                for (Products pm : productsModelList) {
+                                    if (pm.getProduct().toLowerCase().contains(charSting.toLowerCase()) ||
+                                            String.valueOf(pm.getAmount()).contains(charSting.toLowerCase()) ||
+                                            pm.getDepartment().toLowerCase().contains(charSting.toLowerCase()) ||
+                                            String.valueOf(pm.getProduct_barcode().toLowerCase()).contains(charSting.toLowerCase())) {
+                                        filteredList.add(pm);
+                                    }
+                                }
+                                productsFilteredList = filteredList;
                             }
                         }
-                        productsFilteredList = filteredList;
+
+                        filterResults.values = productsFilteredList;
+
                     }
                 }
 
-                FilterResults filterResults = new FilterResults();
-                filterResults.values = productsFilteredList;
+
                 return filterResults;
             }
 

@@ -2,6 +2,8 @@ package com.nerdvana.positiveoffline.background;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import com.epson.epos2.Epos2Exception;
@@ -72,7 +74,7 @@ public class CheatAsync extends AsyncTask<Void, Void, Void> {
 
 
 
-        TransactionCompleteDetails transactionCompleteDetails = GsonHelper.getGson().fromJson(printModel.getData(), TransactionCompleteDetails.class);
+//        TransactionCompleteDetails transactionCompleteDetails = GsonHelper.getGson().fromJson(printModel.getData(), TransactionCompleteDetails.class);
 
         if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.EPSON))) {
 
@@ -153,158 +155,160 @@ public class CheatAsync extends AsyncTask<Void, Void, Void> {
             addPrinterSpace(1, printer);
 
 
-            addTextToPrinter(printer, "LANDMARK DEPARTMENT STORE", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "Citysuper Incorporated", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "EDSA cor Mindanao Ave Ext", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer," Quezon City", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "VAT REG TIN NO: 205-412-358-000" , Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "POS381-SN:41-DLA83", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1,1 ,1 );
-            addTextToPrinter(printer, "MIN#16102713390090828", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1,1);
-
-
+            addTextToPrinter(printer, "HI I AM JUST A TEST", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
 
             addPrinterSpace(1, printer);
-
-
-            addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-            addTextToPrinter(printer, "01/18/2020 71:130  #392   REG", Printer.TRUE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-            addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-            addTextToPrinter(printer, twoColumns(
-                    "2402 CHNCLLR8005 PANTS",
-                    "2    720.00",
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-
-            addTextToPrinter(printer, twoColumns(
-                    "",
-                    "-----------",
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-
-            addTextToPrinter(printer, twoColumns(
-                    "",
-                    "  1,440.00  ",
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-
-            addPrinterSpace(1, printer );
-            addTextToPrinter(printer, twoColumns(
-                    "TOTAL",
-                    "  1,440.00  ",
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-
-            addTextToPrinter(printer, twoColumns(
-                    "EPS",
-                    "  1,440.00  ",
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-
-            addTextToPrinter(printer, twoColumns(
-                    "Card No:",
-                    "  ************6068  ",
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-
-            addTextToPrinter(printer, twoColumns(
-                    "ApprCode",
-                    "  531469  ",
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-
-            addPrinterSpace(1, printer);
-
-
-            addTextToPrinter(printer, twoColumns(
-                    "VATable",
-                    "1285.71",
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-
-            addTextToPrinter(printer, twoColumns(
-                    "VAT-Exempt",
-                    "0.00",
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-
-
-            addTextToPrinter(printer, twoColumns(
-                    "VAT Zero-Rated",
-                    "0.00",
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-
-
-            addTextToPrinter(printer, twoColumns(
-                    "VAT 12%",
-                    "1285.71",
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-
-            addPrinterSpace(1, printer);
-
-
-            addTextToPrinter(printer, "CHECKER: 07201719-Bernadeth Balgimino", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1,1);
-            addTextToPrinter(printer, "Cashier: 07187219-Ronalyn Felicia Villoria", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1,1);
-            addTextToPrinter(printer, "Transaction# 0202 38100064781", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1,1);
-            addTextToPrinter(printer, "SI# 38100064792", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1,1);
-            addTextToPrinter(printer, "LM# 020238100064391", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1,1);
-
-
-            addTextToPrinter(printer, "SOLD TO:", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
-            addTextToPrinter(printer, "TIN: 009772500000", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
-            addTextToPrinter(printer, "NAME: NERDVANA CORP.", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
-            addTextToPrinter(printer, "ADDRESS: 1 CANLEY RD. BRGY. BAGONG ILOG PASIG CITY", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
-            addTextToPrinter(printer, "BUS STYLE:______________________", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
-
-
-
-
-
-
-            addPrinterSpace(1, printer);
-
-            addTextToPrinter(printer, "Thank you for shopping at", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "LANDMARK. PLEASE COME AGAIN.", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "THIS SERVES AS YOUR SALES INVOICE.", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-
-            addPrinterSpace(1, printer);
-
-            addTextToPrinter(printer, "ANSI Information Systems, Inc.", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "Tytana St., Manila", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "VAT Reg TIN: 000-330-515-000", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "ACCR # 030-000330515-00000769642", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "Date Issued: 12/12/2013", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "Valid Until: 07/31/2020", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "PTU No.FP102016-116-0102519-00000", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "Date Issued: 10/27/2016", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "Valid Until: 10/26/2021", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "THIS INVOICE/RECEIPT SHALL BE VALID", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "FOR FIVE(5) YEARS FROM THE DATE OF THE", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "PERMIT TO USE.", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-
+//            addTextToPrinter(printer, "Citysuper Incorporated", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "EDSA cor Mindanao Ave Ext", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer," Quezon City", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "VAT REG TIN NO: 205-412-358-000" , Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "POS381-SN:41-DLA83", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1,1 ,1 );
+//            addTextToPrinter(printer, "MIN#16102713390090828", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1,1);
+//
+//
+//
+//            addPrinterSpace(1, printer);
+//
+//
+//            addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//            addTextToPrinter(printer, "01/18/2020 71:130  #392   REG", Printer.TRUE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//            addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//            addTextToPrinter(printer, twoColumns(
+//                    "2402 CHNCLLR8005 PANTS",
+//                    "2    720.00",
+//                    40,
+//                    2,
+//                    context)
+//                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//
+//            addTextToPrinter(printer, twoColumns(
+//                    "",
+//                    "-----------",
+//                    40,
+//                    2,
+//                    context)
+//                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//
+//            addTextToPrinter(printer, twoColumns(
+//                    "",
+//                    "  1,440.00  ",
+//                    40,
+//                    2,
+//                    context)
+//                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//
+//            addPrinterSpace(1, printer );
+//            addTextToPrinter(printer, twoColumns(
+//                    "TOTAL",
+//                    "  1,440.00  ",
+//                    40,
+//                    2,
+//                    context)
+//                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//
+//            addTextToPrinter(printer, twoColumns(
+//                    "EPS",
+//                    "  1,440.00  ",
+//                    40,
+//                    2,
+//                    context)
+//                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//
+//            addTextToPrinter(printer, twoColumns(
+//                    "Card No:",
+//                    "  ************6068  ",
+//                    40,
+//                    2,
+//                    context)
+//                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//
+//            addTextToPrinter(printer, twoColumns(
+//                    "ApprCode",
+//                    "  531469  ",
+//                    40,
+//                    2,
+//                    context)
+//                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//
+//            addPrinterSpace(1, printer);
+//
+//
+//            addTextToPrinter(printer, twoColumns(
+//                    "VATable",
+//                    "1285.71",
+//                    40,
+//                    2,
+//                    context)
+//                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//
+//            addTextToPrinter(printer, twoColumns(
+//                    "VAT-Exempt",
+//                    "0.00",
+//                    40,
+//                    2,
+//                    context)
+//                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//
+//
+//            addTextToPrinter(printer, twoColumns(
+//                    "VAT Zero-Rated",
+//                    "0.00",
+//                    40,
+//                    2,
+//                    context)
+//                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//
+//
+//            addTextToPrinter(printer, twoColumns(
+//                    "VAT 12%",
+//                    "1285.71",
+//                    40,
+//                    2,
+//                    context)
+//                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//
+//            addPrinterSpace(1, printer);
+//
+//
+//            addTextToPrinter(printer, "CHECKER: 07201719-Bernadeth Balgimino", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1,1);
+//            addTextToPrinter(printer, "Cashier: 07187219-Ronalyn Felicia Villoria", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1,1);
+//            addTextToPrinter(printer, "Transaction# 0202 38100064781", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1,1);
+//            addTextToPrinter(printer, "SI# 38100064792", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1,1);
+//            addTextToPrinter(printer, "LM# 020238100064391", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1,1);
+//
+//
+//            addTextToPrinter(printer, "SOLD TO:", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
+//            addTextToPrinter(printer, "TIN: 009772500000", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
+//            addTextToPrinter(printer, "NAME: NERDVANA CORP.", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
+//            addTextToPrinter(printer, "ADDRESS: 1 CANLEY RD. BRGY. BAGONG ILOG PASIG CITY", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
+//            addTextToPrinter(printer, "BUS STYLE:______________________", Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
+//
+//
+//
+//
+//
+//
+//            addPrinterSpace(1, printer);
+//
+//            addTextToPrinter(printer, "Thank you for shopping at", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "LANDMARK. PLEASE COME AGAIN.", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "THIS SERVES AS YOUR SALES INVOICE.", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//
+//            addPrinterSpace(1, printer);
+//
+//            addTextToPrinter(printer, "ANSI Information Systems, Inc.", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "Tytana St., Manila", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "VAT Reg TIN: 000-330-515-000", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "ACCR # 030-000330515-00000769642", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "Date Issued: 12/12/2013", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "Valid Until: 07/31/2020", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "PTU No.FP102016-116-0102519-00000", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "Date Issued: 10/27/2016", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "Valid Until: 10/26/2021", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "THIS INVOICE/RECEIPT SHALL BE VALID", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "FOR FIVE(5) YEARS FROM THE DATE OF THE", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, "PERMIT TO USE.", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//
 
             try {
 
@@ -322,7 +326,49 @@ public class CheatAsync extends AsyncTask<Void, Void, Void> {
                 }
                 e.printStackTrace();
             }
+        } else if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.STAR_PRINTER))){
+            try {
+                final StarIOPort starIOPort =  StarIOPort.getPort(SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY), "", 2000, context);
+                final Handler handler = new Handler(Looper.getMainLooper());
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (starIOPort != null) {
+                            try {
+                                if (!starIOPort.retreiveStatus().offline) {
+                                    byte[] command = PrinterFunctions.createTextReceiptData(
+                                            StarIoExt.Emulation.StarPRNT,
+                                            iLocalizeReceipts,
+                                            false,
+                                            "HI I AM JUST A TEST",
+                                            true);
+                                    starIOPort.writePort(command, 0, command.length);
+                                    starIOPort.endCheckedBlock();
+                                    asyncFinishCallBack.doneProcessing();
+                                } else {
+                                    asyncFinishCallBack.doneProcessing();
+                                    asyncFinishCallBack.error("PRINTER IS OFFLINE");
+                                }
+                            } catch (StarIOPortException e) {
+                                asyncFinishCallBack.doneProcessing();
+                                asyncFinishCallBack.error("PRINTER IS OFFLINE");
+                            }
+                        } else {
+                            asyncFinishCallBack.doneProcessing();
+                            asyncFinishCallBack.error("PRINTER NOT CONNECTED");
+                        }
+                    }
+                }, 500);
+            } catch (StarIOPortException e) {
+                asyncFinishCallBack.doneProcessing();
+                asyncFinishCallBack.error("PRINTER NOT CONNECTED");
+            }
         }
+
+
+
+
+
 
 
         return null;

@@ -31,6 +31,11 @@ public class ProductsViewModel extends AndroidViewModel {
         return productsRepository.getProductsList();
     }
 
+
+    public Products findProductViaBarcode(String barcode) throws ExecutionException, InterruptedException {
+        return productsRepository.findProductViaBarcode(barcode);
+    }
+
     public void fetchProductsRequest() {
         productsRepository.fetchProductRequest();
     }

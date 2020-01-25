@@ -473,12 +473,14 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                 tmp.getTin_number()
                         );
 
+
                         transactions.setRoom_id(tmp.getRoom_id());
                         transactions.setRoom_number(tmp.getRoom_number());
                         transactions.setMachine_id(tmp.getMachine_id());
-                        transactions.setIs_sent_to_server(tmp.getIs_sent_to_server());
+                        transactions.setIs_sent_to_server(0);
                         transactions.setBranch_id(tmp.getBranch_id());
-
+                        transactions.setCheck_in_time(tmp.getCheck_in_time());
+                        transactions.setCheck_out_time(!TextUtils.isEmpty(tmp.getCheck_in_time()) ? Utils.getDateTimeToday() : "");
 
 
                         transactions.setHas_special(tmp.getHas_special());
@@ -619,6 +621,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
     @Override
     public void clicked(Payments payments) {
+        payments.setIs_sent_to_server(0);
         payments.setIs_void(true);
         transactionsViewModel.updatePayment(payments);
     }

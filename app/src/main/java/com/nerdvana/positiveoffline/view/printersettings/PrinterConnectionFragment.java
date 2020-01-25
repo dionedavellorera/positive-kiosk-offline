@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,11 +21,14 @@ import com.epson.epos2.discovery.Discovery;
 import com.epson.epos2.discovery.DiscoveryListener;
 import com.epson.epos2.discovery.FilterOption;
 import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.BusProvider;
+import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.adapter.OtherPrinterAdapter;
 import com.nerdvana.positiveoffline.intf.PrinterConnection;
 import com.nerdvana.positiveoffline.model.OtherPrinterModel;
+import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.printer.SStarPort;
 import com.starmicronics.stario.PortInfo;
 import com.starmicronics.stario.StarIOPort;
@@ -34,7 +38,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PrinterConnectionFragment extends Fragment implements PrinterConnection {
+//        , View.OnClickListener {
     private View view;
+
+    private Button btnTestPrint;
 
     private TextView activePrinter;
     private OtherPrinterAdapter otherPrinterAdapter;
@@ -46,6 +53,7 @@ public class PrinterConnectionFragment extends Fragment implements PrinterConnec
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_printer_connection, container, false);
+        BusProvider.getInstance().register(this);
 
         activePrinter = view.findViewById(R.id.activePrinter);
         listOtherPrinter = view.findViewById(R.id.listOtherPrinter);
@@ -123,5 +131,12 @@ public class PrinterConnectionFragment extends Fragment implements PrinterConnec
         activePrinter.setText(otherPrinterModelList.get(position).getHead());
 
         if (otherPrinterAdapter != null) otherPrinterAdapter.notifyDataSetChanged();
+    }
+
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        BusProvider.getInstance().unregister(this);
     }
 }

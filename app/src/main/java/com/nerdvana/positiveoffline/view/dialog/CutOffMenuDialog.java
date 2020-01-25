@@ -140,6 +140,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                     }
                                     number_of_transaction += 1;
 
+                                    tr.setIs_sent_to_server(0);
                                     tr.setIs_cut_off(true);
                                     tr.setIs_cut_off_by(userViewModel.searchLoggedInUser().get(0).getUsername());
                                     tr.setCut_off_id(cut_off_id);
@@ -153,6 +154,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
 
 
                             for (Payments payments : cutOffViewModel.getAllPayments()) {
+                                payments.setIs_sent_to_server(0);
                                 payments.setCut_off_id((int) cut_off_id);
                                 cutOffViewModel.update(payments);
                                 switch (payments.getCore_id()) {
@@ -166,6 +168,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
 
                             for (PostedDiscounts postedDiscounts : cutOffViewModel.getUnCutOffPostedDiscount()) {
                                 postedDiscounts.setCut_off_id((int)cut_off_id);
+                                postedDiscounts.setIs_sent_to_server(0);
                                 if (postedDiscounts.getDiscount_name().equalsIgnoreCase("SENIOR")) {
                                     seniorCount += 1;
                                     seniorAmount += postedDiscounts.getAmount();
@@ -179,6 +182,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                             }
 
                             CutOff cutOff = cutOffViewModel.getCutOff(cut_off_id);
+                            cutOff.setIs_sent_to_server(0);
                             cutOff.setTotal_change(Utils.roundedOffTwoDecimal(total_change));
                             cutOff.setGross_sales(Utils.roundedOffTwoDecimal(gross_sales));
                             cutOff.setNet_sales(Utils.roundedOffTwoDecimal(net_sales));
@@ -241,6 +245,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         ));
 
                         for (PostedDiscounts postedDiscounts : cutOffViewModel.getZeroEndOfDay()) {
+                            postedDiscounts.setIs_sent_to_server(0);
                             postedDiscounts.setEnd_of_day_id((int)end_of_day_id);
                         }
 
@@ -266,6 +271,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         List<String> orNumberArray = new ArrayList<>();
 
                         for (CutOff cutOff : cutOffViewModel.getUnCutOffData()) {
+                            cutOff.setIs_sent_to_server(0);
                             orNumberArray.add(cutOff.getBegOrNo());
                             orNumberArray.add(cutOff.getEndOrNo());
                             cutOff.setTreg(Utils.getDateTimeToday());
@@ -292,6 +298,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         }
 
                         EndOfDay endOfDay = cutOffViewModel.getEndOfDay(end_of_day_id);
+                        endOfDay.setIs_sent_to_server(0);
                         endOfDay.setGross_sales(Utils.roundedOffTwoDecimal(gross_sales));
                         endOfDay.setNet_sales(Utils.roundedOffTwoDecimal(net_sales));
                         endOfDay.setVatable_sales(Utils.roundedOffTwoDecimal(vatable_sales));

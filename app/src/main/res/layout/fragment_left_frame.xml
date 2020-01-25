@@ -11,8 +11,51 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorWhite02"
+            android:id="@+id/rootView">
+
+            <TextView
+                android:gravity="center_vertical"
+                android:padding="5dp"
+                android:id="@+id/listItemName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:text="DESCRIPTION"/>
+
+            <TextView
+                android:gravity="center|center_vertical"
+                android:padding="5dp"
+                android:id="@+id/listItemQty"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.2"
+                android:text="QTY"/>
+
+            <TextView
+                android:gravity="right|center_vertical"
+                android:padding="5dp"
+                android:id="@+id/listItemPrice"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.3"
+                android:text="TOTAL"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorLtGrey"
+            android:layout_below="@id/rootView" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/listCheckoutItems"
+            android:layout_below="@id/rootView"
             android:layout_above="@id/linSubtotal"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
@@ -37,7 +80,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@color/colorWhite"
-                android:padding="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
                 android:text="Sub total"
                 android:textSize="15sp"
                 android:textStyle="bold"/>
@@ -49,7 +95,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@color/colorWhite"
-                android:padding="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
                 android:text="0.00"
                 android:textColor="@color/colorBlack"
                 android:textSize="15sp"
@@ -70,7 +119,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@color/colorWhite"
-                android:padding="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
                 android:text="Discount"
                 android:textSize="15sp"
                 android:textStyle="bold"/>
@@ -82,7 +134,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@color/colorWhite"
-                android:padding="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
                 android:text="0.00"
                 android:textColor="@color/colorBlack"
                 android:textSize="15sp"
@@ -103,7 +158,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@color/colorWhite"
-                android:padding="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
                 android:text="Deposit"
                 android:textSize="15sp"
                 android:textStyle="bold"/>
@@ -115,7 +173,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@color/colorWhite"
-                android:padding="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
                 android:text="0.00"
                 android:textColor="@color/colorBlack"
                 android:textSize="15sp"
@@ -137,7 +198,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@color/colorLtGrey"
-                android:padding="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
                 android:text="TOTAL"
                 android:textSize="18sp"
                 android:textStyle="bold"/>
@@ -149,7 +213,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:background="@color/colorLtGrey"
-                android:padding="5dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
                 android:text="0.00"
                 android:textColor="@color/colorBlack"
                 android:textSize="18sp"

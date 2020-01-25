@@ -194,6 +194,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                 tmpTr.setId(Integer.valueOf(transactionId));
                                 tmpTr.setRoom_id(rooms.getRoom_id());
                                 tmpTr.setRoom_number(rooms.getRoom_name());
+                                tmpTr.setIs_sent_to_server(0);
+
+                                tmpTr.setCheck_in_time(Utils.getDateTimeToday());
+
                                 transactionsViewModel.update(tmpTr);
 
                                 insertSelectedRoomRate();
@@ -319,8 +323,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
             tr.setRoom_id(transactions.getRoom_id());
             tr.setRoom_number(transactions.getRoom_number());
             tr.setMachine_id(transactions.getMachine_id());
-            tr.setIs_sent_to_server(transactions.getIs_sent_to_server());
+            tr.setIs_sent_to_server(0);
             tr.setBranch_id(transactions.getBranch_id());
+            tr.setCheck_in_time(transactions.getCheck_in_time());
+            tr.setCheck_out_time(transactions.getCheck_out_time());
 
 
         } catch (ExecutionException e) {
@@ -354,6 +360,12 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 110:// TEST PRINT
+
+                BusProvider.getInstance().post(new PrintModel("CHEAT", "123131"));
+
+
+                break;
             case 109://PRINT SOA
                 if (transactionsViewModel.loadedTransactionList(transactionId).size() > 0) {
                     Transactions currentTrans = transactionsViewModel.loadedTransactionList(transactionId).get(0);
@@ -587,6 +599,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
 
                                     for (Orders order : getEditingOrderList()) {
+                                        order.setIs_sent_to_server(0);
                                         order.setIs_void(true);
                                         order.setIs_editing(false);
                                         transactionsViewModel.updateOrder(order);
@@ -597,7 +610,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                     if (currentTrans.getRoom_id() != 0) {
                                         List<Orders> currentPunchedRoomRate = transactionsViewModel.roomRateList(transactionId);
                                         if (currentPunchedRoomRate.size() < 1) {
+                                            currentTrans.setIs_sent_to_server(0);
                                             currentTrans.setRoom_number("");
+                                            currentTrans.setCheck_in_time("");
+                                            currentTrans.setCheck_out_time("");
                                             currentTrans.setRoom_id(0);
                                             transactionsViewModel.update(currentTrans);
                                             changeRoomStatus(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)), 3, true);
@@ -655,6 +671,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                             order.setVatExempt((order.getVatExempt() / order.getQty()) * newQty);
                                             order.setDiscountAmount((order.getDiscountAmount() / order.getQty()) * newQty);
                                         }
+                                        order.setIs_sent_to_server(0);
                                         order.setQty(newQty);
                                         order.setIs_editing(false);
                                         transactionsViewModel.updateOrder(order);

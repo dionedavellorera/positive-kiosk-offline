@@ -90,6 +90,7 @@ public class TransactionsViewModel extends AndroidViewModel {
                 tr.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vatExemptSales));
                 tr.setVat_amount(Utils.roundedOffTwoDecimal(vatAmount));
                 tr.setDiscount_amount(Utils.roundedOffTwoDecimal(discountAmount));
+                tr.setIs_sent_to_server(0);
                 update(tr);
             }
 

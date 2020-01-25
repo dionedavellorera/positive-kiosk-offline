@@ -43,6 +43,8 @@ import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.model.ReprintReceiptData;
 import com.nerdvana.positiveoffline.model.ServerConnectionTest;
+import com.nerdvana.positiveoffline.model.ShiftUpdateModel;
+import com.nerdvana.positiveoffline.model.TimerUpdateModel;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -74,7 +76,13 @@ public class TimerService extends Service {
             public void onTick(int second) {
                 secsOfDate+= 1;
 
-                if (secsOfDate % 99999999 == 0) {
+                BusProvider.getInstance().post(new TimerUpdateModel(""));
+
+                if (secsOfDate % 3 == 0) {
+                    BusProvider.getInstance().post(new ShiftUpdateModel(""));
+                }
+
+                if (secsOfDate % 5 == 0) {
                     BusProvider.getInstance().post(new ServerConnectionTest(""));
                 }
 

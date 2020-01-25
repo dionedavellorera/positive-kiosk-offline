@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.adapter.ChangeRoomStatusAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
@@ -44,7 +45,12 @@ public abstract class ChangeRoomStatusDialog extends BaseDialog implements Actio
 
     @Override
     public void clicked(int room_status_id, String status_description, String hex_color) {
-        changeStatus(room_status_id, status_description, hex_color);
-        dismiss();
+        if (room_status_id != 2) {
+            changeStatus(room_status_id, status_description, hex_color);
+            dismiss();
+        } else {
+            Helper.showDialogMessage(getContext(), "Please use the proper way of checking in", getContext().getString(R.string.header_message));
+        }
+
     }
 }

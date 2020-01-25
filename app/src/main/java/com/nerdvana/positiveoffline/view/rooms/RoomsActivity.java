@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.RoomTablesAdapter;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.RoomRates;
@@ -142,9 +144,9 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
 
     }
 
+
     @Override
     public void showRates(int room_id) {
-        Log.d("UPDATING", "SHOW RATES");
         try {
             final Rooms rooms = roomsViewModel.getRoomViaId(room_id);
             if (isTransfer.equalsIgnoreCase("y")) {
@@ -249,6 +251,8 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
             tmpTr.setId(transactionId);
             tmpTr.setRoom_id(newRoom.getRoom_id());
             tmpTr.setRoom_number(newRoom.getRoom_name());
+            tmpTr.setCheck_in_time(Utils.getDateTimeToday());
+            tmpTr.setIs_sent_to_server(0);
             transactionsViewModel.update(tmpTr);
         } catch (Exception e) {
             Log.d("UPDATING", e.getMessage());
@@ -263,7 +267,6 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
             room.setStatus_id(roomStatus.getCore_id());
             room.setStatus_description(roomStatus.getRoom_status());
             room.setHex_color(roomStatus.getHex_color());
-
             if (is_transfer) {
                 room.setTransaction_id("");
             }
@@ -276,6 +279,7 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
     private void voidRoomRate(int transactionId) {
         try {
             for (Orders orders  : transactionsViewModel.roomRateList(String.valueOf(transactionId))) {
+                orders.setIs_sent_to_server(0);
                 orders.setIs_void(true);
                 transactionsViewModel.updateOrder(orders);
             }

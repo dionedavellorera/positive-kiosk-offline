@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -195,8 +196,10 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                 transactions.setRoom_id(reference.getRoom_id());
                 transactions.setRoom_number(reference.getRoom_number());
                 transactions.setMachine_id(reference.getMachine_id());
-                transactions.setIs_sent_to_server(reference.getIs_sent_to_server());
+                transactions.setIs_sent_to_server(0);
                 transactions.setBranch_id(reference.getBranch_id());
+                transactions.setCheck_in_time(reference.getCheck_in_time());
+                transactions.setCheck_out_time(reference.getCheck_out_time());
 
                 transactionsViewModel.update(transactions);
                 final Handler handler = new Handler();

@@ -55,6 +55,9 @@ public class Transactions {
     private int room_id = 0;
     private String room_number = "";
 
+    private String check_in_time = "";
+    private String check_out_time = "";
+
     public Transactions(@NonNull String control_number,
                         String user_id, String treg,
                         int is_sent_to_server,
@@ -113,6 +116,22 @@ public class Transactions {
         this.vat_amount = vat_amount;
         this.discount_amount = discountAmount;
         this.change = change;
+    }
+
+    public String getCheck_in_time() {
+        return check_in_time;
+    }
+
+    public void setCheck_in_time(String check_in_time) {
+        this.check_in_time = check_in_time;
+    }
+
+    public String getCheck_out_time() {
+        return check_out_time;
+    }
+
+    public void setCheck_out_time(String check_out_time) {
+        this.check_out_time = check_out_time;
     }
 
     public int getRoom_id() {

@@ -193,8 +193,13 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
         tr.setRoom_id(transactions.getRoom_id());
         tr.setRoom_number(transactions.getRoom_number());
         tr.setMachine_id(transactions.getMachine_id());
-        tr.setIs_sent_to_server(transactions.getIs_sent_to_server());
+        tr.setIs_sent_to_server(0);
         tr.setBranch_id(transactions.getBranch_id());
+
+        tr.setCheck_in_time(transactions.getCheck_in_time());
+        tr.setCheck_out_time(transactions.getCheck_out_time());
+
+
 
         try {
             Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(transactions.getId());

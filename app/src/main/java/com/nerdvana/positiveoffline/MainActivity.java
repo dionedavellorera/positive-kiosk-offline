@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Context;
@@ -19,12 +20,15 @@ import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nerdvana.positiveoffline.apirequests.TestRequest;
 import com.nerdvana.positiveoffline.apiresponses.TestResponse;
+import com.nerdvana.positiveoffline.model.ShiftUpdateModel;
+import com.nerdvana.positiveoffline.model.TimerUpdateModel;
 import com.nerdvana.positiveoffline.printjobasync.BackoutAsync;
 import com.nerdvana.positiveoffline.background.CheatAsync;
 import com.nerdvana.positiveoffline.printjobasync.PostVoidAsync;
@@ -54,6 +58,7 @@ import com.nerdvana.positiveoffline.view.login.LoginActivity;
 import com.nerdvana.positiveoffline.view.posmenu.BottomFrameFragment;
 import com.nerdvana.positiveoffline.view.productsmenu.RightFrameFragment;
 import com.nerdvana.positiveoffline.view.sync.SyncActivity;
+import com.nerdvana.positiveoffline.viewmodel.CutOffViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 import com.squareup.otto.Subscribe;
@@ -76,12 +81,14 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements AsyncFinishCallBack {
-
+    private CutOffViewModel cutOffViewModel;
     boolean hasError = false;
 
     private ImageView onlineImageIndicator;
     private TextView onlineTextIndicator;
+    private TextView tvTime;
     private TextView user;
+    private TextView shift;
 
     private Intent timerIntent;
 
@@ -103,15 +110,24 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         openFragment(R.id.rightFrame, new RightFrameFragment());
         myPrintJobs = new ArrayList<>();
         initViews();
+
+        tvTime.setText(Utils.getDateTimeToday());
+
+
         initUserViewModel();
         setUserData();
         initDataSyncViewModel();
         initILocalizeReceipts();
         startTimerService();
+        initCutOffViewModel();
 
 
 
 
+    }
+
+    private void initCutOffViewModel() {
+        cutOffViewModel = new ViewModelProvider(this).get(CutOffViewModel.class);
     }
 
     private void setUserData() {
@@ -132,7 +148,9 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     private void initViews() {
         onlineImageIndicator = findViewById(R.id.onlineImageIndicator);
         onlineTextIndicator = findViewById(R.id.onlineTextIndicator);
+        tvTime = findViewById(R.id.tvTime);
         user = findViewById(R.id.user);
+        shift = findViewById(R.id.shift);
     }
 
     private void startTimerService() {
@@ -379,6 +397,9 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
     @Subscribe
     public void print(PrintModel printModel) {
+
+        Log.d("QWEQEQ", printModel.getType());
+
         switch (printModel.getType()) {
             case "SOA":
                 addAsync(new SoaAsync(printModel, MainActivity.this,
@@ -446,6 +467,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         }
 
     }
+
 
     private void addAsync(AsyncTask asyncTask, String taskName) {
         if (myPrintJobs.size() < 1) {
@@ -759,4 +781,22 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         }
 
     }
+
+    @Subscribe
+    public void timerUpdate(TimerUpdateModel timerUpdateModel) {
+        tvTime.setText(Utils.getDateTimeToday());
+    }
+
+    @Subscribe
+    public void shiftUpdate(ShiftUpdateModel shiftUpdateModel) {
+        try {
+            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1));
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }

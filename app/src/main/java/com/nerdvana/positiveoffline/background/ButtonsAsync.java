@@ -49,6 +49,7 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
         buttonsModelList.add(new ButtonsModel(129,"SETTINGS", "",12));
 
         buttonsModelList.add(new ButtonsModel(997,"LOGOUT", "",13));
+        buttonsModelList.add(new ButtonsModel(110,"TEST PRINT", "",13));
 
         if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
 

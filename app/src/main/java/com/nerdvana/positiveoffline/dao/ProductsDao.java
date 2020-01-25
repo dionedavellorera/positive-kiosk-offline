@@ -17,6 +17,9 @@ public interface ProductsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(List<Products> productsList);
 
+    @Query("SELECT * FROM Products WHERE product_barcode=:barcode")
+    Products productViaBarCode(String barcode);
+
     @Query("SELECT * FROM Products")
     List<Products> productsList();
 

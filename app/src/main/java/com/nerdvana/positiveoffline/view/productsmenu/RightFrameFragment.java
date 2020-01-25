@@ -1,12 +1,17 @@
 package com.nerdvana.positiveoffline.view.productsmenu;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,6 +23,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
+import com.nerdvana.positiveoffline.GsonHelper;
+import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
@@ -27,6 +34,7 @@ import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.intf.AsyncContract;
 import com.nerdvana.positiveoffline.intf.ProductsContract;
+import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
 import com.nerdvana.positiveoffline.view.HidingEditText;
 import com.nerdvana.positiveoffline.viewmodel.ProductsViewModel;
@@ -35,9 +43,13 @@ import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 
-public class RightFrameFragment extends Fragment implements AsyncContract, ProductsContract {
+public class RightFrameFragment extends Fragment implements AsyncContract, ProductsContract, View.OnClickListener {
+
+    private Timer timer;
 
     private View view;
     private RecyclerView listProducts;
@@ -49,6 +61,8 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
 
     private TransactionsViewModel transactionsViewModel;
     private Products products;
+    private ImageView clearText;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -57,6 +71,8 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
         initProductsViewModel();
         initTransactionViewModel();
 //        initTransactionsViewModelListener();
+
+        BusProvider.getInstance().register(this);
         return view;
     }
 
@@ -80,11 +96,42 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
 
     private void initViews(View view) {
         search = view.findViewById(R.id.search);
+        clearText = view.findViewById(R.id.clearText);
+        clearText.setOnClickListener(this);
         addSearchListener();
         listProducts = view.findViewById(R.id.listProducts);
     }
 
+
     private void addSearchListener() {
+
+
+
+        search.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+
+                if (search.length() > 0) {
+                    if (actionId == 0) {
+                        try {
+                            Products searchedProduct = productsViewModel.findProductViaBarcode(search.getText().toString());
+                            if (searchedProduct != null) {
+                                BusProvider.getInstance().post(new ProductToCheckout(searchedProduct));
+                            } else {
+                                Helper.showDialogMessage(getActivity(), "Product not existing", getString(R.string.header_message));
+                            }
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        search.setText("");
+                    }
+                }
+                return true;
+            }
+        });
+
         search.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -93,14 +140,39 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (timer != null) {
+                    timer.cancel();
+                    timer.purge();
+                    timer = null;
+                }
 
             }
 
             @Override
-            public void afterTextChanged(Editable editable) {
-                if (productsAdapter != null) {
-                    productsAdapter.getFilter().filter(editable);
-                }
+            public void afterTextChanged(final Editable editable) {
+
+                timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        if (productsAdapter != null) {
+                            if (getActivity() != null) {
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        productsAdapter.getFilter().filter(editable);
+                                    }
+                                });
+                            }
+
+
+                        }
+
+                    }
+                }, 500);
+
+
+
             }
         });
     }
@@ -108,18 +180,15 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         fetchProducts();
     }
 
+
     private void setProductAdapter(List<Products> productsList) {
-        //set products adapter with 5 columns (grid layout)
         productsAdapter = new ProductsAdapter(productsList, this, getContext());
         listProducts.setLayoutManager(new GridLayoutManager(getContext(), 4));
         listProducts.setAdapter(productsAdapter);
         productsAdapter.notifyDataSetChanged();
-
-
     }
 
 
@@ -134,6 +203,7 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
 
     @Override
     public void productClicked(Products productsModel) {
+        search.setText("");
         BusProvider.getInstance().post(new ProductToCheckout(productsModel));
 //        List<Orders> orderList = new ArrayList<>();
 //        products = productsModel;
@@ -209,4 +279,20 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
             }
         });
     }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.clearText:
+                search.setText("");
+                break;
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        BusProvider.getInstance().unregister(this);
+    }
+
 }
