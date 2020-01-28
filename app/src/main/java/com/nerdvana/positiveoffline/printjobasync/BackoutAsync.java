@@ -364,39 +364,36 @@ public class BackoutAsync extends AsyncTask<Void, Void, Void> {
 
             try {
                 final StarIOPort starIOPort =  StarIOPort.getPort(SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY), "", 2000, context);
-                final Handler handler = new Handler(Looper.getMainLooper());
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (starIOPort != null) {
-                            try {
-                                if (!starIOPort.retreiveStatus().offline) {
-                                    byte[] command = PrinterFunctions.createTextReceiptData(
-                                            StarIoExt.Emulation.StarPRNT,
-                                            iLocalizeReceipts,
-                                            false,
-                                            EJFileCreator.backoutString(transactionCompleteDetails, context, isReprint, printModel),
-                                            false);
+                synchronized (starIOPort) {
+                    if (starIOPort != null) {
+                        try {
+                            if (!starIOPort.retreiveStatus().offline) {
+                                byte[] command = PrinterFunctions.createTextReceiptData(
+                                        StarIoExt.Emulation.StarPRNT,
+                                        iLocalizeReceipts,
+                                        false,
+                                        EJFileCreator.backoutString(transactionCompleteDetails, context, isReprint, printModel),
+                                        false);
 
-                                    starIOPort.writePort(command, 0, command.length);
+                                starIOPort.writePort(command, 0, command.length);
 
-                                    starIOPort.endCheckedBlock();
+                                starIOPort.endCheckedBlock();
 
-                                    asyncFinishCallBack.doneProcessing();
-                                } else {
-                                    asyncFinishCallBack.doneProcessing();
-                                    asyncFinishCallBack.error("PRINTER IS OFFLINE");
-                                }
-                            } catch (StarIOPortException e) {
+                                asyncFinishCallBack.doneProcessing();
+                            } else {
                                 asyncFinishCallBack.doneProcessing();
                                 asyncFinishCallBack.error("PRINTER IS OFFLINE");
                             }
-                        } else {
+                        } catch (StarIOPortException e) {
                             asyncFinishCallBack.doneProcessing();
-                            asyncFinishCallBack.error("PRINTER NOT CONNECTED");
+                            asyncFinishCallBack.error("PRINTER IS OFFLINE");
                         }
+                    } else {
+                        asyncFinishCallBack.doneProcessing();
+                        asyncFinishCallBack.error("PRINTER NOT CONNECTED");
                     }
-                }, 500);
+
+                }
             } catch (StarIOPortException e) {
                 asyncFinishCallBack.doneProcessing();
                 asyncFinishCallBack.error("PRINTER NOT CONNECTED");

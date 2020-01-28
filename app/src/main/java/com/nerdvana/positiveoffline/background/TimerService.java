@@ -90,7 +90,7 @@ public class TimerService extends Service {
                     BusProvider.getInstance().post(new ReprintReceiptData(""));
                 }
 
-                if (secsOfDate % 30 == 0) { //process sending of data to server
+                if (secsOfDate % 10 == 0) { //process sending of data to server
                     final PosDatabase posDatabase = DatabaseHelper.getDatabase(TimerService.this);
                     new AsyncTask<Void, Void, Void>() {
 

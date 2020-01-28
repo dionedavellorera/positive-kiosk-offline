@@ -67,6 +67,7 @@ import com.starmicronics.stario.StarIOPortException;
 import com.starmicronics.stario.StarResultCode;
 import com.starmicronics.starioextension.ConnectionCallback;
 import com.starmicronics.starioextension.ICommandBuilder;
+import com.starmicronics.starioextension.StarIoExtManager;
 import com.starmicronics.starioextension.StarIoExtManagerListener;
 
 import java.io.File;
@@ -81,6 +82,9 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements AsyncFinishCallBack {
+
+    private StarIoExtManager mStarIoExtManager;
+
     private CutOffViewModel cutOffViewModel;
     boolean hasError = false;
 
@@ -317,11 +321,14 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         } else if (SharedPreferenceManager.getString(MainActivity.this, AppConstants.SELECTED_PRINTER_MODEL).equalsIgnoreCase(String.valueOf(OtherPrinterModel.STAR_PRINTER))){
 
 
+//           mStarIoExtManager = new StarIoExtManager(StarIoExtManager.Type.WithBarcodeReader, SharedPreferenceManager.getString(MainActivity.this, AppConstants.SELECTED_PRINTER_MANUALLY), "", 2000, MainActivity.this);
+
+
 
             try {
                 if (StarIOPort.searchPrinter("BT:").size() > 0) {
                     if (starIoPort == null) {
-                        Log.d("PEKPEK", "GERE");
+
 //                        starIoPort = SStarPort.getStarIOPort();
                     }
                 }

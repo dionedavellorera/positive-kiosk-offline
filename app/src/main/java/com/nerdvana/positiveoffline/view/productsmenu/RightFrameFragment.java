@@ -160,6 +160,7 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
                                 getActivity().runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
+
                                         productsAdapter.getFilter().filter(editable);
                                     }
                                 });

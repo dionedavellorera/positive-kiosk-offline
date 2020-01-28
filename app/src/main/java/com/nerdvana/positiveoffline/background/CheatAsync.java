@@ -347,11 +347,11 @@ public class CheatAsync extends AsyncTask<Void, Void, Void> {
                                     asyncFinishCallBack.doneProcessing();
                                 } else {
                                     asyncFinishCallBack.doneProcessing();
-                                    asyncFinishCallBack.error("PRINTER IS OFFLINE");
+//                                    asyncFinishCallBack.error("PRINTER IS OFFLINE");
                                 }
                             } catch (StarIOPortException e) {
                                 asyncFinishCallBack.doneProcessing();
-                                asyncFinishCallBack.error("PRINTER IS OFFLINE");
+//                                asyncFinishCallBack.error("PRINTER IS OFFLINE");
                             }
                         } else {
                             asyncFinishCallBack.doneProcessing();

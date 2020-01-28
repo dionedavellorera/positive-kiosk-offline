@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Positive-offline</string>
+    <string name="app_name">POSitive-Offline</string>
 
     <string name="app_setup">KIOSK SETUP</string>
     <string name="label_host_name">HOST NAME</string>

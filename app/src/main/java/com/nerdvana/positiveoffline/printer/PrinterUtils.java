@@ -8,6 +8,7 @@ import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
+import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.model.PrintModel;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
@@ -137,14 +138,14 @@ public class PrinterUtils {
             addTextToPrinter(printer, "BAGONG ILOG PASIG CITY", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
             addTextToPrinter(printer, "VAT REG TIN: 009-772-500-00000", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
             addTextToPrinter(printer, "ACCRED NO:**********************", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "DATE ISSUED : " + "TODAY", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "VALID UNTIL : " + "TODAY", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+            addTextToPrinter(printer, "DATE ISSUED : " + Utils.getDateTimeToday(), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+            addTextToPrinter(printer, "VALID UNTIL : " + Utils.getDateTimeToday(), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
 //            addTextToPrinter(printer, "Date Issued : " + Utils.birDateTimeFormat(currentDate), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
 //            addTextToPrinter(printer, "Valid Until : " + Utils.birDateTimeFormat(currentDatePlus5), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
 
             addTextToPrinter(printer, "PERMIT NO: ********-***-*******-*****" , Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1,1 ,1 );
-            addTextToPrinter(printer, "DATE ISSUED : " + "TODAY", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "VALID UNTIL : " + "TODAY", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+            addTextToPrinter(printer, "DATE ISSUED : " + Utils.getDateTimeToday(), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+            addTextToPrinter(printer, "VALID UNTIL : " + Utils.getDateTimeToday(), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
 //            addTextToPrinter(printer, "Date Issued : " + Utils.birDateTimeFormat(currentDate), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
 //            addTextToPrinter(printer, "Valid Until : " + Utils.birDateTimeFormat(currentDatePlus5), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
 
