@@ -60,6 +60,11 @@ public class DataSyncViewModel extends AndroidViewModel {
         mRepository.truncatePrinterSeries();
     }
 
+
+    public void truncateProducts() {
+        mRepository.truncateProducts();
+    }
+
     public void truncatePrinterLanguage() {
         mRepository.truncatePrinterLanguage();
     }

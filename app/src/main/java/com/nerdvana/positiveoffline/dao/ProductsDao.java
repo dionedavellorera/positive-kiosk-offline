@@ -23,4 +23,7 @@ public interface ProductsDao {
     @Query("SELECT * FROM Products WHERE departmentId = 3 OR departmentId = 4 OR departmentId = 5")
     List<Products> productsList();
 
+    @Query("DELETE FROM Products")
+    void truncateProducts();
+
 }

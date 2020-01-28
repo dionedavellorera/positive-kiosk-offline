@@ -31,6 +31,7 @@ import com.nerdvana.positiveoffline.dao.DiscountsDao;
 import com.nerdvana.positiveoffline.dao.PaymentTypeDao;
 import com.nerdvana.positiveoffline.dao.PrinterLanguageDao;
 import com.nerdvana.positiveoffline.dao.PrinterSeriesDao;
+import com.nerdvana.positiveoffline.dao.ProductsDao;
 import com.nerdvana.positiveoffline.dao.RoomRatesDao;
 import com.nerdvana.positiveoffline.dao.RoomStatusDao;
 import com.nerdvana.positiveoffline.dao.RoomsDao;
@@ -45,6 +46,7 @@ import com.nerdvana.positiveoffline.entities.Discounts;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
 import com.nerdvana.positiveoffline.entities.PrinterLanguage;
 import com.nerdvana.positiveoffline.entities.PrinterSeries;
+import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.RoomRates;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
@@ -73,6 +75,7 @@ public class DataSyncRepository {
     private DiscountsDao discountsDao;
     private DiscountSettingsDao discountSettingsDao;
     private PrinterSeriesDao printerSeriesDao;
+    private ProductsDao productsDao;
     private PrinterLanguageDao printerLanguageDao;
     private RoomStatusDao roomStatusDao;
     private LiveData<List<DataSync>> allSyncList;
@@ -96,6 +99,7 @@ public class DataSyncRepository {
         discountsDao = posDatabase.discountsDao();
         discountSettingsDao = posDatabase.discountSettingsDao();
         printerSeriesDao = posDatabase.printerSeriesDao();
+        productsDao = posDatabase.productsDao();
         roomStatusDao = posDatabase.roomStatusDao();
         printerLanguageDao = posDatabase.printerLanguageDao();
         allSyncList = dataSyncDao.syncList();
@@ -275,6 +279,11 @@ public class DataSyncRepository {
     public void truncatePrinterSeries() {
         new DataSyncRepository.truncatePrinterSeriesAsyncTask(printerSeriesDao).execute();
     }
+
+    public void truncateProducts() {
+        new DataSyncRepository.truncateProductsAsyncTask(productsDao).execute();
+    }
+
 
     public void truncatePrinterLanguage() {
         new DataSyncRepository.truncatePrinterLanguageAsyncTask(printerLanguageDao).execute();
@@ -647,6 +656,28 @@ public class DataSyncRepository {
         });
 
     }
+
+
+    private static class truncateProductsAsyncTask extends AsyncTask<List<Void>, Void, Void> {
+
+        private ProductsDao mAsyncTaskDao;
+
+        truncateProductsAsyncTask(ProductsDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(List<Void>... lists) {
+            mAsyncTaskDao.truncateProducts();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+
 
     private static class truncatePrinterSeriesAsyncTask extends AsyncTask<List<Void>, Void, Void> {
 

@@ -370,6 +370,7 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 dataSyncViewModel.updateIsSynced(syncModelList.get(0));
                 break;
             case "products":
+                dataSyncViewModel.truncateProducts();
                 syncModelList.get(1).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(1));
                 break;
