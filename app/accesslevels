@@ -1,0 +1,16 @@
+//"label": "Branch > POS > Function > Sync Data" = 126
+//"label": "Branch > POS > Function > Resume Transaction" = 128
+//"label": "Branch > POS > Function > Save Transaction" = 127
+//"label": "POS > Function > Void > Item" = 68
+//"label": "Branch > POS > Function > Payment" = 129
+//"label": "POS > Function > Void > Post" - VOID TRANSACTION/POST VOID = 67
+//"label": "Branch > POS > Function > Discount" = 62
+//"label": "Branch > POS > Function > View Receipt" = 125
+//"label": "Branch > POS > Settings" = 124
+//"label": "Branch > POS > Function > Switch Room" = 69
+//"label": "Branch > POS > Function > SOA" = 123
+//"label": "Branch > POS > Function > xReading" = 72
+//"label": "Branch > POS > Function > zReading" = 73
+//"label": "POS > Function > Reprint > xReading" = 75
+//"label": "POS > Function > Reprint > zReading" = 76
+//"label": "Branch > POS > Function > Reprint" = 74 OR REPRINT

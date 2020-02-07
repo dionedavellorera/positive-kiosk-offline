@@ -98,6 +98,7 @@
         android:layout_height="wrap_content"
         android:text="@string/label_product_key"/>
 
+
     <com.nerdvana.positiveoffline.view.HidingEditText
         android:id="@+id/etProductKey"
         android:layout_marginLeft="15dp"

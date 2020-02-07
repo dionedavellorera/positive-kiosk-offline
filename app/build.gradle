@@ -64,4 +64,6 @@ dependencies {
     implementation files('libs/StarIOPort3.1.jar')
     implementation files('libs/starioextension.jar')
     implementation(name: 'smcloudservices', ext: 'aar')
+
+    implementation 'com.github.pinball83:masked-edittext:1.0.4'
 }

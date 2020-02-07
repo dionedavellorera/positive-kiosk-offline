@@ -24,6 +24,34 @@ public class User {
 
     private boolean is_logged_in;
 
+    private String role = "";
+    private String access = "";
+    private String user_group = "";
+
+    public String getUser_group() {
+        return user_group;
+    }
+
+    public void setUser_group(String user_group) {
+        this.user_group = user_group;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getAccess() {
+        return access;
+    }
+
+    public void setAccess(String access) {
+        this.access = access;
+    }
+
     public boolean isIs_logged_in() {
         return is_logged_in;
     }

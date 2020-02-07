@@ -95,12 +95,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private TextView subTotalValue;
     private TextView totalValue;
     private TextView discountValue;
-
-
-
     private RecyclerView listCheckoutItems;
-
-
 
     private String transactionId = "";
     @Nullable
@@ -364,47 +359,70 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
                 BusProvider.getInstance().post(new PrintModel("CHEAT", "123131"));
 
-
                 break;
             case 109://PRINT SOA
-                if (transactionsViewModel.loadedTransactionList(transactionId).size() > 0) {
-                    Transactions currentTrans = transactionsViewModel.loadedTransactionList(transactionId).get(0);
-                    if (currentTrans.getRoom_id() != 0) {
-                        Rooms rooms = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
-                        if (rooms != null) {
-                            BusProvider.getInstance().post(new PrintModel("SOA", GsonHelper.getGson().toJson(transactionsViewModel.getTransactionViaTransactionId(rooms.getTransaction_id()))));
-                        } else {
-                            Helper.showDialogMessage(getContext(), "No room/table attached to orders", getString(R.string.header_message));
-                        }
-                    } else {
-                        Helper.showDialogMessage(getActivity(), "No room/table attached to transaction", getString(R.string.header_message));
+                if (Utils.isPasswordProtected(userViewModel, "123")) {
+                    if (passwordDialog == null) {
+                        passwordDialog = new PasswordDialog(getActivity(), "SOA", userViewModel, transactionsViewModel) {
+                            @Override
+                            public void success() {
+                                doSoaFunction();
+                            }
+                        };
+
+                        passwordDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+
+                        passwordDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+                        passwordDialog.show();
                     }
+
                 } else {
-                    Helper.showDialogMessage(getActivity(), "No room/table attached to transaction", getString(R.string.header_message));
+                    doSoaFunction();
                 }
+
 
 
 
                 break;
             case 107://TRANSFER ROOM
-                if (transactionsViewModel.loadedTransactionList(transactionId).size() > 0) {
-                    Transactions currentTrans = transactionsViewModel.loadedTransactionList(transactionId).get(0);
-                    if (currentTrans.getRoom_id() != 0) {
-                        Rooms rooms = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
-                        if (rooms != null) {
-                            Intent roomsActivityIntent = new Intent(getContext(), RoomsActivity.class);
-                            roomsActivityIntent.putExtra(AppConstants.TRANS_ID, TextUtils.isEmpty(transactionId) ? 0 : Integer.valueOf(transactionId));
-                            roomsActivityIntent.putExtra(AppConstants.TRANSFER, "y");
-                            startActivityForResult(roomsActivityIntent, ROOM_SELECTED_RETURN);
-                        } else {
-                            Helper.showDialogMessage(getContext(), "No room attached to orders", getString(R.string.header_message));
-                        }
-                    } else {
-                        Helper.showDialogMessage(getActivity(), "No room attached to transaction", getString(R.string.header_message));
+                if (Utils.isPasswordProtected(userViewModel, "69")) {
+                    if (passwordDialog == null) {
+                        passwordDialog = new PasswordDialog(getActivity(),"TRANSFER ROOM", userViewModel, transactionsViewModel) {
+                            @Override
+                            public void success() {
+                                doTransferRoomFunction();
+                            }
+                        };
+                        passwordDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+
+                        passwordDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+                        passwordDialog.show();
                     }
+
                 } else {
-                    Helper.showDialogMessage(getActivity(), "No room attached to transaction", getString(R.string.header_message));
+                    doTransferRoomFunction();
                 }
+
 
 
                 break;
@@ -415,64 +433,92 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                 startActivityForResult(roomsActivityIntent, ROOM_SELECTED_RETURN);
                 break;
             case 996://OPEN VIEW RECEIPT
-                if (transactionDialog == null) {
-                    transactionDialog = new TransactionDialog(getActivity(),
-                            getContext().getString(R.string.title_reprint_transactions),
-                            transactionsViewModel,
-                            userViewModel,
-                            false);
-                    transactionDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialogInterface) {
-                            transactionDialog = null;
-                        }
-                    });
-                    transactionDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialogInterface) {
-                            transactionDialog = null;
-                        }
-                    });
+                if (Utils.isPasswordProtected(userViewModel, "125")) {
+                    if (passwordDialog == null) {
+                        passwordDialog = new PasswordDialog(getActivity(), "VIEW RECEIPT", userViewModel, transactionsViewModel) {
+                            @Override
+                            public void success() {
+                                doViewReceiptFunction();
+                            }
+                        };
+                        passwordDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
 
-                    transactionDialog.show();
+                        passwordDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+                        passwordDialog.show();
+                    }
+                } else {
+                    doViewReceiptFunction();
                 }
+
                 break;
             case 129://OPEN SETTINGS
-                startActivity(new Intent(getContext(), SettingsActivity.class));
+                if (Utils.isPasswordProtected(userViewModel, "124")) {
+                    if (passwordDialog == null) {
+                        passwordDialog = new PasswordDialog(getActivity(), "SETTINGS", userViewModel, transactionsViewModel) {
+                            @Override
+                            public void success() {
+                                startActivity(new Intent(getContext(), SettingsActivity.class));
+                            }
+                        };
+                        passwordDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+
+                        passwordDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+                    }
+                } else {
+                    startActivity(new Intent(getContext(), SettingsActivity.class));
+                }
+
                 break;
             case 115://OPEN DISCOUNT DIALOG
-                if (!TextUtils.isEmpty(transactionId)) {
-                    if (transactionsViewModel.orderList(transactionId).size() > 0) {
-                        if (discountMenuDialog == null) {
-                            discountMenuDialog = new DiscountMenuDialog(getActivity(), discountViewModel,
-                                    transactionsViewModel, transactionId);
-                            discountMenuDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                @Override
-                                public void onDismiss(DialogInterface dialogInterface) {
-                                    discountMenuDialog = null;
-                                }
-                            });
+                if (Utils.isPasswordProtected(userViewModel, "62")) {
+                    if (passwordDialog == null) {
 
-                            discountMenuDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                                @Override
-                                public void onCancel(DialogInterface dialogInterface) {
-                                    discountMenuDialog = null;
-                                }
-                            });
-                            discountMenuDialog.show();
-                        }
+                        passwordDialog = new PasswordDialog(getActivity(), "DISCOUNT", userViewModel, transactionsViewModel) {
+                            @Override
+                            public void success() {
+                                doDiscountFunction();
+                            }
+                        };
 
-                    } else {
-                        Helper.showDialogMessage(getActivity(),
-                                getContext().getString(R.string.error_no_items_disc),
-                                getContext().getString(R.string.header_message));
+                        passwordDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+
+                        passwordDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+                        passwordDialog.show();
                     }
-
                 } else {
-                    Helper.showDialogMessage(getActivity(),
-                            getContext().getString(R.string.error_no_transaction_disc),
-                            getContext().getString(R.string.header_message));
+                    doDiscountFunction();
                 }
+
 
 
 
@@ -498,154 +544,96 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                 }
                 break;
             case 113://VOID TRANSACTION
-                if (transactionDialog == null) {
-                    transactionDialog = new TransactionDialog(getActivity(),
-                            getContext().getString(R.string.title_completed_transactions),
-                            transactionsViewModel,
-                            userViewModel,
-                            true);
-                    transactionDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialogInterface) {
-                            transactionDialog = null;
-                        }
-                    });
-                    transactionDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialogInterface) {
-                            transactionDialog = null;
-                        }
-                    });
-
-                    transactionDialog.show();
-                }
-//                startActivity(new Intent(getContext(), TransactionActivity.class));
-                break;
-            case 105://PAYMENT
-                if (!TextUtils.isEmpty(transactionId)) {
-                    if (transactionsViewModel.orderList(transactionId).size() > 0) {
-                        if (paymentDialog == null) {
-                            paymentDialog = new PaymentDialog(getActivity(), dataSyncViewModel,
-                                    transactionsViewModel, transactionId,
-                                    userViewModel, roomsViewModel) {
-                                @Override
-                                public void completed(String receiptNumber) {
-
-
-                                    try {
-                                        BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
-//                                        BusProvider.getInstance().post(new PrintModel("CHEAT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
-                                    } catch (ExecutionException e) {
-                                        e.printStackTrace();
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
-
-                                    try {
-                                        if (transactionsList().size() > 0) {
-                                            transactionId = String.valueOf(transactionsList().get(0).getId());
-                                            setOrderAdapter(transactionsViewModel.orderList(transactionId));
-                                        } else {
-                                            defaults();
-                                        }
-                                    } catch (ExecutionException e) {
-                                        e.printStackTrace();
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            };
-                            paymentDialog.show();
-
-                            paymentDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                                @Override
-                                public void onCancel(DialogInterface dialogInterface) {
-                                    paymentDialog = null;
-                                }
-                            });
-
-                            paymentDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                @Override
-                                public void onDismiss(DialogInterface dialogInterface) {
-                                    paymentDialog = null;
-                                }
-                            });
-                        }
-
-                    } else {
-                        Helper.showDialogMessage(getActivity(),
-                                getContext().getString(R.string.error_no_items),
-                                getContext().getString(R.string.header_message));
-                    }
-
-                } else {
-                    Helper.showDialogMessage(getActivity(),
-                            getContext().getString(R.string.error_no_transaction),
-                            getContext().getString(R.string.header_message));
-                }
-
-                break;
-            case 101://ITEM VOID
-                if (getEditingOrderList().size() > 0) {
+                if (Utils.isPasswordProtected(userViewModel, "67")) {
                     if (passwordDialog == null) {
-                        passwordDialog = new PasswordDialog(getActivity(),
-                                getContext().getString(R.string.item_void_password_dialog),
-                                userViewModel,
-                                transactionsViewModel) {
+                        passwordDialog = new PasswordDialog(getActivity(), "POST VOID", userViewModel, transactionsViewModel) {
                             @Override
                             public void success() {
-
-                                try {
-
-
-                                    for (Orders order : getEditingOrderList()) {
-                                        order.setIs_sent_to_server(0);
-                                        order.setIs_void(true);
-                                        order.setIs_editing(false);
-                                        transactionsViewModel.updateOrder(order);
-                                    }
-
-
-                                    Transactions currentTrans = transactionsViewModel.loadedTransactionList(transactionId).get(0);
-                                    if (currentTrans.getRoom_id() != 0) {
-                                        List<Orders> currentPunchedRoomRate = transactionsViewModel.roomRateList(transactionId);
-                                        if (currentPunchedRoomRate.size() < 1) {
-                                            currentTrans.setIs_sent_to_server(0);
-                                            currentTrans.setRoom_number("");
-                                            currentTrans.setCheck_in_time("");
-                                            currentTrans.setCheck_out_time("");
-                                            currentTrans.setRoom_id(0);
-                                            transactionsViewModel.update(currentTrans);
-                                            changeRoomStatus(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)), 3, true);
-                                        }
-                                    }
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-
-
-
-
+                                doVoidTransactionFunction();
                             }
                         };
-                        passwordDialog.show();
-
                         passwordDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                             @Override
                             public void onCancel(DialogInterface dialogInterface) {
                                 passwordDialog = null;
                             }
                         });
-
                         passwordDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                             @Override
                             public void onDismiss(DialogInterface dialogInterface) {
                                 passwordDialog = null;
                             }
                         });
+                        passwordDialog.show();
                     }
+                } else {
+                    doVoidTransactionFunction();
+                }
+
+//                startActivity(new Intent(getContext(), TransactionActivity.class));
+                break;
+            case 105://PAYMENT
+                if (Utils.isPasswordProtected(userViewModel, "129")) {
+                    if (passwordDialog == null) {
+                        passwordDialog = new PasswordDialog(getActivity(), "PAYMENT", userViewModel, transactionsViewModel) {
+                            @Override
+                            public void success() {
+                                doPaymentFunction();
+                            }
+                        };
+                        passwordDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+                        passwordDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+                        passwordDialog.show();
+                    }
+                } else {
+                    doPaymentFunction();
+                }
+
+
+                break;
+            case 101://ITEM VOID
+                if (getEditingOrderList().size() > 0) {
+                    if (Utils.isPasswordProtected(userViewModel, "68")) {
+                        if (passwordDialog == null) {
+                            passwordDialog = new PasswordDialog(getActivity(),
+                                    getContext().getString(R.string.item_void_password_dialog),
+                                    userViewModel,
+                                    transactionsViewModel) {
+                                @Override
+                                public void success() {
+                                    doItemVoidFunction();
+                                }
+                            };
+                            passwordDialog.show();
+
+                            passwordDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialogInterface) {
+                                    passwordDialog = null;
+                                }
+                            });
+
+                            passwordDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+                                    passwordDialog = null;
+                                }
+                            });
+                        }
+                    } else {
+                        doItemVoidFunction();
+                    }
+
 
                 } else {
                     Helper.showDialogMessage(getActivity(), "No item to void", "Information");
@@ -711,56 +699,60 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                 }
                 break;
             case 100://SAVE TRANSACTION
-                try {
-                    if (transactionsList().size() > 0) {
-                        if (inputDialog == null) {
-                            inputDialog = new InputDialog(getActivity()) {
-                                @Override
-                                public void confirm(String str) {
-
-                                    try {
-                                        saveTransaction(transactionsList().get(0), str);
-                                    } catch (ExecutionException e) {
-                                        e.printStackTrace();
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            };
-                            inputDialog.show();
-
-                            inputDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                                @Override
-                                public void onCancel(DialogInterface dialogInterface) {
-                                    inputDialog = null;
-                                }
-                            });
-
-                            inputDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                @Override
-                                public void onDismiss(DialogInterface dialogInterface) {
-                                    inputDialog = null;
-                                }
-                            });
-                        }
-
-
-                    } else {
-                        if (loadedTransactionsList(transactionId).size() > 0) {
-
-                            saveTransaction(loadedTransactionsList(transactionId).get(0), "");
-
-                        }
+                if (Utils.isPasswordProtected(userViewModel, "127")) {
+                    if (passwordDialog == null) {
+                        passwordDialog = new PasswordDialog(getActivity(), "SAVE TRANSACTION", userViewModel, transactionsViewModel) {
+                            @Override
+                            public void success() {
+                                doSaveTransactionFunction();
+                            }
+                        };
+                        passwordDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+                        passwordDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+                        passwordDialog.show();
                     }
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                } else {
+                    doSaveTransactionFunction();
                 }
+
                 break;
             case 9988://RESUME TRANSACTION
-                Intent resumeTransactionIntent = new Intent(getContext(), ResumeTransactionActivity.class);
-                startActivityForResult(resumeTransactionIntent, RESUME_TRANS_RETURN);
+                if (Utils.isPasswordProtected(userViewModel, "128")) {
+                    if (passwordDialog == null) {
+                        passwordDialog = new PasswordDialog(getActivity(), "RESUME TRANSACTION", userViewModel, transactionsViewModel) {
+                            @Override
+                            public void success() {
+                                doResumeTransaction();
+                            }
+                        };
+                        passwordDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+                        passwordDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                passwordDialog = null;
+                            }
+                        });
+                        passwordDialog.show();
+                    }
+                } else {
+                    doResumeTransaction();
+                }
+
                 break;
             case 116://CANCEL BACK TO DEFAULTS
                 if (transactionsList().size() > 0) {
@@ -770,6 +762,303 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     defaults();
                 }
                 break;
+        }
+    }
+
+    private void doResumeTransaction() {
+        Intent resumeTransactionIntent = new Intent(getContext(), ResumeTransactionActivity.class);
+        startActivityForResult(resumeTransactionIntent, RESUME_TRANS_RETURN);
+    }
+
+    private void doSaveTransactionFunction() {
+        try {
+            if (transactionsList().size() > 0) {
+                if (inputDialog == null) {
+                    inputDialog = new InputDialog(getActivity()) {
+                        @Override
+                        public void confirm(String str) {
+
+                            try {
+                                saveTransaction(transactionsList().get(0), str);
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    };
+                    inputDialog.show();
+
+                    inputDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialogInterface) {
+                            inputDialog = null;
+                        }
+                    });
+
+                    inputDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            inputDialog = null;
+                        }
+                    });
+                }
+
+
+            } else {
+                if (loadedTransactionsList(transactionId).size() > 0) {
+
+                    saveTransaction(loadedTransactionsList(transactionId).get(0), "");
+
+                }
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void doItemVoidFunction() {
+        try {
+
+
+            for (Orders order : getEditingOrderList()) {
+                order.setIs_sent_to_server(0);
+                order.setIs_void(true);
+                order.setIs_editing(false);
+                transactionsViewModel.updateOrder(order);
+            }
+
+
+            Transactions currentTrans = transactionsViewModel.loadedTransactionList(transactionId).get(0);
+            if (currentTrans.getRoom_id() != 0) {
+                List<Orders> currentPunchedRoomRate = transactionsViewModel.roomRateList(transactionId);
+                if (currentPunchedRoomRate.size() < 1) {
+                    currentTrans.setIs_sent_to_server(0);
+                    currentTrans.setRoom_number("");
+                    currentTrans.setCheck_in_time("");
+                    currentTrans.setCheck_out_time("");
+                    currentTrans.setRoom_id(0);
+                    transactionsViewModel.update(currentTrans);
+                    changeRoomStatus(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)), 3, true);
+                }
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void doPaymentFunction() {
+        if (!TextUtils.isEmpty(transactionId)) {
+            try {
+                if (transactionsViewModel.orderList(transactionId).size() > 0) {
+                    if (paymentDialog == null) {
+                        paymentDialog = new PaymentDialog(getActivity(), dataSyncViewModel,
+                                transactionsViewModel, transactionId,
+                                userViewModel, roomsViewModel) {
+                            @Override
+                            public void completed(String receiptNumber) {
+
+
+                                try {
+                                    BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
+    //                                        BusProvider.getInstance().post(new PrintModel("CHEAT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+
+                                try {
+                                    if (transactionsList().size() > 0) {
+                                        transactionId = String.valueOf(transactionsList().get(0).getId());
+                                        setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                                    } else {
+                                        defaults();
+                                    }
+                                } catch (ExecutionException e) {
+                                    e.printStackTrace();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        };
+                        paymentDialog.show();
+
+                        paymentDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                paymentDialog = null;
+                            }
+                        });
+
+                        paymentDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                paymentDialog = null;
+                            }
+                        });
+                    }
+
+                } else {
+                    Helper.showDialogMessage(getActivity(),
+                            getContext().getString(R.string.error_no_items),
+                            getContext().getString(R.string.header_message));
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        } else {
+            Helper.showDialogMessage(getActivity(),
+                    getContext().getString(R.string.error_no_transaction),
+                    getContext().getString(R.string.header_message));
+        }
+    }
+
+    private void doVoidTransactionFunction() {
+        if (transactionDialog == null) {
+            transactionDialog = new TransactionDialog(getActivity(),
+                    getContext().getString(R.string.title_completed_transactions),
+                    transactionsViewModel,
+                    userViewModel,
+                    true);
+            transactionDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialogInterface) {
+                    transactionDialog = null;
+                }
+            });
+            transactionDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialogInterface) {
+                    transactionDialog = null;
+                }
+            });
+
+            transactionDialog.show();
+        }
+    }
+
+    private void doDiscountFunction() {
+        if (!TextUtils.isEmpty(transactionId)) {
+            try {
+                if (transactionsViewModel.orderList(transactionId).size() > 0) {
+                    if (discountMenuDialog == null) {
+                        discountMenuDialog = new DiscountMenuDialog(getActivity(), discountViewModel,
+                                transactionsViewModel, transactionId);
+                        discountMenuDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                discountMenuDialog = null;
+                            }
+                        });
+
+                        discountMenuDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                discountMenuDialog = null;
+                            }
+                        });
+                        discountMenuDialog.show();
+                    }
+
+                } else {
+                    Helper.showDialogMessage(getActivity(),
+                            getContext().getString(R.string.error_no_items_disc),
+                            getContext().getString(R.string.header_message));
+                }
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        } else {
+            Helper.showDialogMessage(getActivity(),
+                    getContext().getString(R.string.error_no_transaction_disc),
+                    getContext().getString(R.string.header_message));
+        }
+    }
+
+    private void doViewReceiptFunction() {
+        if (transactionDialog == null) {
+            transactionDialog = new TransactionDialog(getActivity(),
+                    getContext().getString(R.string.title_reprint_transactions),
+                    transactionsViewModel,
+                    userViewModel,
+                    false);
+            transactionDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialogInterface) {
+                    transactionDialog = null;
+                }
+            });
+            transactionDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialogInterface) {
+                    transactionDialog = null;
+                }
+            });
+
+            transactionDialog.show();
+        }
+    }
+
+    private void doTransferRoomFunction() {
+        try {
+            if (transactionsViewModel.loadedTransactionList(transactionId).size() > 0) {
+                Transactions currentTrans = transactionsViewModel.loadedTransactionList(transactionId).get(0);
+                if (currentTrans.getRoom_id() != 0) {
+                    Rooms rooms = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
+                    if (rooms != null) {
+                        Intent roomsActivityIntent = new Intent(getContext(), RoomsActivity.class);
+                        roomsActivityIntent.putExtra(AppConstants.TRANS_ID, TextUtils.isEmpty(transactionId) ? 0 : Integer.valueOf(transactionId));
+                        roomsActivityIntent.putExtra(AppConstants.TRANSFER, "y");
+                        startActivityForResult(roomsActivityIntent, ROOM_SELECTED_RETURN);
+                    } else {
+                        Helper.showDialogMessage(getContext(), "No room attached to orders", getString(R.string.header_message));
+                    }
+                } else {
+                    Helper.showDialogMessage(getActivity(), "No room attached to transaction", getString(R.string.header_message));
+                }
+            } else {
+                Helper.showDialogMessage(getActivity(), "No room attached to transaction", getString(R.string.header_message));
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void doSoaFunction() {
+        try {
+            if (transactionsViewModel.loadedTransactionList(transactionId).size() > 0) {
+                Transactions currentTrans = transactionsViewModel.loadedTransactionList(transactionId).get(0);
+                if (currentTrans.getRoom_id() != 0) {
+                    Rooms rooms = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
+                    if (rooms != null) {
+                        BusProvider.getInstance().post(new PrintModel("SOA", GsonHelper.getGson().toJson(transactionsViewModel.getTransactionViaTransactionId(rooms.getTransaction_id()))));
+                    } else {
+                        Helper.showDialogMessage(getContext(), "No room/table attached to orders", getString(R.string.header_message));
+                    }
+                } else {
+                    Helper.showDialogMessage(getActivity(), "No room/table attached to transaction", getString(R.string.header_message));
+                }
+            } else {
+                Helper.showDialogMessage(getActivity(), "No room/table attached to transaction", getString(R.string.header_message));
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 

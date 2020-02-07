@@ -43,7 +43,7 @@ public class BottomFrameFragment extends Fragment implements ButtonsContract, As
     private View view;
     private RecyclerView listButtons;
     private ButtonsAdapter buttonsAdapter;
-
+    private UserViewModel userViewModel;
 
     @Nullable
     @Override
@@ -58,9 +58,13 @@ public class BottomFrameFragment extends Fragment implements ButtonsContract, As
         super.onViewCreated(view, savedInstanceState);
 
         initializeViews();
-
+        initUserViewModel();
         setButtonsAdapter();
 
+    }
+
+    private void initUserViewModel() {
+        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
     }
 
 
@@ -77,7 +81,7 @@ public class BottomFrameFragment extends Fragment implements ButtonsContract, As
         buttonsAdapter = new ButtonsAdapter(new ArrayList<ButtonsModel>(), this, getContext());
         listButtons.setLayoutManager(new GridLayoutManager(getContext(),2,  GridLayoutManager.HORIZONTAL, false));
         listButtons.setAdapter(buttonsAdapter);
-        new ButtonsAsync(BottomFrameFragment.this, getContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        new ButtonsAsync(BottomFrameFragment.this, getContext(), userViewModel).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     @Override

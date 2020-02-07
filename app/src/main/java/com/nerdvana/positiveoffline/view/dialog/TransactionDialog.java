@@ -155,7 +155,7 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
     }
 
     @Override
-    public void clicked(TransactionWithOrders transactionWithOrders) {
+    public void clicked(final TransactionWithOrders transactionWithOrders) {
         try {
             if (forVoid) {
                 progressDialog.setMessage("VOIDING TRANSACTION ...");
@@ -222,22 +222,42 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                 search.setText("");
 
             } else {
-                progressDialog.setMessage("REPRINTING ...");
-                progressDialog.show();
-                BusProvider.getInstance().post(new PrintModel("REPRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(transactionWithOrders.transactions.getReceipt_number()))));
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        progressDialog.dismiss();
-                    }
-                }, 500);
+                if (Utils.isPasswordProtected(userViewModel, "74")) {
+                    PasswordDialog passwordDialog = new PasswordDialog(getContext(), "REPRINT OR", userViewModel, transactionsViewModel) {
+                        @Override
+                        public void success() {
+                            doReprintFunction(transactionWithOrders.transactions.getReceipt_number());
+                        }
+                    };
+                    passwordDialog.show();
+                } else {
+                    doReprintFunction(transactionWithOrders.transactions.getReceipt_number());
+                }
+
             }
 
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+
+    }
+
+    private void doReprintFunction(String receiptNumber) {
+        try {
+            progressDialog.setMessage("REPRINTING ...");
+            progressDialog.show();
+            BusProvider.getInstance().post(new PrintModel("REPRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    progressDialog.dismiss();
+                }
+            }, 500);
+        } catch (Exception e) {
+
         }
 
     }

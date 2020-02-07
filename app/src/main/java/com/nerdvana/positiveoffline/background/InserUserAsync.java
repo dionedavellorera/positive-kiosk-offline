@@ -40,6 +40,14 @@ public class InserUserAsync extends AsyncTask<Void, Void, Void> {
             user.setUsername(r.getUsername());
             user.setPassword(r.getPassword());
             user.setIs_logged_in(false);
+            if (r.getRole() != null) {
+                user.setRole(r.getRole().getRole());
+                if (r.getRole().getGroup() != null) {
+                    user.setUser_group(r.getRole().getGroup().getUser_group());
+                    user.setAccess(r.getRole().getGroup().getAccess());
+                }
+            }
+            user.setIs_logged_in(false);
             users.add(user);
         }
 
