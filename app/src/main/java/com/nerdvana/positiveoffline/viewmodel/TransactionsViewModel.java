@@ -116,113 +116,117 @@ public class TransactionsViewModel extends AndroidViewModel {
                 List<DiscountComputeModel> dcm = new ArrayList<>();
                 for (OrderWithDiscounts owd : discountViewModel.getOrderWithDiscount(transactionId)) {
 
-                    //region check if special
-                    for (OrderDiscounts od : owd.orderWithDiscountList) {
-                        if (!od.getIs_void()) {
-                            if (od.getDiscount_name().equalsIgnoreCase("senior") ||
-                                    od.getDiscount_name().equalsIgnoreCase("pwd")) {
-                                hasSpecial = 1;
-                            }
-
-                        }
-                    }
-                    //endregion
-
-                    Double remainingAmount = 0.00;
-                    Double finalAmount = 0.00;
-                    Double totalDiscountAmount = 0.00; ;
-
-                    if (hasSpecial == 1) {
-                        remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
-                        finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
-                        totalDiscountAmount = 0.00;
-                    } else {
-                        remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
-                        finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
-                        totalDiscountAmount = 0.00;
-                    }
-
-                    //region apply discounting
-
-                    List<OrderDiscounts> sortedDiscounts = new ArrayList<>();
-
-                    int otherCounter = 0;
-
-
-                    for (OrderDiscounts od : owd.orderWithDiscountList) {
-                        if (!od.getIs_void()) {
-
-                            if (od.getDiscount_name().equalsIgnoreCase("senior") ||
-                                    od.getDiscount_name().equalsIgnoreCase("pwd")) {
-
-                                sortedDiscounts.add(otherCounter, od);
-
-                            } else {
-
-                                if (od.getIs_percentage()) {
-                                    sortedDiscounts.add(0, od);
-                                } else {
-                                    sortedDiscounts.add(od);
+                    if (owd.orders.getIs_discount_exempt() == 0) {
+                        //region check if special
+                        for (OrderDiscounts od : owd.orderWithDiscountList) {
+                            if (!od.getIs_void()) {
+                                if (od.getDiscount_name().equalsIgnoreCase("senior") ||
+                                        od.getDiscount_name().equalsIgnoreCase("pwd")) {
+                                    hasSpecial = 1;
                                 }
 
-                                otherCounter += 1;
                             }
                         }
-                    }
+                        //endregion
 
-                    Double currentDiscountAmount = 0.00;
+                        Double remainingAmount = 0.00;
+                        Double finalAmount = 0.00;
+                        Double totalDiscountAmount = 0.00; ;
 
-                    for (OrderDiscounts od : sortedDiscounts) {
-                        if (!od.getIs_void()) {
-
-                            if (od.getIs_percentage()) {
-                                totalDiscountAmount += Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100));
-                                currentDiscountAmount = Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100));
-                            } else {
-                                totalDiscountAmount += Utils.roundedOffTwoDecimal(od.getValue());
-                                currentDiscountAmount = Utils.roundedOffTwoDecimal(od.getValue());
-                            }
-
-                            dcm.add(new DiscountComputeModel((int)od.getPosted_discount_id(), currentDiscountAmount));
-
-                            remainingAmount = Utils.roundedOffTwoDecimal(remainingAmount - totalDiscountAmount);
+                        if (hasSpecial == 1) {
+                            remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
+                            finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
+                            totalDiscountAmount = 0.00;
+                        } else {
+                            remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
+                            finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
+                            totalDiscountAmount = 0.00;
                         }
+
+                        //region apply discounting
+
+                        List<OrderDiscounts> sortedDiscounts = new ArrayList<>();
+
+                        int otherCounter = 0;
+
+
+                        for (OrderDiscounts od : owd.orderWithDiscountList) {
+                            if (!od.getIs_void()) {
+
+                                if (od.getDiscount_name().equalsIgnoreCase("senior") ||
+                                        od.getDiscount_name().equalsIgnoreCase("pwd")) {
+
+                                    sortedDiscounts.add(otherCounter, od);
+
+                                } else {
+
+                                    if (od.getIs_percentage()) {
+                                        sortedDiscounts.add(0, od);
+                                    } else {
+                                        sortedDiscounts.add(od);
+                                    }
+
+                                    otherCounter += 1;
+                                }
+                            }
+                        }
+
+                        Double currentDiscountAmount = 0.00;
+
+                        for (OrderDiscounts od : sortedDiscounts) {
+                            if (!od.getIs_void()) {
+
+                                if (od.getIs_percentage()) {
+                                    totalDiscountAmount += Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100));
+                                    currentDiscountAmount = Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100));
+                                } else {
+                                    totalDiscountAmount += Utils.roundedOffTwoDecimal(od.getValue());
+                                    currentDiscountAmount = Utils.roundedOffTwoDecimal(od.getValue());
+                                }
+
+                                dcm.add(new DiscountComputeModel((int)od.getPosted_discount_id(), currentDiscountAmount));
+
+                                remainingAmount = Utils.roundedOffTwoDecimal(remainingAmount - totalDiscountAmount);
+                            }
+                        }
+
+                        //endregion
+
+                        finalAmount = finalAmount - totalDiscountAmount;
+
+                        Orders ord = new Orders(
+                                owd.orders.getTransaction_id(),
+                                owd.orders.getCore_id(),
+                                owd.orders.getQty(),
+                                Utils.roundedOffTwoDecimal(finalAmount),
+                                owd.orders.getOriginal_amount(),
+                                owd.orders.getName(),
+                                owd.orders.getDepartmentId(),
+                                hasSpecial == 1 ? Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() - (owd.orders.getOriginal_amount() / 1.12)) : Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() * .12),
+                                hasSpecial == 1 ? 0.00 : owd.orders.getOriginal_amount() / 1.12,
+                                hasSpecial == 1 ? Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12) : 0.00,
+                                Utils.roundedOffTwoDecimal(totalDiscountAmount),
+                                owd.orders.getDepartmentName(),
+                                owd.orders.getCategoryName(),
+                                owd.orders.getCategoryId(),
+                                0,
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                                Utils.getDateTimeToday(),
+                                owd.orders.getIs_room_rate()
+
+                        );
+                        ord.setId(owd.orders.getId());
+                        updateOrder(ord);
+                        grossSales += Utils.roundedOffTwoDecimal((owd.orders.getVatAmount() + owd.orders.getVatable() + owd.orders.getVatExempt()));
+                        netSales += Utils.roundedOffTwoDecimal(((owd.orders.getVatable() + owd.orders.getVatExempt()) - owd.orders.getDiscountAmount()));
+                        vatableSales += Utils.roundedOffTwoDecimal(owd.orders.getVatable());
+                        vatExemptSales += Utils.roundedOffTwoDecimal(owd.orders.getVatExempt());
+                        vatAmount += Utils.roundedOffTwoDecimal(owd.orders.getVatAmount());
+                        discountAmount += Utils.roundedOffTwoDecimal(totalDiscountAmount);
                     }
 
-                    //endregion
 
-                    finalAmount = finalAmount - totalDiscountAmount;
-
-                    Orders ord = new Orders(
-                            owd.orders.getTransaction_id(),
-                            owd.orders.getCore_id(),
-                            owd.orders.getQty(),
-                            Utils.roundedOffTwoDecimal(finalAmount),
-                            owd.orders.getOriginal_amount(),
-                            owd.orders.getName(),
-                            owd.orders.getDepartmentId(),
-                            hasSpecial == 1 ? Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() - (owd.orders.getOriginal_amount() / 1.12)) : Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() * .12),
-                            hasSpecial == 1 ? 0.00 : owd.orders.getOriginal_amount() / 1.12,
-                            hasSpecial == 1 ? Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12) : 0.00,
-                            Utils.roundedOffTwoDecimal(totalDiscountAmount),
-                            owd.orders.getDepartmentName(),
-                            owd.orders.getCategoryName(),
-                            owd.orders.getCategoryId(),
-                            0,
-                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
-                            Utils.getDateTimeToday(),
-                            owd.orders.getIs_room_rate()
-
-                    );
-                    ord.setId(owd.orders.getId());
-                    updateOrder(ord);
-                    grossSales += Utils.roundedOffTwoDecimal((owd.orders.getVatAmount() + owd.orders.getVatable() + owd.orders.getVatExempt()));
-                    netSales += Utils.roundedOffTwoDecimal(((owd.orders.getVatable() + owd.orders.getVatExempt()) - owd.orders.getDiscountAmount()));
-                    vatableSales += Utils.roundedOffTwoDecimal(owd.orders.getVatable());
-                    vatExemptSales += Utils.roundedOffTwoDecimal(owd.orders.getVatExempt());
-                    vatAmount += Utils.roundedOffTwoDecimal(owd.orders.getVatAmount());
-                    discountAmount += Utils.roundedOffTwoDecimal(totalDiscountAmount);
                 }
 
                 List<DiscountComputeModel> pepe = new ArrayList<>();
@@ -251,36 +255,39 @@ public class TransactionsViewModel extends AndroidViewModel {
                 }
             } else {
                 for (Orders selectedProduct : orderList(transactionId)) {
-                    Orders ord = new Orders(
-                            Integer.valueOf(transactionId),
-                            selectedProduct.getCore_id(),
-                            selectedProduct.getQty(),
-                            selectedProduct.getOriginal_amount(),
-                            selectedProduct.getOriginal_amount(),
-                            selectedProduct.getName(),
-                            selectedProduct.getDepartmentId(),
-                            Utils.roundedOffTwoDecimal((selectedProduct.getOriginal_amount()/1.12) * .12),
-                            Utils.roundedOffTwoDecimal( selectedProduct.getOriginal_amount() / 1.12),
-                            0.00,
-                            0.00,
-                            selectedProduct.getDepartmentName(),
-                            selectedProduct.getCategoryName(),
-                            selectedProduct.getCategoryId(),
-                            0,
-                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
-                            Utils.getDateTimeToday(),
-                            selectedProduct.getIs_room_rate()
-                    );
-                    ord.setId(selectedProduct.getId());
-                    updateOrder(ord);
+                    if (selectedProduct.getIs_discount_exempt() == 0) {
+                        Orders ord = new Orders(
+                                Integer.valueOf(transactionId),
+                                selectedProduct.getCore_id(),
+                                selectedProduct.getQty(),
+                                selectedProduct.getOriginal_amount(),
+                                selectedProduct.getOriginal_amount(),
+                                selectedProduct.getName(),
+                                selectedProduct.getDepartmentId(),
+                                Utils.roundedOffTwoDecimal((selectedProduct.getOriginal_amount()/1.12) * .12),
+                                Utils.roundedOffTwoDecimal( selectedProduct.getOriginal_amount() / 1.12),
+                                0.00,
+                                0.00,
+                                selectedProduct.getDepartmentName(),
+                                selectedProduct.getCategoryName(),
+                                selectedProduct.getCategoryId(),
+                                0,
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                                Utils.getDateTimeToday(),
+                                selectedProduct.getIs_room_rate()
+                        );
+                        ord.setId(selectedProduct.getId());
+                        updateOrder(ord);
 
-                    grossSales += Utils.roundedOffTwoDecimal((selectedProduct.getVatAmount() + selectedProduct.getVatable() + selectedProduct.getVatExempt()));
-                    netSales += Utils.roundedOffTwoDecimal(((selectedProduct.getVatable() + selectedProduct.getVatExempt()) - selectedProduct.getDiscountAmount()));
-                    vatableSales += Utils.roundedOffTwoDecimal(selectedProduct.getVatable());
-                    vatAmount += Utils.roundedOffTwoDecimal(selectedProduct.getVatAmount());
-                    vatExemptSales += 0.00;
-                    discountAmount += 0.00;
+                        grossSales += Utils.roundedOffTwoDecimal((selectedProduct.getVatAmount() + selectedProduct.getVatable() + selectedProduct.getVatExempt()));
+                        netSales += Utils.roundedOffTwoDecimal(((selectedProduct.getVatable() + selectedProduct.getVatExempt()) - selectedProduct.getDiscountAmount()));
+                        vatableSales += Utils.roundedOffTwoDecimal(selectedProduct.getVatable());
+                        vatAmount += Utils.roundedOffTwoDecimal(selectedProduct.getVatAmount());
+                        vatExemptSales += 0.00;
+                        discountAmount += 0.00;
+                    }
+
                 }
             }
 
@@ -316,7 +323,6 @@ public class TransactionsViewModel extends AndroidViewModel {
     public OrDetails getOrDetails(String transactionId) throws ExecutionException, InterruptedException {
         return transactionsRepository.getOrDetails(transactionId);
     }
-
 
 
     public void updateOrder(Orders order) {

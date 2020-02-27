@@ -45,6 +45,8 @@ public class Orders {
 
     private int is_room_rate;
 
+    private int is_discount_exempt = 0;
+
     public Orders(int transaction_id, int core_id,
                   int qty, @NonNull Double amount,
                   @NonNull Double original_amount,
@@ -74,6 +76,14 @@ public class Orders {
         this.vatable = vatable;
         this.vatExempt = vatExempt;
         this.discountAmount = discountAmount;
+    }
+
+    public int getIs_discount_exempt() {
+        return is_discount_exempt;
+    }
+
+    public void setIs_discount_exempt(int is_discount_exempt) {
+        this.is_discount_exempt = is_discount_exempt;
     }
 
     public int getIs_room_rate() {

@@ -355,6 +355,13 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 122:// DISCOUNT EXEMPT
+                if (getEditingOrderList().size() > 0) {
+                    diDiscountExempt(getEditingOrderList(), true);
+                } else {
+                    Helper.showDialogMessage(getActivity(), "No item to discount exempt", "Information");
+                }
+                break;
             case 110:// TEST PRINT
 
                 BusProvider.getInstance().post(new PrintModel("CHEAT", "123131"));
@@ -418,13 +425,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                         });
                         passwordDialog.show();
                     }
-
                 } else {
                     doTransferRoomFunction();
                 }
-
-
-
                 break;
             case 106://OPEN ROOM OR TABLES DEPENDING ON SYSTEM TYPE
                 Intent roomsActivityIntent = new Intent(getContext(), RoomsActivity.class);
@@ -762,6 +765,18 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     defaults();
                 }
                 break;
+        }
+    }
+
+    private void diDiscountExempt(List<Orders> ordersList, boolean willDiscountExempt) {
+        for (Orders orders : ordersList) {
+            if (willDiscountExempt) {
+                orders.setIs_discount_exempt(1);
+            } else {
+                orders.setIs_discount_exempt(0);
+            }
+            orders.setIs_editing(false);
+            transactionsViewModel.updateOrder(orders);
         }
     }
 
