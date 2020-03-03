@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:id="@+id/rootView">
 
+    
     <TextView
         android:gravity="center_vertical"
         android:padding="5dp"

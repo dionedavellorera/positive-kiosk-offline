@@ -85,7 +85,12 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             ((CheckoutAdapter.ViewHolder)holder).rootView.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
         }
 
-        ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(productsModel.getName());
+        if (productsModel.getIs_discount_exempt() == 1) {
+            ((CheckoutAdapter.ViewHolder)holder).listItemName.setText("(DE)" +productsModel.getName());
+        } else {
+            ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(productsModel.getName());
+        }
+
         ((CheckoutAdapter.ViewHolder)holder).listItemQty.setText(String.valueOf(productsModel.getQty()));
         ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setText(Utils.digitsWithComma(productsModel.getOriginal_amount() * productsModel.getQty()));
 

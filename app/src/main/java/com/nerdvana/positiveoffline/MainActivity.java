@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.nerdvana.positiveoffline.apirequests.TestRequest;
 import com.nerdvana.positiveoffline.apiresponses.TestResponse;
+import com.nerdvana.positiveoffline.background.IntransitAsync;
 import com.nerdvana.positiveoffline.model.ShiftUpdateModel;
 import com.nerdvana.positiveoffline.model.TimerUpdateModel;
 import com.nerdvana.positiveoffline.printjobasync.BackoutAsync;
@@ -408,6 +409,11 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         Log.d("QWEQEQ", printModel.getType());
 
         switch (printModel.getType()) {
+            case "PRINT_INTRANSIT":
+                addAsync(new IntransitAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "intransit");
+                break;
             case "SOA":
                 addAsync(new SoaAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
@@ -454,6 +460,12 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                         this, dataSyncViewModel,
                         iLocalizeReceipts, SStarPort.getStarIOPort(), true), "print_xread");
                 break;
+            case "PRINT_SPOT_AUDIT":
+//                saveEjFile(printModel);
+                addAsync(new CutOffAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_xread");
+                break;
             case "PRINT_XREAD":
                 saveEjFile(printModel);
                 addAsync(new CutOffAsync(printModel, MainActivity.this,
@@ -488,6 +500,10 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     private void runTask(String taskName, AsyncTask asyncTask) {
 
         switch (taskName) {
+            case "intransit":
+                IntransitAsync intransitAsync = (IntransitAsync) asyncTask;
+                intransitAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                break;
             case "soa":
                 SoaAsync soaAsync = (SoaAsync) asyncTask;
                 soaAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);

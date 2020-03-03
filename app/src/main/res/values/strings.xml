@@ -13,6 +13,8 @@
     <string name="hint_product_key">#####-#####-#####-#####-#####</string>
     <string name="general_progress_text">Loading.. please wait</string>
     <string name="error_message_fill_up_all_fields">Please fill up all fields</string>
+    <string name="no_item_to_discount">No item to discount</string>
+    <string name="no_item_to_discount_disc_exempt">All items selected are discount exempted</string>
     <string name="text_header_error">Error</string>
     <string name="error_message_invalid_url">Invalid url</string>
     <string name="header_message">Message</string>

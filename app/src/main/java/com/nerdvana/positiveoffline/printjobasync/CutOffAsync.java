@@ -106,11 +106,16 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
 
             PrinterUtils.addHeader(printModel, printer);
             addPrinterSpace(1, printer);
-            if (isReprint) {
-                addTextToPrinter(printer, "X READING(REPRINT)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+            if (printModel.getType().equalsIgnoreCase("PRINT_SPOT_AUDIT")) {
+                addTextToPrinter(printer, "SPOT AUDIT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
             } else {
-                addTextToPrinter(printer, "X READING", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+                if (isReprint) {
+                    addTextToPrinter(printer, "X READING(REPRINT)", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+                } else {
+                    addTextToPrinter(printer, "X READING", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+                }
             }
+
 
             addPrinterSpace(1, printer);
 

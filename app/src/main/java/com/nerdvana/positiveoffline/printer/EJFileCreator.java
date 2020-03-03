@@ -1,7 +1,15 @@
 package com.nerdvana.positiveoffline.printer;
 
 import android.content.Context;
+import android.text.TextUtils;
 
+import androidx.core.content.ContextCompat;
+
+import com.epson.epos2.Epos2Exception;
+import com.epson.epos2.printer.Printer;
+import com.epson.epos2.printer.PrinterStatusInfo;
+import com.epson.epos2.printer.ReceiveListener;
+import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
@@ -12,11 +20,22 @@ import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
+import com.nerdvana.positiveoffline.model.OtherPrinterModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
+import com.nerdvana.positiveoffline.model.TransactionWithOrders;
+
+import org.joda.time.DateTime;
+import org.joda.time.Minutes;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import static com.nerdvana.positiveoffline.printer.PrinterUtils.addPrinterSpace;
+import static com.nerdvana.positiveoffline.printer.PrinterUtils.addTextToPrinter;
 
 public class EJFileCreator {
 
@@ -473,7 +492,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString("", "", context, true);
         finalString += PrinterUtils.receiptString("OR NO", transactionCompleteDetails.transactions.getReceipt_number(), context, false);
-        finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
+//        finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
         finalString += PrinterUtils.receiptString("", "", context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
         finalString += PrinterUtils.receiptString("QTY  DESCRIPTION          AMOUNT", "", context, true);
@@ -1383,6 +1402,63 @@ public class EJFileCreator {
                 context,
                 true);
         return finalString;
+    }
+
+    private static String intransitReceipt(List<String> details, Context ctx) {
+        String finalString = "";
+        float maxColumn = Float.valueOf(SharedPreferenceManager.getString(ctx, AppConstants.MAX_COLUMN_COUNT));
+        int perColumn = (int)maxColumn / details.size();
+
+        for (int i = 0; i < details.size(); i++) {
+            if (details.size() >= perColumn) {
+                finalString += details.get(i);
+            } else {
+                finalString += details.get(i);
+                float temp = perColumn - details.get(i).length();
+                for (int j = 0; j < temp; j++) {
+                    finalString += " ";
+                }
+            }
+        }
+        return finalString;
+    }
+
+
+    public static String intransitString(List<TransactionWithOrders> data, Context ctx){
+        String finalString = "";
+
+        List<TransactionWithOrders> transactions = data;
+
+
+        finalString += "INTRANSIT SLIP" + "\n";
+        List<String> t = new ArrayList<>();
+        t.add("I");
+        t.add("II");
+        t.add("III");
+        t.add("IV");
+        t.add("V");
+
+        finalString += intransitReceipt(t, ctx) + "\n";
+
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        for (TransactionWithOrders tr : transactions) {
+            List<String> temp = new ArrayList<>();
+            DateTime dt = formatter.parseDateTime(tr.transactions.getSaved_at());
+
+
+            temp.add(tr.transactions.getTrans_name());
+            temp.add(String.valueOf(tr.ordersList.size()));
+            String dateONly = tr.transactions.getSaved_at().split(" ")[0];
+            temp.add(dateONly.split("-")[1] + "-" + dateONly.split("-")[2]);
+
+            temp.add(String.valueOf(tr.transactions.getGross_sales()));
+            temp.add(String.valueOf(Minutes.minutesBetween(dt, new DateTime()).getMinutes()) + " MINS");
+
+            finalString += intransitReceipt(temp, ctx) + "\n";
+        }
+        finalString += "\n";
+        return finalString;
+
     }
 
     public static String soaString(TransactionCompleteDetails transactionCompleteDetails, Context context, boolean isReprint, PrintModel printModel) {

@@ -47,6 +47,7 @@ public class TransactionsViewModel extends AndroidViewModel {
     }
 
 
+
     public void insertPayment(List<Payments> paymentList) {
         transactionsRepository.insertPayment(paymentList);
     }
@@ -418,6 +419,10 @@ public class TransactionsViewModel extends AndroidViewModel {
 
     public List<OrDetails> getAllSavedOr() throws ExecutionException, InterruptedException {
         return transactionsRepository.getAllSavedOr();
+    }
+
+    public List<TransactionWithOrders> savedTransactionsList() throws ExecutionException, InterruptedException {
+        return transactionsRepository.savedTransactionsList();
     }
 
 

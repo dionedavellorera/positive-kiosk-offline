@@ -27,7 +27,10 @@ import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.CheckoutAdapter;
+import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.Orders;
+import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.RoomRates;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
@@ -39,9 +42,11 @@ import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
 import com.nerdvana.positiveoffline.view.dialog.ChangeQtyDialog;
+import com.nerdvana.positiveoffline.view.dialog.CollectionDialog;
 import com.nerdvana.positiveoffline.view.dialog.CutOffMenuDialog;
 import com.nerdvana.positiveoffline.view.dialog.DiscountMenuDialog;
 import com.nerdvana.positiveoffline.view.dialog.InputDialog;
+import com.nerdvana.positiveoffline.view.dialog.IntransitDialog;
 import com.nerdvana.positiveoffline.view.dialog.OpenPriceDialog;
 import com.nerdvana.positiveoffline.view.dialog.PasswordDialog;
 import com.nerdvana.positiveoffline.view.dialog.PaymentDialog;
@@ -65,6 +70,8 @@ import java.util.concurrent.ExecutionException;
 public class LeftFrameFragment extends Fragment implements OrdersContract {
 
     //regiondialogs
+    private CollectionDialog collectionDialog;
+    private IntransitDialog intransitDialog;
     private DiscountMenuDialog discountMenuDialog;
     private PaymentDialog paymentDialog;
     private PasswordDialog passwordDialog;
@@ -355,6 +362,203 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 124://INTRANSIT
+                if (intransitDialog == null) {
+                    intransitDialog = new IntransitDialog(getActivity(), transactionsViewModel);
+                    intransitDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialogInterface) {
+                            intransitDialog = null;
+                        }
+                    });
+                    intransitDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            intransitDialog = null;
+                        }
+                    });
+                    intransitDialog.show();
+                }
+                break;
+            case 125://SPOT AUDIT
+                if (collectionDialog == null) {
+                    collectionDialog = new CollectionDialog(getActivity(), dataSyncViewModel) {
+                        @Override
+                        public void cutOffSuccess(Double totalCash) {
+
+                            try {
+                                CutOff cutOff = new CutOff(
+                                        0,
+                                        0.00,
+                                        0.00,
+                                        0.00,
+                                        0.00,
+                                        0.00,
+                                        0.00,
+                                        0.00,
+                                        0,
+                                        Utils.getDateTimeToday(),
+                                        "",
+                                        "",
+                                        0,
+                                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                );
+                                cutOff.setId(996699);
+                                        /*
+                                        cutOffViewModel.insertData(new CutOff(
+                                        0,
+                                        0.00,
+                                        0.00,
+                                        0.00,
+                                        0.00,
+                                        0.00,
+                                        0.00,
+                                        0.00,
+                                        0,
+                                        Utils.getDateTimeToday(),
+                                        "",
+                                        "",
+                                        0,
+                                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                ));
+                                         */
+
+                                List<Transactions> transactionsList = transactionsViewModel.unCutOffTransactions(userViewModel.searchLoggedInUser().get(0).getUsername());
+                                int number_of_transaction = 0;
+                                Double gross_sales = 0.00;
+                                Double net_sales = 0.00;
+                                Double vatable_sales = 0.00;
+                                Double vat_exempt_sales = 0.00;
+                                Double vat_amount = 0.00;
+                                Double void_amount = 0.00;
+
+                                Double total_cash_payments = 0.00;
+                                Double total_card_payments = 0.00;
+                                Double total_change = 0.00;
+
+                                int seniorCount = 0;
+                                Double seniorAmount = 0.00;
+                                int pwdCount = 0;
+                                Double pwdAmount = 0.00;
+                                int othersCount = 0;
+                                Double othersAmount = 0.00;
+
+                                String begOrNo = "";
+                                String endOrNo = "";
+
+
+                                if (transactionsList.size() > 0) {
+                                    begOrNo = transactionsList.get(0).getReceipt_number();
+                                    endOrNo = transactionsList.get(transactionsList.size() - 1).getReceipt_number();
+                                    for (Transactions tr : transactionsList) {
+                                        if (tr.getIs_void()) {
+                                            void_amount += tr.getNet_sales();
+                                        } else {
+
+                                            gross_sales += tr.getGross_sales();
+                                            net_sales += tr.getNet_sales();
+                                            vatable_sales += tr.getVatable_sales();
+                                            vat_exempt_sales += tr.getVat_exempt_sales();
+                                            vat_amount += tr.getVat_amount();
+                                            total_change += tr.getChange();
+                                        }
+                                        number_of_transaction += 1;
+
+                                        tr.setIs_sent_to_server(0);
+                                        tr.setIs_cut_off(true);
+                                        tr.setIs_cut_off_by(userViewModel.searchLoggedInUser().get(0).getUsername());
+                                        tr.setCut_off_id(996699);
+                                        tr.setIs_cut_off_at(Utils.getDateTimeToday());
+//                                        transactionsViewModel.update(tr);
+                                    }
+                                    dismiss();
+                                } else {
+                                    Helper.showDialogMessage(getContext(), getContext().getString(R.string.error_no_transaction_cutoff), getContext().getString(R.string.header_message));
+                                }
+
+
+                                for (Payments payments : cutOffViewModel.getAllPayments()) {
+//                                    payments.setIs_sent_to_server(0);
+//                                    payments.setCut_off_id((int) cut_off_id);
+//                                    cutOffViewModel.update(payments);
+                                    switch (payments.getCore_id()) {
+                                        case 1://CASH
+                                            total_cash_payments += payments.getAmount();
+                                            break;
+                                        case 2://CARD
+                                            total_card_payments += payments.getAmount();
+                                    }
+                                }
+
+                                for (PostedDiscounts postedDiscounts : cutOffViewModel.getUnCutOffPostedDiscount()) {
+//                                    postedDiscounts.setCut_off_id((int)cut_off_id);
+//                                    postedDiscounts.setIs_sent_to_server(0);
+                                    if (postedDiscounts.getDiscount_name().equalsIgnoreCase("SENIOR")) {
+                                        seniorCount += 1;
+                                        seniorAmount += postedDiscounts.getAmount();
+                                    } else if (postedDiscounts.getDiscount_name().equalsIgnoreCase("PWD")) {
+                                        pwdCount += 1;
+                                        pwdAmount += postedDiscounts.getAmount();
+                                    } else {
+                                        othersCount += 1;
+                                        othersAmount += postedDiscounts.getAmount();
+                                    }
+                                }
+
+//                                CutOff cutOff = cutOffViewModel.getCutOff(cut_off_id);
+                                cutOff.setIs_sent_to_server(0);
+                                cutOff.setTotal_change(Utils.roundedOffTwoDecimal(total_change));
+                                cutOff.setGross_sales(Utils.roundedOffTwoDecimal(gross_sales));
+                                cutOff.setNet_sales(Utils.roundedOffTwoDecimal(net_sales));
+                                cutOff.setVatable_sales(Utils.roundedOffTwoDecimal(vatable_sales));
+                                cutOff.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vat_exempt_sales));
+                                cutOff.setVat_amount(Utils.roundedOffTwoDecimal(vat_amount));
+                                cutOff.setNumber_of_transactions(number_of_transaction);
+                                cutOff.setVoid_amount(Utils.roundedOffTwoDecimal(void_amount));
+                                cutOff.setTotal_cash_amount(Utils.roundedOffTwoDecimal(totalCash));
+                                cutOff.setTotal_cash_payments(Utils.roundedOffTwoDecimal(total_cash_payments));
+                                cutOff.setTotal_card_payments(Utils.roundedOffTwoDecimal(total_card_payments));
+
+                                cutOff.setSeniorCount(seniorCount);
+                                cutOff.setSeniorAmount(seniorAmount);
+                                cutOff.setPwdCount(pwdCount);
+                                cutOff.setPwdAmount(pwdAmount);
+                                cutOff.setOthersCount(othersCount);
+                                cutOff.setOthersAmount(othersAmount);
+
+                                cutOff.setBegOrNo(begOrNo);
+                                cutOff.setEndOrNo(endOrNo);
+
+                                BusProvider.getInstance().post(new PrintModel("PRINT_SPOT_AUDIT", GsonHelper.getGson().toJson(cutOff)));
+
+//                                cutOffViewModel.update(cutOff);
+                                dismiss();
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+
+
+                        }
+                    };
+                    collectionDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialogInterface) {
+                            collectionDialog = null;
+                        }
+                    });
+                    collectionDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            collectionDialog = null;
+                        }
+                    });
+                    collectionDialog.show();
+                }
+                break;
             case 122:// DISCOUNT EXEMPT
                 if (getEditingOrderList().size() > 0) {
                     diDiscountExempt(getEditingOrderList(), true);
@@ -964,25 +1168,50 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private void doDiscountFunction() {
         if (!TextUtils.isEmpty(transactionId)) {
             try {
-                if (transactionsViewModel.orderList(transactionId).size() > 0) {
-                    if (discountMenuDialog == null) {
-                        discountMenuDialog = new DiscountMenuDialog(getActivity(), discountViewModel,
-                                transactionsViewModel, transactionId);
-                        discountMenuDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                            @Override
-                            public void onDismiss(DialogInterface dialogInterface) {
-                                discountMenuDialog = null;
-                            }
-                        });
 
-                        discountMenuDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                            @Override
-                            public void onCancel(DialogInterface dialogInterface) {
-                                discountMenuDialog = null;
+                if (transactionsViewModel.orderList(transactionId).size() > 0) {
+
+                    if (getEditingOrderList().size() > 0) {
+                        if (discountMenuDialog == null) {
+                            boolean hasItemToDiscount = false;
+                            for (Orders ord : transactionsViewModel.orderList(transactionId)) {
+                                if (ord.getIs_discount_exempt() == 0) {
+                                    hasItemToDiscount = true;
+                                    break;
+                                }
                             }
-                        });
-                        discountMenuDialog.show();
+                            if (hasItemToDiscount) {
+                                discountMenuDialog = new DiscountMenuDialog(getActivity(), discountViewModel,
+                                        transactionsViewModel, transactionId);
+                                discountMenuDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                    @Override
+                                    public void onDismiss(DialogInterface dialogInterface) {
+                                        discountMenuDialog = null;
+                                    }
+                                });
+
+                                discountMenuDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                    @Override
+                                    public void onCancel(DialogInterface dialogInterface) {
+                                        discountMenuDialog = null;
+                                    }
+                                });
+                                discountMenuDialog.show();
+                            } else {
+                                Helper.showDialogMessage(getActivity(),
+                                        getContext().getString(R.string.no_item_to_discount_disc_exempt),
+                                        getContext().getString(R.string.header_message));
+                            }
+
+                        }
+                    } else {
+                        Helper.showDialogMessage(getActivity(),
+                                getContext().getString(R.string.no_item_to_discount),
+                                getContext().getString(R.string.header_message));
                     }
+
+
+
 
                 } else {
                     Helper.showDialogMessage(getActivity(),
