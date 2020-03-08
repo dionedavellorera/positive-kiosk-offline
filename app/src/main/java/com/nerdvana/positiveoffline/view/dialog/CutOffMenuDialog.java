@@ -557,7 +557,6 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                             if (tr.getIs_void()) {
                                 void_amount += tr.getNet_sales();
                             } else {
-
                                 gross_sales += tr.getGross_sales();
                                 net_sales += tr.getNet_sales();
                                 vatable_sales += tr.getVatable_sales();
