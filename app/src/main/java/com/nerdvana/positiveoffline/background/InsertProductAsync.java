@@ -15,6 +15,8 @@ import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
+import com.nerdvana.positiveoffline.entities.BranchGroup;
+import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.SyncCallback;
@@ -100,10 +102,69 @@ public class InsertProductAsync extends AsyncTask<Void, Void, Void> {
 
             }
 
+
+
             productsList.add(product);
+            List<ProductAlacart> branchAlaCartList = new ArrayList<>();
+
+            if (r.getBranchAlaCartList().size() > 0) {
+                for (FetchProductsResponse.BranchAlaCart branchAlaCart : r.getBranchAlaCartList()) {
+                    if (branchAlaCart.getBranchProduct() != null) {
+                        branchAlaCartList.add(
+                                new ProductAlacart(
+                                        branchAlaCart.getProductId(),
+                                        branchAlaCart.getProductAlacarId(),
+                                        branchAlaCart.getQty(),
+                                        branchAlaCart.getPrice(),
+                                        branchAlaCart.getBranchProduct().getProduct(),
+                                        branchAlaCart.getBranchProduct().getProductInitial(),
+                                        branchAlaCart.getBranchProduct().getImageFile()
+                                )
+                        );
+                    }
+                }
+            }
+
+            if (branchAlaCartList.size() > 0) {
+                productsViewModel.insertAlaCart(branchAlaCartList);
+            }
+
+
+            if (r.getBranchGroupList().size() > 0) {
+                for (FetchProductsResponse.BranchGroup branchGroup : r.getBranchGroupList()) {
+                    List<BranchGroup> branchGroupList = new ArrayList<>();
+                    if (branchGroup.getBranchLists().size() > 0) {
+                        for (FetchProductsResponse.BranchList branchList : branchGroup.getBranchLists()) {
+                            if (branchList.getBranchProduct() != null) {
+                                branchGroupList.add(
+                                        new BranchGroup(
+                                                branchList.getProductId(),
+                                                branchGroup.getProductId(),
+                                                branchGroup.getQty(),
+                                                branchList.getPrice(),
+                                                branchList.getBranchProduct().getProduct(),
+                                                branchList.getBranchProduct().getProductInitial(),
+                                                branchList.getBranchProduct().getImageFile(),
+                                                branchGroup.getGroupName(),
+                                                String.valueOf(branchGroup.getCoreId())
+                                        )
+                                );
+                            }
+                        }
+                    }
+
+                    if (branchGroupList.size() > 0) {
+                        productsViewModel.insertBranchGroup(branchGroupList);
+                    }
+                }
+            }
+//
+
         }
 
         productsViewModel.insert(productsList);
+
+//        productsViewModel.insert();
         return null;
     }
 

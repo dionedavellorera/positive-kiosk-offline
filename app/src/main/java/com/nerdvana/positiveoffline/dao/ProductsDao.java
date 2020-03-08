@@ -6,6 +6,9 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
+import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
+import com.nerdvana.positiveoffline.entities.BranchGroup;
+import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.User;
 
@@ -25,5 +28,30 @@ public interface ProductsDao {
 
     @Query("DELETE FROM Products")
     void truncateProducts();
+
+    @Query("DELETE FROM ProductAlacart")
+    void truncateAlacarts();
+
+    @Query("DELETE FROM BranchGroup")
+    void truncateBranchGroup();
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertAlacart(List<ProductAlacart> productsList);
+
+    @Query("SELECT * FROM BranchGroup WHERE product_group_id = :product_id")
+    List<BranchGroup> getBranchGroup(String product_id);
+
+
+
+    @Query("SELECT * FROM BranchGroup WHERE branch_group_id = :branch_group_id")
+    List<BranchGroup> getFilteredProductsPerCategory(String branch_group_id);
+
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertBranchGroup(List<BranchGroup> productsList);
+
+    @Query("SELECT * FROM ProductAlacart WHERE product_id = :product_id")
+    List<ProductAlacart> getBranchAlacart(String product_id);
+
 
 }

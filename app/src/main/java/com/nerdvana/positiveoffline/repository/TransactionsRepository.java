@@ -12,13 +12,16 @@ import com.nerdvana.positiveoffline.dao.DataSyncDao;
 import com.nerdvana.positiveoffline.dao.OrDetailsDao;
 import com.nerdvana.positiveoffline.dao.OrdersDao;
 import com.nerdvana.positiveoffline.dao.PaymentsDao;
+import com.nerdvana.positiveoffline.dao.ProductsDao;
 import com.nerdvana.positiveoffline.dao.TransactionsDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
+import com.nerdvana.positiveoffline.entities.BranchGroup;
 import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
@@ -35,12 +38,14 @@ public class TransactionsRepository {
     private OrdersDao ordersDao;
     private PaymentsDao paymentsDao;
     private OrDetailsDao orDetailsDao;
+    private ProductsDao productsDao;
     private MutableLiveData<FetchProductsResponse> fetchProductLiveData;
 
     public TransactionsRepository(Application application) {
         PosDatabase posDatabase = DatabaseHelper.getDatabase(application);
         transactionsDao = posDatabase.transactionsDao();
         ordersDao = posDatabase.ordersDao();
+        productsDao = posDatabase.productsDao();
         paymentsDao = posDatabase.paymentsDao();
         orDetailsDao = posDatabase.orDetailsDao();
 
@@ -54,6 +59,46 @@ public class TransactionsRepository {
     public LiveData<List<Transactions>> getSavedTransactions() {
         return transactionsDao.ldSavedTransactionsList();
     }
+
+    public List<BranchGroup> getBranchGroup(final String productId) throws ExecutionException, InterruptedException {
+        Callable<List<BranchGroup>> callable = new Callable<List<BranchGroup>>() {
+            @Override
+            public List<BranchGroup> call() throws Exception {
+                return productsDao.getBranchGroup(productId);
+            }
+        };
+
+        Future<List<BranchGroup>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public List<BranchGroup> getFilteredProductsPerCategory(final String branch_group_id) throws ExecutionException, InterruptedException {
+        Callable<List<BranchGroup>> callable = new Callable<List<BranchGroup>>() {
+            @Override
+            public List<BranchGroup> call() throws Exception {
+                return productsDao.getFilteredProductsPerCategory(branch_group_id);
+            }
+        };
+
+        Future<List<BranchGroup>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
+
+
+    public List<ProductAlacart> getBranchAlacart(final String productId) throws ExecutionException, InterruptedException {
+        Callable<List<ProductAlacart>> callable = new Callable<List<ProductAlacart>>() {
+            @Override
+            public List<ProductAlacart> call() throws Exception {
+                return productsDao.getBranchAlacart(productId);
+            }
+        };
+
+        Future<List<ProductAlacart>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
 
 
 
@@ -162,6 +207,20 @@ public class TransactionsRepository {
         Future<List<Orders>> future = Executors.newSingleThreadExecutor().submit(callable);
         return future.get();
     }
+
+    public List<Orders> getBundledItems(final String product_id) throws ExecutionException, InterruptedException {
+        Callable<List<Orders>> callable = new Callable<List<Orders>>() {
+            @Override
+            public List<Orders> call() throws Exception {
+                return ordersDao.getBundledItems(product_id);
+            }
+        };
+
+        Future<List<Orders>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
     public List<Orders> getOrderList(final String transactionId) throws ExecutionException, InterruptedException {
         Callable<List<Orders>> callable = new Callable<List<Orders>>() {
             @Override
@@ -199,6 +258,10 @@ public class TransactionsRepository {
         return future.get();
     }
 
+
+    public void updateEditingOrderList(String transaction_id) {
+        new TransactionsRepository.updateEditingOrderAsync(ordersDao, transaction_id).execute();
+    }
 
     public void update(Transactions transactions) {
         new TransactionsRepository.updateAsyncTask(transactionsDao, transactions).execute();
@@ -316,6 +379,8 @@ public class TransactionsRepository {
         return future.get();
     }
 
+
+
     private static class updateOrderAsyncTask extends AsyncTask<Transactions, Void, Void> {
 
         private OrdersDao mAsyncTaskDao;
@@ -416,6 +481,21 @@ public class TransactionsRepository {
         }
     }
 
+    private static class updateEditingOrderAsync extends AsyncTask<List<Transactions>, Void, Void> {
+
+        private OrdersDao mAsyncTaskDao;
+        private String transactionId;
+        updateEditingOrderAsync(OrdersDao dao, String transactionId) {
+            mAsyncTaskDao = dao;
+            this.transactionId = transactionId;
+        }
+
+        @Override
+        protected Void doInBackground(final List<Transactions>... params) {
+            mAsyncTaskDao.removeEditingOrders(transactionId);
+            return null;
+        }
+    }
 
 
     private static class insertAsyncTask extends AsyncTask<List<Transactions>, Void, Void> {

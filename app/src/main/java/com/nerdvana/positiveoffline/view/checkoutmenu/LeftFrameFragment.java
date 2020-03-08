@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -27,10 +29,13 @@ import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.CheckoutAdapter;
+import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
+import com.nerdvana.positiveoffline.entities.BranchGroup;
 import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
+import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.RoomRates;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
@@ -41,6 +46,8 @@ import com.nerdvana.positiveoffline.intf.OrdersContract;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
+import com.nerdvana.positiveoffline.view.dialog.AlacartCompositionDialog;
+import com.nerdvana.positiveoffline.view.dialog.BundleCompositionDialog;
 import com.nerdvana.positiveoffline.view.dialog.ChangeQtyDialog;
 import com.nerdvana.positiveoffline.view.dialog.CollectionDialog;
 import com.nerdvana.positiveoffline.view.dialog.CutOffMenuDialog;
@@ -69,6 +76,9 @@ import java.util.concurrent.ExecutionException;
 
 public class LeftFrameFragment extends Fragment implements OrdersContract {
 
+    private List<ProductAlacart> mAlacartList = new ArrayList<>();
+    private List<BranchGroup> mBranchGroupList = new ArrayList<>();
+    int lastIncrementalId = 0;
     //regiondialogs
     private CollectionDialog collectionDialog;
     private IntransitDialog intransitDialog;
@@ -1042,13 +1052,20 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private void doItemVoidFunction() {
         try {
 
-
+            int incrementalId = 0;
             for (Orders order : getEditingOrderList()) {
                 order.setIs_sent_to_server(0);
                 order.setIs_void(true);
                 order.setIs_editing(false);
+                incrementalId = order.getId();
                 transactionsViewModel.updateOrder(order);
+
+                for (Orders bundle : transactionsViewModel.getBundledItems(String.valueOf(incrementalId))) {
+                    bundle.setIs_void(true);
+                    transactionsViewModel.updateOrder(bundle);
+                }
             }
+
 
 
             Transactions currentTrans = transactionsViewModel.loadedTransactionList(transactionId).get(0);
@@ -1418,64 +1435,188 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     }
 
     @Subscribe
-    public void productToCheckout(ProductToCheckout productsModel) {
+    public void productToCheckout(final ProductToCheckout productsModel) {
 
         try {
-            selectedProduct = productsModel.getProducts();
-            if (!TextUtils.isEmpty(transactionId)) {
-                insertSelectedOrder();
-            } else {
-                if (transactionsList().size() > 0) {
-                    insertSelectedOrder();
-                } else {
-                    String controlNumber = "";
-                    try {
-                        if (transactionsViewModel.lastTransactionId() == null) {
-                            controlNumber = Utils.getCtrlNumberFormat("1");
+            final List<ProductAlacart> alacartList = transactionsViewModel.getBranchAlacart(String.valueOf(productsModel.getProducts().getCore_id()));
+            final List<BranchGroup> branchGroupList = transactionsViewModel.getBranchGroup(String.valueOf(productsModel.getProducts().getCore_id()));
+
+            if (branchGroupList.size() > 0) { //SHOW SELECTION OF PRODUCT FROM GROUP AND INCLUDED IN ALACART
+                //show dialog for bundle
+
+                ChangeQtyDialog changeQtyDialog = new ChangeQtyDialog(getActivity(), 1) {
+                    @Override
+                    public void success(int newQty) {
+                        BundleCompositionDialog bundleCompositionDialog =
+                                new BundleCompositionDialog(getActivity(), alacartList,
+                                        branchGroupList, transactionsViewModel,
+                                        newQty) {
+                                    @Override
+                                    public void bundleCompleted(List<BranchGroup> bgList) {
+
+                                        mAlacartList = alacartList;
+                                        mBranchGroupList = bgList;
+
+
+                                        selectedProduct = productsModel.getProducts();
+                                        if (!TextUtils.isEmpty(transactionId)) {
+                                            insertSelectedOrder();
+                                        } else {
+                                            try {
+                                                if (transactionsList().size() > 0) {
+                                                    insertSelectedOrder();
+                                                } else {
+                                                    String controlNumber = "";
+                                                    try {
+                                                        if (transactionsViewModel.lastTransactionId() == null) {
+                                                            controlNumber = Utils.getCtrlNumberFormat("1");
+                                                        } else {
+                                                            if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
+                                                                controlNumber = Utils.getCtrlNumberFormat("1");
+                                                            } else {
+                                                                controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                                            }
+
+                                                        }
+                                                    } catch (ExecutionException e) {
+                                                        e.printStackTrace();
+                                                    } catch (InterruptedException e) {
+                                                        e.printStackTrace();
+                                                    }
+
+
+                                                    List<Transactions> tr = new ArrayList<>();
+
+                                                    tr.add(new Transactions(
+                                                            controlNumber,
+                                                            getUser().getUsername(),
+                                                            Utils.getDateTimeToday(),
+                                                            0,
+                                                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                                    ));
+                                                    transactionsViewModel.insert(tr);
+
+
+                                                }
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            } catch (ExecutionException e) {
+                                                e.printStackTrace();
+                                            }
+
+                                        }
+
+                                    }
+                                };
+                        bundleCompositionDialog.show();
+                    }
+                };
+                changeQtyDialog.show();
+
+            } else if (alacartList.size() > 0){ //SHOW INCLUDED IN ALACART
+                //show dialog for alacart confirmation
+                mAlacartList = alacartList;
+                AlacartCompositionDialog alacartCompositionDialog = new AlacartCompositionDialog(getActivity(), alacartList) {
+                    @Override
+                    public void confirmed() {
+                        selectedProduct = productsModel.getProducts();
+                        if (!TextUtils.isEmpty(transactionId)) {
+                            insertSelectedOrder();
                         } else {
-                            if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
-                                controlNumber = Utils.getCtrlNumberFormat("1");
-                            } else {
-                                controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                            try {
+                                if (transactionsList().size() > 0) {
+                                    insertSelectedOrder();
+                                } else {
+                                    String controlNumber = "";
+                                    try {
+                                        if (transactionsViewModel.lastTransactionId() == null) {
+                                            controlNumber = Utils.getCtrlNumberFormat("1");
+                                        } else {
+                                            if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
+                                                controlNumber = Utils.getCtrlNumberFormat("1");
+                                            } else {
+                                                controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                            }
+
+                                        }
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+
+
+                                    List<Transactions> tr = new ArrayList<>();
+
+                                    tr.add(new Transactions(
+                                            controlNumber,
+                                            getUser().getUsername(),
+                                            Utils.getDateTimeToday(),
+                                            0,
+                                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                    ));
+                                    transactionsViewModel.insert(tr);
+
+
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
                             }
 
                         }
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
                     }
+                };
+                alacartCompositionDialog.show();
+            } else {
+                selectedProduct = productsModel.getProducts();
+                if (!TextUtils.isEmpty(transactionId)) {
+                    insertSelectedOrder();
+                } else {
+                    if (transactionsList().size() > 0) {
+                        insertSelectedOrder();
+                    } else {
+                        String controlNumber = "";
+                        try {
+                            if (transactionsViewModel.lastTransactionId() == null) {
+                                controlNumber = Utils.getCtrlNumberFormat("1");
+                            } else {
+                                if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
+                                    controlNumber = Utils.getCtrlNumberFormat("1");
+                                } else {
+                                    controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                }
+
+                            }
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
 
 
-                    List<Transactions> tr = new ArrayList<>();
+                        List<Transactions> tr = new ArrayList<>();
 
-                    tr.add(new Transactions(
-                            controlNumber,
-                            getUser().getUsername(),
-                            Utils.getDateTimeToday(),
-                            0,
-                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
-                    ));
-
-
-
-//                    tr.add(new Transactions(
-//                            controlNumber,
-//                            getUser().getUsername(),
-//                            Utils.getDateTimeToday(),
-//                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-//                            0
-//                            ));
-                    transactionsViewModel.insert(tr);
+                        tr.add(new Transactions(
+                                controlNumber,
+                                getUser().getUsername(),
+                                Utils.getDateTimeToday(),
+                                0,
+                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                        ));
+                        transactionsViewModel.insert(tr);
 
 
+                    }
                 }
             }
-
-        } catch (ExecutionException e) {
-            e.printStackTrace();
         } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
             e.printStackTrace();
         }
     }
@@ -1513,30 +1654,160 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
 
     private void insertSelectedOrder() {
-        List<Orders> orderList = new ArrayList<>();
+
         if (!TextUtils.isEmpty(transactionId)) {
-            orderList.add(new Orders(
-                    Integer.valueOf(transactionId),
-                    selectedProduct.getCore_id(),
-                    1,
-                    selectedProduct.getAmount(),
-                    selectedProduct.getAmount(),
-                    selectedProduct.getProduct(),
-                    selectedProduct.getDepartmentId(),
-                    Utils.roundedOffTwoDecimal((selectedProduct.getAmount() / 1.12) * .12),
-                    Utils.roundedOffTwoDecimal(selectedProduct.getAmount() / 1.12),
-                    0.00,
-                    0.00,
-                    selectedProduct.getDepartment(),
-                    selectedProduct.getCategory(),
-                    selectedProduct.getCategoryId(),
-                    0,
-                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
-                    Utils.getDateTimeToday(),
-                    0
-            ));
-            transactionsViewModel.insertOrder(orderList);
+            if (selectedProduct != null) {
+
+
+                List<Orders> orderList = new ArrayList<>();
+
+
+                Orders orders = new Orders(
+                        Integer.valueOf(transactionId),
+                        selectedProduct.getCore_id(),
+                        1,
+                        selectedProduct.getAmount(),
+                        selectedProduct.getAmount(),
+                        selectedProduct.getProduct(),
+                        selectedProduct.getDepartmentId(),
+                        Utils.roundedOffTwoDecimal((selectedProduct.getAmount() / 1.12) * .12),
+                        Utils.roundedOffTwoDecimal(selectedProduct.getAmount() / 1.12),
+                        0.00,
+                        0.00,
+                        selectedProduct.getDepartment(),
+                        selectedProduct.getCategory(),
+                        selectedProduct.getCategoryId(),
+                        0,
+                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                        Utils.getDateTimeToday(),
+                        0
+                );
+//                orders.setIs_editing(true);
+                orderList.add(orders);
+                transactionsViewModel.insertOrder(orderList);
+//                transactionsViewModel.updateEditingOrderList(transactionId);
+
+
+            }
+
+            if (mAlacartList.size() > 0) {
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (transactionsViewModel.orderList(transactionId).size() > 0) {
+                                Orders lastOrder = transactionsViewModel.orderList(transactionId).get(transactionsViewModel.orderList(transactionId).size() - 1);
+                                lastIncrementalId = lastOrder.getId();
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        }
+
+
+                        for (ProductAlacart palac : mAlacartList) {
+                            List<Orders> orderList = new ArrayList<>();
+
+
+                            Orders orders = new Orders(
+                                    Integer.valueOf(transactionId),
+                                    palac.getProduct_id(),
+                                    (int) palac.getQty(),
+                                    palac.getPrice(),
+                                    palac.getPrice(),
+                                    palac.getProduct(),
+                                    0,
+                                    Utils.roundedOffTwoDecimal((palac.getPrice() / 1.12) * .12),
+                                    Utils.roundedOffTwoDecimal(palac.getPrice() / 1.12),
+                                    0.00,
+                                    0.00,
+                                    "",
+                                    "",
+                                    0,
+                                    0,
+                                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                                    Utils.getDateTimeToday(),
+                                    0
+                            );
+                            orders.setProduct_alacart_id(palac.getProduct_alacart_id());
+                            orders.setIs_editing(false);
+                            orders.setOrders_incremental_id(lastIncrementalId);
+                            orderList.add(orders);
+                            transactionsViewModel.insertOrder(orderList);
+
+
+                        }
+
+                        mAlacartList = new ArrayList<>();
+
+                    }
+                }, 300);
+            }
+
+            if (mAlacartList.size() == 0) lastIncrementalId = 0;
+
+            if (mBranchGroupList.size() > 0) {
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (transactionsViewModel.orderList(transactionId).size() > 0) {
+                                if (lastIncrementalId == 0) {
+                                    Orders lastOrder = transactionsViewModel.orderList(transactionId).get(transactionsViewModel.orderList(transactionId).size() - 1);
+                                    lastIncrementalId = lastOrder.getId();
+                                }
+
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        }
+
+
+                        for (BranchGroup palac : mBranchGroupList) {
+                            List<Orders> orderList = new ArrayList<>();
+
+
+                            Orders orders = new Orders(
+                                    Integer.valueOf(transactionId),
+                                    palac.getProduct_id(),
+                                    (int) palac.getSelectedQty(),
+                                    palac.getPrice(),
+                                    palac.getPrice(),
+                                    palac.getProduct(),
+                                    0,
+                                    Utils.roundedOffTwoDecimal((palac.getPrice() / 1.12) * .12),
+                                    Utils.roundedOffTwoDecimal(palac.getPrice() / 1.12),
+                                    0.00,
+                                    0.00,
+                                    "",
+                                    "",
+                                    0,
+                                    0,
+                                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                                    Utils.getDateTimeToday(),
+                                    0
+                            );
+                            orders.setProduct_alacart_id(palac.getProduct_group_id());
+                            orders.setIs_editing(false);
+                            orders.setOrders_incremental_id(lastIncrementalId);
+                            orderList.add(orders);
+                            transactionsViewModel.insertOrder(orderList);
+                        }
+                        mBranchGroupList = new ArrayList<>();
+                    }
+                }, 300);
+            }
+
+
+
         }
 
     }

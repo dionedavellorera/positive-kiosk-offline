@@ -47,6 +47,10 @@ public class Orders {
 
     private int is_discount_exempt = 0;
 
+    private int product_alacart_id = 0;
+    private int product_group_id = 0;
+    private int orders_incremental_id = 0;
+
     public Orders(int transaction_id, int core_id,
                   int qty, @NonNull Double amount,
                   @NonNull Double original_amount,
@@ -76,6 +80,14 @@ public class Orders {
         this.vatable = vatable;
         this.vatExempt = vatExempt;
         this.discountAmount = discountAmount;
+    }
+
+    public int getOrders_incremental_id() {
+        return orders_incremental_id;
+    }
+
+    public void setOrders_incremental_id(int orders_incremental_id) {
+        this.orders_incremental_id = orders_incremental_id;
     }
 
     public int getIs_discount_exempt() {
@@ -263,5 +275,21 @@ public class Orders {
 
     public void setName(@NonNull String name) {
         this.name = name;
+    }
+
+    public int getProduct_alacart_id() {
+        return product_alacart_id;
+    }
+
+    public void setProduct_alacart_id(int product_alacart_id) {
+        this.product_alacart_id = product_alacart_id;
+    }
+
+    public int getProduct_group_id() {
+        return product_group_id;
+    }
+
+    public void setProduct_group_id(int product_group_id) {
+        this.product_group_id = product_group_id;
     }
 }

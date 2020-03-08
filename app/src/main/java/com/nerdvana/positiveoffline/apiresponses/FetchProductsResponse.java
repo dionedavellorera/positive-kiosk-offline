@@ -42,7 +42,7 @@ public class FetchProductsResponse {
         private String productTags;
         @SerializedName("qty")
         @Expose
-        private int qty;
+        private double qty;
         @SerializedName("tax_rate")
         @Expose
         private double taxRate;
@@ -145,11 +145,11 @@ public class FetchProductsResponse {
             this.productTags = productTags;
         }
 
-        public int getQty() {
+        public double getQty() {
             return qty;
         }
 
-        public void setQty(int qty) {
+        public void setQty(double qty) {
             this.qty = qty;
         }
 
@@ -291,7 +291,7 @@ public class FetchProductsResponse {
         private int currencyId;
         @SerializedName("qty")
         @Expose
-        private int qty;
+        private double qty;
         @SerializedName("price")
         @Expose
         private double price;
@@ -343,11 +343,11 @@ public class FetchProductsResponse {
             this.currencyId = currencyId;
         }
 
-        public int getQty() {
+        public double getQty() {
             return qty;
         }
 
-        public void setQty(int qty) {
+        public void setQty(double qty) {
             this.qty = qty;
         }
 
@@ -420,6 +420,9 @@ public class FetchProductsResponse {
         @SerializedName("product_group_id")
         @Expose
         private int productGroupId;
+        @SerializedName("product_id")
+        @Expose
+        private int productId;
         @SerializedName("currency_id")
         @Expose
         private int currencyId;
@@ -441,6 +444,14 @@ public class FetchProductsResponse {
         @SerializedName("branch_product")
         @Expose
         private BranchProduct branchProduct;
+
+        public int getProductId() {
+            return productId;
+        }
+
+        public void setProductId(int productId) {
+            this.productId = productId;
+        }
 
         public BranchProduct getBranchProduct() {
             return branchProduct;
@@ -517,7 +528,7 @@ public class FetchProductsResponse {
 
     public static class BranchGroup {
 
-        public BranchGroup(int selectedQtyInBranch, int id, int coreId, int productId, String groupName, int currencyId, int qty, String createdBy, String createdAt, String updatedAt, String deletedAt) {
+        public BranchGroup(int selectedQtyInBranch, int id, int coreId, int productId, String groupName, int currencyId, double qty, String createdBy, String createdAt, String updatedAt, String deletedAt) {
             this.selectedQtyInBranch = selectedQtyInBranch;
             this.id = id;
             this.coreId = coreId;
@@ -551,7 +562,7 @@ public class FetchProductsResponse {
         private int currencyId;
         @SerializedName("qty")
         @Expose
-        private int qty;
+        private double qty;
         @SerializedName("created_by")
         @Expose
         private String createdBy;
@@ -616,11 +627,11 @@ public class FetchProductsResponse {
             this.currencyId = currencyId;
         }
 
-        public int getQty() {
+        public double getQty() {
             return qty;
         }
 
-        public void setQty(int qty) {
+        public void setQty(double qty) {
             this.qty = qty;
         }
 
@@ -695,7 +706,7 @@ public class FetchProductsResponse {
         private String productTags;
         @SerializedName("qty")
         @Expose
-        private Integer qty;
+        private double qty;
         @SerializedName("min")
         @Expose
         private Integer min;
@@ -817,11 +828,11 @@ public class FetchProductsResponse {
             this.productTags = productTags;
         }
 
-        public Integer getQty() {
+        public double getQty() {
             return qty;
         }
 
-        public void setQty(Integer qty) {
+        public void setQty(double qty) {
             this.qty = qty;
         }
 

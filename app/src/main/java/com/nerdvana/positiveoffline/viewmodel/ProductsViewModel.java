@@ -8,6 +8,8 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
+import com.nerdvana.positiveoffline.entities.BranchGroup;
+import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.repository.ProductsRepository;
 
@@ -42,5 +44,13 @@ public class ProductsViewModel extends AndroidViewModel {
 
     public void insert(List<Products> productsList) {
         productsRepository.insert(productsList);
+    }
+
+    public void insertAlaCart(List<ProductAlacart> branchAlaCartList) {
+        productsRepository.insertAlacart(branchAlaCartList);
+    }
+
+    public void insertBranchGroup(List<BranchGroup> branchGroupList) {
+        productsRepository.insertBranchGroup(branchGroupList);
     }
 }

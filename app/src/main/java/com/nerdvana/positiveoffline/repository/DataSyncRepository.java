@@ -669,6 +669,8 @@ public class DataSyncRepository {
         @Override
         protected Void doInBackground(List<Void>... lists) {
             mAsyncTaskDao.truncateProducts();
+            mAsyncTaskDao.truncateAlacarts();
+            mAsyncTaskDao.truncateBranchGroup();
             return null;
         }
 

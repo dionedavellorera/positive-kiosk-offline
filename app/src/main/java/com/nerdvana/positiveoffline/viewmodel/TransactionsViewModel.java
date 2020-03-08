@@ -14,11 +14,13 @@ import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
+import com.nerdvana.positiveoffline.entities.BranchGroup;
 import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.OrderDiscounts;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
+import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
@@ -326,6 +328,11 @@ public class TransactionsViewModel extends AndroidViewModel {
     }
 
 
+
+    public void updateEditingOrderList(String transactionId) {
+        transactionsRepository.updateEditingOrderList(transactionId);
+    }
+
     public void updateOrder(Orders order) {
         transactionsRepository.update(order);
     }
@@ -337,6 +344,8 @@ public class TransactionsViewModel extends AndroidViewModel {
     public void insertOrder(List<Orders> orderList) {
         transactionsRepository.insertOrder(orderList);
     }
+
+
 
 //    public void insertOrder(Orders order) {
 //        transactionsRepository.update(order);
@@ -388,6 +397,11 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.getRoomRateList(transactionId);
     }
 
+    public List<Orders> getBundledItems(String product_id) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getBundledItems(product_id);
+    }
+
+
     public List<Orders> orderList(String transactionId) throws ExecutionException, InterruptedException {
         return transactionsRepository.getOrderList(transactionId);
     }
@@ -404,6 +418,8 @@ public class TransactionsViewModel extends AndroidViewModel {
     public List<Transactions> loadedTransactionList(String transactionId) throws ExecutionException, InterruptedException {
         return transactionsRepository.loadedTransaction(transactionId);
     }
+
+
 
     public List<Transactions> loadedTransactionListViaControlNumber(String controlNumber) throws ExecutionException, InterruptedException {
         return transactionsRepository.loadedTransactionViaControlNumber(controlNumber);
@@ -424,6 +440,22 @@ public class TransactionsViewModel extends AndroidViewModel {
     public List<TransactionWithOrders> savedTransactionsList() throws ExecutionException, InterruptedException {
         return transactionsRepository.savedTransactionsList();
     }
+
+    public List<ProductAlacart> getBranchAlacart(String product_id) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getBranchAlacart(product_id);
+    }
+
+    public List<BranchGroup> getBranchGroup(String product_id) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getBranchGroup(product_id);
+    }
+
+    public List<BranchGroup> getFilteredProductsPerCategory(String branch_group_id) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getFilteredProductsPerCategory(branch_group_id);
+    }
+
+
+
+
 
 
 }

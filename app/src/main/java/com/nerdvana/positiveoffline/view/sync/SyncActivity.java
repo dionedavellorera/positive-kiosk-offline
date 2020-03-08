@@ -224,6 +224,7 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         productsViewModel.getProductsLiveData().observe(this, new Observer<FetchProductsResponse>() {
             @Override
             public void onChanged(FetchProductsResponse fetchProductsResponse) {
+                Log.d("WEKWEK", "INSERT PROD ASYNC");
                 new InsertProductAsync(fetchProductsResponse.getResult(), SyncActivity.this, productsViewModel, SyncActivity.this).execute();
             }
         });

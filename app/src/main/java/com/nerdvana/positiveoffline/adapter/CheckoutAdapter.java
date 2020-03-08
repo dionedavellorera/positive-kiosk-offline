@@ -63,21 +63,21 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int i) {
         final Orders productsModel = checkoutList.get(i);
-
-        ((CheckoutAdapter.ViewHolder)holder).rootView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                ordersContract.longClicked(productsModel);
-                return true;
-            }
-        });
-
-        ((CheckoutAdapter.ViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ordersContract.clicked(productsModel);
-            }
-        });
+        if (productsModel.getProduct_alacart_id() == 0 && productsModel.getProduct_group_id() == 0) {
+            ((CheckoutAdapter.ViewHolder)holder).rootView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    ordersContract.longClicked(productsModel);
+                    return true;
+                }
+            });
+            ((CheckoutAdapter.ViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ordersContract.clicked(productsModel);
+                }
+            });
+        }
 
         if (productsModel.getIs_editing()) {
             ((CheckoutAdapter.ViewHolder)holder).rootView.setBackgroundColor(context.getResources().getColor(R.color.colorGreen));
@@ -85,11 +85,16 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             ((CheckoutAdapter.ViewHolder)holder).rootView.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
         }
 
-        if (productsModel.getIs_discount_exempt() == 1) {
-            ((CheckoutAdapter.ViewHolder)holder).listItemName.setText("(DE)" +productsModel.getName());
+        if (productsModel.getProduct_alacart_id() != 0 || productsModel.getProduct_group_id() != 0) {
+            ((CheckoutAdapter.ViewHolder)holder).listItemName.setText("  " +productsModel.getName());
         } else {
-            ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(productsModel.getName());
+            if (productsModel.getIs_discount_exempt() == 1) {
+                ((CheckoutAdapter.ViewHolder)holder).listItemName.setText("(DE)" +productsModel.getName());
+            } else {
+                ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(productsModel.getName());
+            }
         }
+
 
         ((CheckoutAdapter.ViewHolder)holder).listItemQty.setText(String.valueOf(productsModel.getQty()));
         ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setText(Utils.digitsWithComma(productsModel.getOriginal_amount() * productsModel.getQty()));

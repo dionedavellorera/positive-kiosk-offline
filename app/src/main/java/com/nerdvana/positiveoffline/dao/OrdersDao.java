@@ -36,6 +36,13 @@ public interface OrdersDao {
     @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id AND is_void = 0 AND is_editing = 1")
     List<Orders> editingOrderList(String transaction_id);
 
+
+    @Query("SELECT * FROM Orders WHERE orders_incremental_id = :product_id")
+    List<Orders> getBundledItems(String product_id);
+
     @Update()
     void update(Orders order);
+
+    @Query("UPDATE Orders set is_editing = 0 where transaction_id = :transaction_id")
+    void removeEditingOrders(String transaction_id);
 }

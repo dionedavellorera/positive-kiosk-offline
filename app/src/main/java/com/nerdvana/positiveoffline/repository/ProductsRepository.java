@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.repository;
 
 import android.app.Application;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -16,7 +17,9 @@ import com.nerdvana.positiveoffline.dao.ProductsDao;
 import com.nerdvana.positiveoffline.dao.UserDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
+import com.nerdvana.positiveoffline.entities.BranchGroup;
 import com.nerdvana.positiveoffline.entities.DataSync;
+import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.User;
 
@@ -49,6 +52,44 @@ public class ProductsRepository {
 
     public void insert(List<Products> user) {
         new ProductsRepository.insertAsyncTask(productsDao).execute(user);
+    }
+
+    public void insertAlacart(List<ProductAlacart> branchAlaCartList) {
+        new ProductsRepository.insertAlacartAsyncTask(productsDao).execute(branchAlaCartList);
+    }
+
+    private static class insertAlacartAsyncTask extends AsyncTask<List<ProductAlacart>, Void, Void> {
+
+        private ProductsDao mAsyncTaskDao;
+
+        insertAlacartAsyncTask(ProductsDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final List<ProductAlacart>... params) {
+            mAsyncTaskDao.insertAlacart(params[0]);
+            return null;
+        }
+    }
+
+    public void insertBranchGroup(List<BranchGroup> branchGroupList) {
+        new ProductsRepository.insertBranchGroupAsyncTask(productsDao).execute(branchGroupList);
+    }
+
+    private static class insertBranchGroupAsyncTask extends AsyncTask<List<BranchGroup>, Void, Void> {
+
+        private ProductsDao mAsyncTaskDao;
+
+        insertBranchGroupAsyncTask(ProductsDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final List<BranchGroup>... params) {
+            mAsyncTaskDao.insertBranchGroup(params[0]);
+            return null;
+        }
     }
 
 
@@ -88,12 +129,13 @@ public class ProductsRepository {
         call.enqueue(new Callback<FetchProductsResponse>() {
             @Override
             public void onResponse(Call<FetchProductsResponse> call, Response<FetchProductsResponse> response) {
+                Log.d("WEKWEK", "RESP OK");
                 fetchProductLiveData.postValue(response.body());
             }
 
             @Override
             public void onFailure(Call<FetchProductsResponse> call, Throwable t) {
-
+                Log.d("WEKWEK", t.getMessage());
             }
         });
     }

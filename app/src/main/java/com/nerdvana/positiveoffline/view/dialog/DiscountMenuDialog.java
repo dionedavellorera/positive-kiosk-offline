@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
@@ -152,8 +153,11 @@ public class DiscountMenuDialog extends BaseDialog implements DiscountsContract 
                             manualDiscDialog = null;
                         }
                     });
-
-                    manualDiscDialog.show();
+                    if (discountViewModel.getTransactionWithDiscounts(transactionId).size() > 0) {
+                        Helper.showDialogMessage(getContext(), "Only one discount can be applied per transaction", getContext().getString(R.string.header_message));
+                    } else {
+                        manualDiscDialog.show();
+                    }
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
@@ -187,7 +191,11 @@ public class DiscountMenuDialog extends BaseDialog implements DiscountsContract 
                         customDiscDialog = null;
                     }
                 });
-                customDiscDialog.show();
+                if (discountViewModel.getTransactionWithDiscounts(transactionId).size() > 0) {
+                    Helper.showDialogMessage(getContext(), "Only one discount can be applied per transaction", getContext().getString(R.string.header_message));
+                } else {
+                    customDiscDialog.show();
+                }
             }
         } else { //SHOW SENIOR / PWD DIALOG
             if (specialDiscDialog == null) {
@@ -218,7 +226,12 @@ public class DiscountMenuDialog extends BaseDialog implements DiscountsContract 
                             specialDiscDialog = null;
                         }
                     });
-                    specialDiscDialog.show();
+                    if (discountViewModel.getTransactionWithDiscounts(transactionId).size() > 0) {
+                        Helper.showDialogMessage(getContext(), "Only one discount can be applied per transaction", getContext().getString(R.string.header_message));
+                    } else {
+                        specialDiscDialog.show();
+                    }
+
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
