@@ -77,7 +77,9 @@ import java.util.concurrent.ExecutionException;
 public class LeftFrameFragment extends Fragment implements OrdersContract {
 
     private List<ProductAlacart> mAlacartList = new ArrayList<>();
+    private int mQty = 1;
     private List<BranchGroup> mBranchGroupList = new ArrayList<>();
+
     int lastIncrementalId = 0;
     //regiondialogs
     private CollectionDialog collectionDialog;
@@ -865,26 +867,26 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                 try {
                                     for (Orders order : getEditingOrderList()) {
 
-                                        if (newQty > order.getQty()) {
-                                            order.setVatAmount(((newQty - order.getQty()) * order.getVatAmount()) + order.getVatAmount());
-                                            order.setVatable(((newQty - order.getQty()) * order.getVatable()) + order.getVatable());
-                                            order.setVatExempt(((newQty - order.getQty()) * order.getVatExempt()) + order.getVatExempt());
-                                            order.setDiscountAmount(((newQty - order.getQty()) * order.getDiscountAmount()) + order.getDiscountAmount());
-                                        } else if (newQty < order.getQty()) {
-                                            order.setVatAmount((order.getVatAmount() / order.getQty()) * newQty);
-                                            order.setVatable((order.getVatable() / order.getQty()) * newQty);
-                                            order.setVatExempt((order.getVatExempt() / order.getQty()) * newQty);
-                                            order.setDiscountAmount((order.getDiscountAmount() / order.getQty()) * newQty);
+                                        if (transactionsViewModel.getBundledItems(String.valueOf(order.getId())).size() < 1) {
+                                            if (newQty > order.getQty()) {
+                                                order.setVatAmount(((newQty - order.getQty()) * order.getVatAmount()) + order.getVatAmount());
+                                                order.setVatable(((newQty - order.getQty()) * order.getVatable()) + order.getVatable());
+                                                order.setVatExempt(((newQty - order.getQty()) * order.getVatExempt()) + order.getVatExempt());
+                                                order.setDiscountAmount(((newQty - order.getQty()) * order.getDiscountAmount()) + order.getDiscountAmount());
+                                            } else if (newQty < order.getQty()) {
+                                                order.setVatAmount((order.getVatAmount() / order.getQty()) * newQty);
+                                                order.setVatable((order.getVatable() / order.getQty()) * newQty);
+                                                order.setVatExempt((order.getVatExempt() / order.getQty()) * newQty);
+                                                order.setDiscountAmount((order.getDiscountAmount() / order.getQty()) * newQty);
+                                            }
+                                            order.setIs_sent_to_server(0);
+                                            order.setQty(newQty);
+
                                         }
-                                        order.setIs_sent_to_server(0);
-                                        order.setQty(newQty);
                                         order.setIs_editing(false);
                                         transactionsViewModel.updateOrder(order);
-
                                     }
-
                                     transactionsViewModel.recomputeTransaction(transactionsViewModel.orderList(transactionId), transactionId);
-
                                 } catch (ExecutionException e) {
                                     e.printStackTrace();
                                 } catch (InterruptedException e) {
@@ -1057,9 +1059,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                 order.setIs_sent_to_server(0);
                 order.setIs_void(true);
                 order.setIs_editing(false);
-                incrementalId = order.getId();
+
                 transactionsViewModel.updateOrder(order);
 
+                incrementalId = order.getId();
                 for (Orders bundle : transactionsViewModel.getBundledItems(String.valueOf(incrementalId))) {
                     bundle.setIs_void(true);
                     transactionsViewModel.updateOrder(bundle);
@@ -1436,7 +1439,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
     @Subscribe
     public void productToCheckout(final ProductToCheckout productsModel) {
-
+        mQty = 1;
         try {
             final List<ProductAlacart> alacartList = transactionsViewModel.getBranchAlacart(String.valueOf(productsModel.getProducts().getCore_id()));
             final List<BranchGroup> branchGroupList = transactionsViewModel.getBranchGroup(String.valueOf(productsModel.getProducts().getCore_id()));
@@ -1446,14 +1449,14 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
                 ChangeQtyDialog changeQtyDialog = new ChangeQtyDialog(getActivity(), 1) {
                     @Override
-                    public void success(int newQty) {
+                    public void success(final int newQty) {
                         BundleCompositionDialog bundleCompositionDialog =
                                 new BundleCompositionDialog(getActivity(), alacartList,
                                         branchGroupList, transactionsViewModel,
                                         newQty) {
                                     @Override
                                     public void bundleCompleted(List<BranchGroup> bgList) {
-
+                                        mQty = newQty;
                                         mAlacartList = alacartList;
                                         mBranchGroupList = bgList;
 
@@ -1516,61 +1519,69 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
             } else if (alacartList.size() > 0){ //SHOW INCLUDED IN ALACART
                 //show dialog for alacart confirmation
-                mAlacartList = alacartList;
-                AlacartCompositionDialog alacartCompositionDialog = new AlacartCompositionDialog(getActivity(), alacartList) {
+                ChangeQtyDialog changeQtyDialog = new ChangeQtyDialog(getContext(), 1) {
                     @Override
-                    public void confirmed() {
-                        selectedProduct = productsModel.getProducts();
-                        if (!TextUtils.isEmpty(transactionId)) {
-                            insertSelectedOrder();
-                        } else {
-                            try {
-                                if (transactionsList().size() > 0) {
+                    public void success(int newQty) {
+                        mAlacartList = alacartList;
+                        mQty = newQty;
+                        AlacartCompositionDialog alacartCompositionDialog = new AlacartCompositionDialog(getActivity(), alacartList) {
+                            @Override
+                            public void confirmed() {
+                                selectedProduct = productsModel.getProducts();
+                                if (!TextUtils.isEmpty(transactionId)) {
                                     insertSelectedOrder();
                                 } else {
-                                    String controlNumber = "";
                                     try {
-                                        if (transactionsViewModel.lastTransactionId() == null) {
-                                            controlNumber = Utils.getCtrlNumberFormat("1");
+                                        if (transactionsList().size() > 0) {
+                                            insertSelectedOrder();
                                         } else {
-                                            if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
-                                                controlNumber = Utils.getCtrlNumberFormat("1");
-                                            } else {
-                                                controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                            String controlNumber = "";
+                                            try {
+                                                if (transactionsViewModel.lastTransactionId() == null) {
+                                                    controlNumber = Utils.getCtrlNumberFormat("1");
+                                                } else {
+                                                    if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
+                                                        controlNumber = Utils.getCtrlNumberFormat("1");
+                                                    } else {
+                                                        controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                                    }
+
+                                                }
+                                            } catch (ExecutionException e) {
+                                                e.printStackTrace();
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
                                             }
 
+
+                                            List<Transactions> tr = new ArrayList<>();
+
+                                            tr.add(new Transactions(
+                                                    controlNumber,
+                                                    getUser().getUsername(),
+                                                    Utils.getDateTimeToday(),
+                                                    0,
+                                                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                            ));
+                                            transactionsViewModel.insert(tr);
+
+
                                         }
-                                    } catch (ExecutionException e) {
-                                        e.printStackTrace();
                                     } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    } catch (ExecutionException e) {
                                         e.printStackTrace();
                                     }
 
-
-                                    List<Transactions> tr = new ArrayList<>();
-
-                                    tr.add(new Transactions(
-                                            controlNumber,
-                                            getUser().getUsername(),
-                                            Utils.getDateTimeToday(),
-                                            0,
-                                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
-                                    ));
-                                    transactionsViewModel.insert(tr);
-
-
                                 }
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            } catch (ExecutionException e) {
-                                e.printStackTrace();
                             }
-
-                        }
+                        };
+                        alacartCompositionDialog.show();
                     }
                 };
-                alacartCompositionDialog.show();
+                changeQtyDialog.show();
+
             } else {
                 selectedProduct = productsModel.getProducts();
                 if (!TextUtils.isEmpty(transactionId)) {
@@ -1665,7 +1676,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                 Orders orders = new Orders(
                         Integer.valueOf(transactionId),
                         selectedProduct.getCore_id(),
-                        1,
+                        1 * mQty,
                         selectedProduct.getAmount(),
                         selectedProduct.getAmount(),
                         selectedProduct.getProduct(),
@@ -1715,7 +1726,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                             Orders orders = new Orders(
                                     Integer.valueOf(transactionId),
                                     palac.getProduct_id(),
-                                    (int) palac.getQty(),
+                                    (int) palac.getQty() * mQty,
                                     0.00,
                                     0.00,
                                     palac.getProduct(),
