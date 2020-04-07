@@ -27,6 +27,7 @@ import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.RoomRates;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
+import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.repository.DataSyncRepository;
 
 import java.util.List;
@@ -69,12 +70,20 @@ public class DataSyncViewModel extends AndroidViewModel {
         mRepository.truncatePrinterLanguage();
     }
 
+    public void truncateThemeSelection() {
+        mRepository.truncateThemeSelection();
+    }
+
     public void updatePrinterSeries(PrinterSeries printerSeries) {
         mRepository.update(printerSeries);
     }
 
     public void updatePrinterLanguage(PrinterLanguage printerLanguage) {
         mRepository.update(printerLanguage);
+    }
+
+    public void updateThemeSelection(List<ThemeSelection> themeSelection) {
+        mRepository.update(themeSelection);
     }
 
     public void insertData(List<DataSync> list) {
@@ -107,6 +116,10 @@ public class DataSyncViewModel extends AndroidViewModel {
 
     public List<PrinterLanguage> getPrinterLanguage() throws ExecutionException, InterruptedException {
         return mRepository.getPrinterLanguageList();
+    }
+
+    public List<ThemeSelection> getThemeSelectionList() throws ExecutionException, InterruptedException {
+        return mRepository.getThemeSelectionList();
     }
 
     public PrinterSeries getActivePrinterSeries() throws ExecutionException, InterruptedException {
@@ -142,6 +155,10 @@ public class DataSyncViewModel extends AndroidViewModel {
         return mRepository.getFetchRoomLiveData();
     }
 
+    public LiveData<List<ThemeSelection>> getThemeSelectionLiveData() {
+        return mRepository.getThemeSelectionLiveData();
+    }
+
     public MutableLiveData<FetchPaymentTypeResponse> getPaymentTypeLiveData() {
         return mRepository.getFetchPaymentTypeLiveData();
     }
@@ -173,6 +190,10 @@ public class DataSyncViewModel extends AndroidViewModel {
 
     public void insertPrinterSeries(List<PrinterSeries> list) {
         mRepository.insertPrinterSeries(list);
+    }
+
+    public void insertThemeSelection(List<ThemeSelection> list) {
+        mRepository.insertThemeSelection(list);
     }
 
     public void insertPrinterLanguage(List<PrinterLanguage> list) {

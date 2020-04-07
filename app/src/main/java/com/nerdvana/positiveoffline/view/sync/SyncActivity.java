@@ -1,5 +1,6 @@
 package com.nerdvana.positiveoffline.view.sync;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -37,6 +38,7 @@ import com.nerdvana.positiveoffline.background.InsertPrinterSeriesAsync;
 import com.nerdvana.positiveoffline.background.InsertProductAsync;
 import com.nerdvana.positiveoffline.background.InsertRoomAsync;
 import com.nerdvana.positiveoffline.background.InsertRoomStatusAsync;
+import com.nerdvana.positiveoffline.background.InsertThemeSelectionAsync;
 import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.intf.SyncCallback;
 import com.nerdvana.positiveoffline.intf.SyncDataAdapterListener;
@@ -72,7 +74,6 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         initProductViewModel();
 
         initUserListener();
-
         initDataSyncListener();
         initProductListener();
         initPaymentTypeListener();
@@ -81,6 +82,7 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         initDiscountListener();
         initFetchRoomListener();
         initRoomStatusListener();
+
     }
 
     private void initDiscountListener() {
@@ -155,6 +157,7 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                     syncModelList.add(new DataSync("Printer Language", false));
                     syncModelList.add(new DataSync("Rooms", false));
                     syncModelList.add(new DataSync("Room Status", false));
+                    syncModelList.add(new DataSync("Theme Selection", false));
 
 //                    syncModelList.add(new DataSync("End of Day", true));
 //                    syncModelList.add(new DataSync("Posted Discounts", true));
@@ -210,6 +213,10 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                     if (!syncModelList.get(9).getSynced()) {
                         dataSyncViewModel.fetchRoomStatus();
                     }
+
+                    if (!syncModelList.get(10).getSynced()) {
+                        new InsertThemeSelectionAsync(SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+                    }
                 }
 
             }
@@ -224,7 +231,6 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         productsViewModel.getProductsLiveData().observe(this, new Observer<FetchProductsResponse>() {
             @Override
             public void onChanged(FetchProductsResponse fetchProductsResponse) {
-                Log.d("WEKWEK", "INSERT PROD ASYNC");
                 new InsertProductAsync(fetchProductsResponse.getResult(), SyncActivity.this, productsViewModel, SyncActivity.this).execute();
             }
         });
@@ -262,9 +268,9 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         syncDataAdapter = new SyncDataAdapter(list, this);
         rvSyncData.setAdapter(syncDataAdapter);
         rvSyncData.setLayoutManager(llm);
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvSyncData.getContext(),
-                llm.getOrientation());
-        rvSyncData.addItemDecoration(dividerItemDecoration);
+//        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvSyncData.getContext(),
+//                llm.getOrientation());
+//        rvSyncData.addItemDecoration(dividerItemDecoration);
         syncDataAdapter.notifyDataSetChanged();
     }
 
@@ -331,6 +337,10 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
             case "room_status":
                 syncModelList.get(9).setSynced(true);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(9));
+                break;
+            case "theme_selection":
+                syncModelList.get(10).setSynced(true);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(10));
                 break;
         }
     }
@@ -408,6 +418,11 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
             case "room status":
                 syncModelList.get(9).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(9));
+                break;
+            case "theme selection":
+                dataSyncViewModel.truncateThemeSelection();
+                syncModelList.get(10).setSynced(false);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(10));
                 break;
         }
     }

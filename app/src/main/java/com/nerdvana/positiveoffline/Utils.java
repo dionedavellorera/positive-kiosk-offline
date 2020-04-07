@@ -84,6 +84,11 @@ public class Utils {
         return dateTime.toString("yyyy-MM-dd HH:mm:ss");
     }
 
+    public static String getPayoutSeriesFormat(String value) {
+        String str = String.format("PO-%8s",value);
+        return str.replace(' ','0');
+    }
+
     public static String getOrFormat(String value) {
         String str = String.format("OR-%8s",value);
         return str.replace(' ','0');

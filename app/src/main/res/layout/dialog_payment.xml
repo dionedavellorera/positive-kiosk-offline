@@ -51,108 +51,142 @@
                     android:orientation="vertical"
                     android:visibility="gone"
                     android:id="@+id/formGuestInfo"
-                    android:layout_above="@id/add"
                     android:layout_toRightOf="@id/cardPayments"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
-
-                    <TextView
-                        android:layout_margin="10dp"
-                        android:textSize="16sp"
-                        android:textColor="@color/colorBlack"
-                        android:text="Receipt assignment"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <View
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginTop="5dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/colorLtGrey"/>
-
-
-
-
-                    <TextView
-                        android:id="@+id/guestDetailsHeader"
-                        android:layout_margin="10dp"
-                        android:textSize="16sp"
-                        android:textColor="@color/colorBlack"
-                        android:text="Guest details"
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:drawableRight="@mipmap/baseline_list_black_24"/>
+                        android:orientation="vertical">
 
-
-                    <View
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginTop="5dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/colorLtGrey"/>
-
-
-
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_gravity="center"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                        <com.nerdvana.positiveoffline.view.HidingEditText
-                            android:imeOptions="actionNext"
-                            android:gravity="center"
-                            android:hint="Name"
-                            android:id="@+id/guestNameInput"
+                        <TextView
+                            android:padding="5dp"
+                            android:textSize="16sp"
+                            android:textColor="@color/colorBlack"
+                            android:text="Receipt assignment"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
-                    </com.google.android.material.textfield.TextInputLayout>
 
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_gravity="center"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                        <com.nerdvana.positiveoffline.view.HidingEditText
-                            android:imeOptions="actionNext"
-                            android:inputType="text"
-                            android:gravity="center"
-                            android:hint="Address"
-                            android:id="@+id/guestAddressinput"
+                        <View
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginTop="5dp"
+                            android:layout_marginBottom="5dp"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                            android:layout_height="1dp"
+                            android:background="@color/colorLtGrey"/>
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_gravity="center"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                        <com.nerdvana.positiveoffline.view.HidingEditText
-                            android:imeOptions="actionDone"
-                            android:inputType="text"
-                            android:gravity="center"
-                            android:hint="TIN#"
-                            android:id="@+id/guestTinInput"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-                    </com.google.android.material.textfield.TextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_gravity="center"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                        <com.nerdvana.positiveoffline.view.HidingEditText
-                            android:imeOptions="actionDone"
-                            android:inputType="text"
-                            android:gravity="center"
-                            android:hint="Business style"
-                            android:id="@+id/guestBusinessStyle"
+
+
+                        <TextView
+                            android:id="@+id/guestDetailsHeader"
+                            android:padding="5dp"
+                            android:textSize="16sp"
+                            android:textColor="@color/colorBlack"
+                            android:text="Customer details"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                            android:layout_height="wrap_content"
+                            android:drawableRight="@mipmap/baseline_list_black_24"/>
+
+
+                        <View
+                            android:layout_marginLeft="10dp"
+                            android:layout_marginTop="5dp"
+                            android:layout_marginBottom="5dp"
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="@color/colorLtGrey"/>
+
+
+
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_gravity="center"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+                            <com.nerdvana.positiveoffline.view.HidingEditText
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:imeOptions="actionDone"
+                                android:hint="Name"
+                                android:id="@+id/guestNameInput"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_gravity="center"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+                            <com.nerdvana.positiveoffline.view.HidingEditText
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:imeOptions="actionDone"
+                                android:inputType="text"
+                                android:gravity="left"
+                                android:hint="Address"
+                                android:id="@+id/guestAddressinput"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_gravity="center"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+                            <com.nerdvana.positiveoffline.view.HidingEditText
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:imeOptions="actionDone"
+                                android:inputType="text"
+                                android:gravity="left"
+                                android:hint="TIN#"
+                                android:id="@+id/guestTinInput"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_gravity="center"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
+                            <com.nerdvana.positiveoffline.view.HidingEditText
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:imeOptions="actionDone"
+                                android:inputType="text"
+                                android:gravity="left"
+                                android:hint="Business style"
+                                android:id="@+id/guestBusinessStyle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <Button
+                            android:textColor="@color/colorWhite"
+                            android:layout_margin="10dp"
+                            android:background="@drawable/button_selector"
+                            android:id="@+id/addGuestInfo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Add Customer Info"/>
+
+
+                    </LinearLayout>
+
+                </ScrollView>
+
+
+
                 </LinearLayout>
 
 
@@ -162,7 +196,6 @@
                     android:orientation="vertical"
                     android:visibility="gone"
                     android:id="@+id/formCash"
-                    android:layout_above="@id/add"
                     android:layout_toRightOf="@id/cardPayments"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
@@ -184,23 +217,42 @@
                         android:background="@color/colorLtGrey"/>
 
 
-                    <com.nerdvana.positiveoffline.view.HidingEditText
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_margin="10dp"
-                        android:layout_centerInParent="true"
-                        android:background="@drawable/edittext_round"
-                        android:textSize="22sp"
-                        android:selectAllOnFocus="true"
-                        android:maxLines="1"
-                        android:maxLength="10"
-                        android:padding="10dp"
-                        android:imeOptions="actionDone"
-                        android:inputType="numberDecimal"
-                        android:gravity="center"
-                        android:hint="1000.00"
-                        android:id="@+id/amount"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:id="@+id/tilPayment"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
+                        <com.nerdvana.positiveoffline.view.HidingEditText
+                            android:background="@drawable/edittext_round"
+                            android:textSize="22sp"
+                            android:selectAllOnFocus="true"
+                            android:maxLines="1"
+                            android:maxLength="10"
+                            android:padding="10dp"
+                            android:imeOptions="actionDone"
+                            android:inputType="numberDecimal"
+                            android:gravity="left"
+                            android:hint="Amount to pay"
+                            android:id="@+id/amount"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+
+                    <Button
+                        android:textColor="@color/colorWhite"
+                        android:layout_margin="10dp"
+                        android:background="@drawable/button_selector"
+                        android:layout_alignParentBottom="true"
+                        android:id="@+id/addCash"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="ADD CASH PAYMENT"/>
 
                 </RelativeLayout>
 
@@ -209,14 +261,13 @@
                     android:orientation="vertical"
                     android:visibility="gone"
                     android:id="@+id/formCard"
-                    android:layout_above="@id/add"
+
                     android:layout_toRightOf="@id/cardPayments"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
-
-
                     <TextView
+                        android:visibility="gone"
                         android:padding="5dp"
                         android:textSize="16sp"
                         android:textColor="@color/colorBlack"
@@ -225,20 +276,18 @@
                         android:layout_height="wrap_content" />
 
                     <View
+                        android:visibility="gone"
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:background="@color/colorLtGrey"/>
 
-                    <RadioGroup
-                        android:id="@+id/rgCards"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+
 
 
 
 
                     <TextView
-                        android:layout_margin="10dp"
+                        android:padding="5dp"
                         android:textSize="16sp"
                         android:textColor="@color/colorBlack"
                         android:text="Details"
@@ -258,79 +307,132 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical">
-                            <com.nerdvana.positiveoffline.view.HidingEditText
+                            <com.google.android.material.textfield.TextInputLayout
                                 android:layout_margin="5dp"
-                                android:background="@drawable/edittext_round"
-                                android:padding="10dp"
-                                android:inputType="text"
-                                android:maxLines="1"
-                                android:imeOptions="actionDone"
-                                android:hint="Card number"
-                                android:id="@+id/cardNumber"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tilCardNumber"
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                >
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:padding="10dp"
+                                    android:inputType="text"
+                                    android:maxLines="1"
+                                    android:imeOptions="actionDone"
+                                    android:hint="Card number"
+                                    android:id="@+id/cardNumber"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_margin="5dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tilCardHolder"
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                >
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:padding="10dp"
+                                    android:inputType="text"
+                                    android:maxLines="1"
+                                    android:imeOptions="actionDone"
+                                    android:hint="Cardholder's name"
+                                    android:id="@+id/cardHoldersName"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_margin="5dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tilExpiration"
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                >
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:editable="false"
+                                    android:inputType="none"
+                                    android:padding="10dp"
+                                    android:maxLines="1"
+                                    android:imeOptions="actionDone"
+                                    android:hint="Card expiration"
+                                    android:id="@+id/expiration"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_margin="5dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tilAuthorization"
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                >
+
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:padding="10dp"
+                                    android:inputType="text"
+                                    android:maxLines="1"
+                                    android:imeOptions="actionDone"
+                                    android:hint="Authorization"
+                                    android:id="@+id/authorization"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+
+                            </com.google.android.material.textfield.TextInputLayout>
+
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_margin="5dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tilCardAmount"
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                >
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:padding="10dp"
+                                    android:maxLines="1"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="numberDecimal"
+                                    android:hint="Amount"
+                                    android:id="@+id/creditCardAmount"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:layout_margin="5dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:id="@+id/tilRemarks"
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                >
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+
+                                    android:padding="10dp"
+                                    android:inputType="text"
+                                    android:maxLines="1"
+                                    android:imeOptions="actionDone"
+                                    android:hint="Remarks"
+                                    android:id="@+id/remarks"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvCreditCard"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content" />
 
-                            <com.nerdvana.positiveoffline.view.HidingEditText
-                                android:layout_margin="5dp"
-                                android:background="@drawable/edittext_round"
-                                android:padding="10dp"
-                                android:inputType="text"
-                                android:maxLines="1"
-                                android:imeOptions="actionDone"
-                                android:hint="Cardholder's name"
-                                android:id="@+id/cardHoldersName"
+                            <Button
+                                android:textColor="@color/colorWhite"
+                                android:layout_margin="10dp"
+                                android:background="@drawable/button_selector"
+                                android:id="@+id/addCard"
                                 android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
-
-                            <com.nerdvana.positiveoffline.view.HidingEditText
-                                android:editable="false"
-                                android:layout_margin="5dp"
-                                android:inputType="none"
-                                android:background="@drawable/edittext_round"
-                                android:padding="10dp"
-                                android:maxLines="1"
-                                android:imeOptions="actionDone"
-                                android:hint="01/19"
-                                android:id="@+id/expiration"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
-
-                            <com.nerdvana.positiveoffline.view.HidingEditText
-                                android:layout_margin="5dp"
-                                android:background="@drawable/edittext_round"
-                                android:padding="10dp"
-                                android:inputType="text"
-                                android:maxLines="1"
-                                android:imeOptions="actionDone"
-                                android:hint="Authorization"
-                                android:id="@+id/authorization"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
-
-                            <com.nerdvana.positiveoffline.view.HidingEditText
-                                android:layout_margin="5dp"
-                                android:background="@drawable/edittext_round"
-                                android:padding="10dp"
-                                android:maxLines="1"
-                                android:imeOptions="actionDone"
-                                android:inputType="numberDecimal"
-                                android:hint="Amount"
-                                android:id="@+id/creditCardAmount"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
-
-                            <com.nerdvana.positiveoffline.view.HidingEditText
-                                android:layout_margin="5dp"
-                                android:background="@drawable/edittext_round"
-                                android:padding="10dp"
-                                android:inputType="text"
-                                android:maxLines="1"
-                                android:imeOptions="actionDone"
-                                android:hint="Remarks"
-                                android:id="@+id/remarks"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
-
+                                android:layout_height="wrap_content"
+                                android:text="ADD CARD PAYMENT"/>
                         </LinearLayout>
                     </ScrollView>
                 </LinearLayout>
@@ -339,7 +441,6 @@
                     android:orientation="vertical"
                     android:visibility="gone"
                     android:id="@+id/formOnline"
-                    android:layout_above="@id/add"
                     android:layout_toRightOf="@id/cardPayments"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
@@ -434,7 +535,6 @@
                     android:orientation="vertical"
                     android:visibility="gone"
                     android:id="@+id/formGiftCheck"
-                    android:layout_above="@id/add"
                     android:layout_toRightOf="@id/cardPayments"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
@@ -541,7 +641,6 @@
                     android:orientation="vertical"
                     android:visibility="gone"
                     android:id="@+id/formForex"
-                    android:layout_above="@id/add"
                     android:layout_toRightOf="@id/cardPayments"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
@@ -625,6 +724,7 @@
                 </LinearLayout>
 
                 <Button
+                    android:visibility="gone"
                     android:textColor="@color/colorWhite"
                     android:layout_margin="10dp"
                     android:layout_toRightOf="@id/cardPayments"

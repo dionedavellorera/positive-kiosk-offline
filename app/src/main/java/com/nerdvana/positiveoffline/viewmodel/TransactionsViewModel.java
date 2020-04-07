@@ -19,6 +19,7 @@ import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.OrderDiscounts;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.Payout;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.Products;
@@ -54,6 +55,10 @@ public class TransactionsViewModel extends AndroidViewModel {
         transactionsRepository.insertPayment(paymentList);
     }
 
+    public void insertPayoutData(Payout payout) {
+        transactionsRepository.insertPayout(payout);
+    }
+
 
     public void insert(List<Transactions> transactionList) {
         transactionsRepository.insert(transactionList);
@@ -75,7 +80,11 @@ public class TransactionsViewModel extends AndroidViewModel {
             for (Orders owd : orderList) {
 
                 grossSales += (Utils.roundedOffTwoDecimal(owd.getVatAmount() + owd.getVatable() + owd.getVatExempt()));
-                netSales += (Utils.roundedOffTwoDecimal((owd.getVatable() + owd.getVatExempt()) - owd.getDiscountAmount()));
+                if (owd.getVatExempt() > 0) {
+                    netSales += (Utils.roundedOffTwoDecimal((owd.getVatExempt()) - owd.getDiscountAmount()));
+                } else {
+                    netSales += (Utils.roundedOffTwoDecimal((owd.getVatAmount() + owd.getVatable() + owd.getVatExempt()) - owd.getDiscountAmount()));
+                }
                 vatableSales += Utils.roundedOffTwoDecimal(owd.getVatable());
                 vatExemptSales += Utils.roundedOffTwoDecimal(owd.getVatExempt());
                 vatAmount += Utils.roundedOffTwoDecimal(owd.getVatAmount());
@@ -216,9 +225,13 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
                                 Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
                                 Utils.getDateTimeToday(),
-                                owd.orders.getIs_room_rate()
+                                owd.orders.getIs_room_rate(),
+                                owd.orders.getNotes()
 
                         );
+
+                        ord.setIs_void(owd.orders.getIs_void());
+
                         ord.setId(owd.orders.getId());
                         updateOrder(ord);
                         grossSales += Utils.roundedOffTwoDecimal((owd.orders.getVatAmount() + owd.orders.getVatable() + owd.orders.getVatExempt()));
@@ -278,7 +291,8 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
                                 Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
                                 Utils.getDateTimeToday(),
-                                selectedProduct.getIs_room_rate()
+                                selectedProduct.getIs_room_rate(),
+                                selectedProduct.getNotes()
                         );
                         ord.setId(selectedProduct.getId());
                         updateOrder(ord);
@@ -370,6 +384,10 @@ public class TransactionsViewModel extends AndroidViewModel {
 
     public Transactions lastOrNumber() throws ExecutionException, InterruptedException {
         return transactionsRepository.getLastOrNumber();
+    }
+
+    public Payout lastPayoutSeriesNumber() throws ExecutionException, InterruptedException {
+        return transactionsRepository.getLastPayoutSeries();
     }
 
     public List<Transactions> unCutOffTransactions(String userId) throws ExecutionException, InterruptedException {

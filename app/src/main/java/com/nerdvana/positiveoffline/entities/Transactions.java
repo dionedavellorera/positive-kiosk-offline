@@ -58,6 +58,10 @@ public class Transactions {
     private String check_in_time = "";
     private String check_out_time = "";
 
+    private Double service_charge_value = 0.00;
+    private boolean service_charge_is_percentage = false;
+
+
     public Transactions(@NonNull String control_number,
                         String user_id, String treg,
                         int is_sent_to_server,
@@ -421,5 +425,21 @@ public class Transactions {
 
     public void setCut_off_id(long cut_off_id) {
         this.cut_off_id = cut_off_id;
+    }
+
+    public Double getService_charge_value() {
+        return service_charge_value;
+    }
+
+    public void setService_charge_value(Double service_charge_value) {
+        this.service_charge_value = service_charge_value;
+    }
+
+    public boolean isService_charge_is_percentage() {
+        return service_charge_is_percentage;
+    }
+
+    public void setService_charge_is_percentage(boolean service_charge_is_percentage) {
+        this.service_charge_is_percentage = service_charge_is_percentage;
     }
 }

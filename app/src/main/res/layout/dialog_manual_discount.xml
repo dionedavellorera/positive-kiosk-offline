@@ -5,27 +5,31 @@
 
     <include layout="@layout/partial_header" android:id="@+id/header"/>
 
-    <TextView
-        android:layout_below="@id/header"
-        android:id="@+id/tvValue"
-        android:layout_margin="15dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_value"/>
 
-    <com.nerdvana.positiveoffline.view.HidingEditText
-        android:inputType="numberDecimal"
-        android:id="@+id/etValue"
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_below="@id/header"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
-        android:padding="10dp"
-        android:background="@drawable/edittext_round"
-        android:layout_below="@id/tvValue"
+        android:id="@+id/tilValue"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/hint_amount_percentage"/>
+        android:layout_height="wrap_content">
+        <com.nerdvana.positiveoffline.view.HidingEditText
+            android:singleLine="true"
+            android:maxLines="1"
+            android:imeOptions="actionDone"
+            android:inputType="numberDecimal"
+            android:id="@+id/etValue"
+            android:padding="10dp"
+            android:background="@drawable/edittext_round"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/label_value"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+
 
     <RadioGroup
         android:id="@+id/rgType"
@@ -33,7 +37,7 @@
         android:layout_marginRight="15dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
-        android:layout_below="@id/etValue"
+        android:layout_below="@id/tilValue"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

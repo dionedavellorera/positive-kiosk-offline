@@ -10,6 +10,7 @@ import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.Payout;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.model.DiscountWithSettings;
 import com.nerdvana.positiveoffline.repository.CutOffRepository;
@@ -40,6 +41,10 @@ public class CutOffViewModel extends AndroidViewModel {
         cutOffRepository.update(endOfDay);
     }
 
+    public void update(Payout payout) throws ExecutionException, InterruptedException {
+        cutOffRepository.update(payout);
+    }
+
     public void update(CutOff cutOff) throws ExecutionException, InterruptedException {
         cutOffRepository.update(cutOff);
     }
@@ -58,6 +63,10 @@ public class CutOffViewModel extends AndroidViewModel {
 
     public List<PostedDiscounts> getUnCutOffPostedDiscount() throws ExecutionException, InterruptedException {
         return discountsRepository.getUnCutOffPostedDiscounts();
+    }
+
+    public List<Payout> getUnCutOffPayouts() throws ExecutionException, InterruptedException {
+        return cutOffRepository.getUnCutOffPayouts();
     }
 
     public List<PostedDiscounts> getZeroEndOfDay() throws ExecutionException, InterruptedException {

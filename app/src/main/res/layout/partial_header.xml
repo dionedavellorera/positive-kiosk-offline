@@ -3,20 +3,19 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/toptoptop"
-    android:background="@color/colorSecondary">
+    android:id="@+id/toptoptop">
 
     <ImageView
         android:clickable="true"
         android:focusable="true"
         android:layout_alignParentRight="true"
-        android:padding="5dp"
         android:layout_centerVertical="true"
         android:id="@+id/backButton"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginRight="10dp"
         android:src="@mipmap/sharp_close_white_24"
-        android:tint="@color/colorWhite"/>
+        android:tint="@color/colorBlack"/>
 
     <Button
         android:layout_margin="10dp"
@@ -29,15 +28,15 @@
         android:layout_height="wrap_content" />
 
 
-    <EditText
+    <com.nerdvana.positiveoffline.view.HidingEditText
         android:imeOptions="actionDone"
         android:maxLines="1"
         android:singleLine="true"
         android:id="@+id/search"
         android:visibility="gone"
         android:background="@null"
-        android:textColorHint="@color/colorWhite"
-        android:textColor="@color/colorWhite"
+        android:textColorHint="@color/colorBlack"
+        android:textColor="@color/colorBlack"
         android:hint="Search here"
         android:layout_toLeftOf="@id/backButton"
         android:layout_width="120dp"
@@ -52,8 +51,14 @@
         android:padding="15dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/colorWhite"
+        android:textColor="@color/colorBlack"
         android:text="SETTING"
         android:textStyle="bold"/>
+
+    <View
+        android:layout_below="@id/displayHeader"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorLtGrey"/>
 
 </RelativeLayout>

@@ -3,14 +3,14 @@
 
     <string name="app_setup">KIOSK SETUP</string>
     <string name="label_host_name">HOST NAME</string>
-    <string name="hint_host_name">http://192.168.1.100</string>
+    <string name="hint_host_name">Host name</string>
     <string name="label_company">COMPANY</string>
-    <string name="hint_company">company</string>
+    <string name="hint_company">Company</string>
     <string name="label_code">CODE</string>
-    <string name="hint_code">CODE</string>
+    <string name="hint_code">Code</string>
     <string name="label_product_key">PRODUCT KEY</string>
     <string name="button_label_confirm">CONFIRM</string>
-    <string name="hint_product_key">#####-#####-#####-#####-#####</string>
+    <string name="hint_product_key">Product key</string>
     <string name="general_progress_text">Loading.. please wait</string>
     <string name="error_message_fill_up_all_fields">Please fill up all fields</string>
     <string name="no_item_to_discount">No item to discount</string>
@@ -40,8 +40,8 @@
     <string name="hint_username">abc123</string>
     <string name="item_void_password_dialog">CONFIRM ITEM VOID</string>
     <string name="label_quantity">Change Quantity</string>
-    <string name="hint_quantity">100</string>
-    <string name="dialog_header_change_qty">CHANGE QUANTITY</string>
+    <string name="hint_quantity">Enter new quantity</string>
+    <string name="dialog_header_change_qty">Change quantity</string>
     <string name="error_zero_quantity">Cannot enter 0 quantity</string>
     <string name="error_no_transaction">No transaction for payment</string>
     <string name="error_no_items">No items for payment</string>
@@ -107,4 +107,8 @@
     <string name="message_or_details_success">OR Details successfully saved</string>
     <string name="label_card_number">CARD NUMBER</string>
     <string name="error_card_number_required">Card number is always required</string>
+    <string name="hint_enter_card_number">Enter card number</string>
+    <string name="hint_enter_name">Enter name</string>
+    <string name="hint_enter_username">Enter username</string>
+    <string name="hint_enter_password">Enter password</string>
 </resources>

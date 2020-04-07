@@ -43,12 +43,12 @@ public class DiscountMenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         private TextView name;
-        private CardView rootView;
+//        private CardView rootView;
         private RelativeLayout relView;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.name);
-            rootView = itemView.findViewById(R.id.rootView);
+//            rootView = itemView.findViewById(R.id.rootView);
             relView = itemView.findViewById(R.id.relView);
         }
     }
@@ -59,7 +59,7 @@ public class DiscountMenuAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         final DiscountWithSettings model = discountWithSettingsList.get(holder.getAdapterPosition());
 
-        ((DiscountMenuAdapter.ViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
+        ((ViewHolder)holder).relView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {

@@ -15,5 +15,10 @@
     <color name="colorSecondary">#009688</color>
     <color name="colorList">#B2DFDB</color>
 
+    <color name="colorYellow">#ffb733</color>
+    <color name="colorDarkLighter">#282f35</color>
+
+    <color name="darkColorAccent">#2FD1AA</color>
+
 
 </resources>

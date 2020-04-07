@@ -15,6 +15,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -31,12 +33,14 @@ import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.ProductsAdapter;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Products;
+import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.intf.AsyncContract;
 import com.nerdvana.positiveoffline.intf.ProductsContract;
 import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
 import com.nerdvana.positiveoffline.view.HidingEditText;
+import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.ProductsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 
@@ -50,10 +54,12 @@ import java.util.concurrent.ExecutionException;
 public class RightFrameFragment extends Fragment implements AsyncContract, ProductsContract, View.OnClickListener {
 
     private Timer timer;
-
+    private boolean isDarkMode = false;
     private View view;
     private RecyclerView listProducts;
+    private CardView cardSearch;
     private HidingEditText search;
+    private ConstraintLayout rightFrameConstraint;
 
     private ProductsAdapter productsAdapter;
 
@@ -92,14 +98,17 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
 
     private void initProductsViewModel() {
         productsViewModel = new ViewModelProvider(this).get(ProductsViewModel.class);
+
     }
 
     private void initViews(View view) {
         search = view.findViewById(R.id.search);
+        cardSearch = view.findViewById(R.id.cardSearch);
         clearText = view.findViewById(R.id.clearText);
         clearText.setOnClickListener(this);
         addSearchListener();
         listProducts = view.findViewById(R.id.listProducts);
+        rightFrameConstraint = view.findViewById(R.id.rightFrameConstraint);
     }
 
 
@@ -186,7 +195,10 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
 
 
     private void setProductAdapter(List<Products> productsList) {
-        productsAdapter = new ProductsAdapter(productsList, this, getContext());
+        productsAdapter = new ProductsAdapter(productsList,
+                this,
+                getContext(),
+                isDarkMode);
         listProducts.setLayoutManager(new GridLayoutManager(getContext(), 4));
         listProducts.setAdapter(productsAdapter);
         productsAdapter.notifyDataSetChanged();
@@ -267,7 +279,8 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
                                 Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
                                 Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
                                 Utils.getDateTimeToday(),
-                                0
+                                0,
+                                ""
                         ));
                         transactionsViewModel.insertOrder(orderList);
                     }
@@ -294,6 +307,55 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
     public void onDetach() {
         super.onDetach();
         BusProvider.getInstance().unregister(this);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        initThemeSelectionListener();
+    }
+
+    private void initThemeSelectionListener() {
+        DataSyncViewModel dataSyncViewModel = new ViewModelProvider(this).get(DataSyncViewModel.class);
+        dataSyncViewModel.getThemeSelectionLiveData().observe(this, new Observer<List<ThemeSelection>>() {
+            @Override
+            public void onChanged(List<ThemeSelection> themeSelectionList) {
+                for (ThemeSelection tsl : themeSelectionList) {
+                    if (tsl.getIs_selected()) {
+                        if (tsl.getTheme_id() == 100) { // LIGHT MODE
+                            search.setTextColor(getResources().getColor(R.color.colorBlack));
+                            search.setHintTextColor(getResources().getColor(R.color.colorBlack));
+                            search.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+                            cardSearch.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+                            listProducts.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+                            rightFrameConstraint.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+
+                            isDarkMode = false;
+                            break;
+                        } else { // DARK MODE
+                            isDarkMode = true;
+                            search.setTextColor(getResources().getColor(R.color.colorWhite));
+                            search.setHintTextColor(getResources().getColor(R.color.colorWhite));
+                            search.setBackgroundColor(getResources().getColor(R.color.colorDarkLighter));
+                            cardSearch.setBackgroundColor(getResources().getColor(R.color.colorDarkLighter));
+                            listProducts.setBackgroundColor(getResources().getColor(R.color.colorBlack));
+                            rightFrameConstraint.setBackgroundColor(getResources().getColor(R.color.colorBlack));
+                            break;
+                        }
+                    }
+                }
+
+                try {
+                    setProductAdapter(productsViewModel.getProductsList());
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+        });
     }
 
 }

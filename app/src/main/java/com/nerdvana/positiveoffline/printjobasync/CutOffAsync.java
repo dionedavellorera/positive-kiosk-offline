@@ -10,6 +10,7 @@ import com.epson.epos2.printer.Printer;
 import com.epson.epos2.printer.PrinterStatusInfo;
 import com.epson.epos2.printer.ReceiveListener;
 import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.entities.CutOff;
@@ -252,7 +253,29 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
                     2,
                     context)
                     ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            if (cutOff.getTotal_payout() > 0) {
+                addTextToPrinter(printer, twoColumns(
+                        "PAYOUT",
+                        "-"+PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_payout())),
+                        40,
+                        2,
+                        context)
+                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            } else {
+                addTextToPrinter(printer, twoColumns(
+                        "PAYOUT",
+                        "0.00",
+                        40,
+                        2,
+                        context)
+                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            }
+
+
+
             PrinterUtils.addFooterToPrinter(printer);
+
+            BusProvider.getInstance().post(new PrintModel("PRINT_SHORTOVER", GsonHelper.getGson().toJson(cutOff)));
 
             try {
 
@@ -279,7 +302,7 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
                                         StarIoExt.Emulation.StarPRNT,
                                         iLocalizeReceipts,
                                         false,
-                                        EJFileCreator.cutOffString(cutOff, context, isReprint),
+                                        EJFileCreator.cutOffString(cutOff, context, isReprint, true),
                                         false);
 
                                 starIOPort.writePort(command, 0, command.length);
@@ -304,14 +327,7 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
                 asyncFinishCallBack.doneProcessing();
                 asyncFinishCallBack.error("PRINTER NOT CONNECTED");
             }
-
-
-
         }
-
-
-
-
         return null;
     }
 

@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Context;
@@ -21,17 +22,23 @@ import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.widget.CompoundButton;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nerdvana.positiveoffline.apirequests.TestRequest;
 import com.nerdvana.positiveoffline.apiresponses.TestResponse;
 import com.nerdvana.positiveoffline.background.IntransitAsync;
+import com.nerdvana.positiveoffline.entities.Payout;
+import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.model.ShiftUpdateModel;
 import com.nerdvana.positiveoffline.model.TimerUpdateModel;
 import com.nerdvana.positiveoffline.printjobasync.BackoutAsync;
 import com.nerdvana.positiveoffline.background.CheatAsync;
+import com.nerdvana.positiveoffline.printjobasync.PayoutAsync;
 import com.nerdvana.positiveoffline.printjobasync.PostVoidAsync;
 import com.nerdvana.positiveoffline.background.TimerService;
 import com.nerdvana.positiveoffline.entities.CutOff;
@@ -53,6 +60,7 @@ import com.nerdvana.positiveoffline.printer.SStarPort;
 import com.nerdvana.positiveoffline.printjobasync.CutOffAsync;
 import com.nerdvana.positiveoffline.printjobasync.EndOfDayAsync;
 import com.nerdvana.positiveoffline.printjobasync.PrintReceiptAsync;
+import com.nerdvana.positiveoffline.printjobasync.ShortOverAsync;
 import com.nerdvana.positiveoffline.printjobasync.SoaAsync;
 import com.nerdvana.positiveoffline.view.checkoutmenu.LeftFrameFragment;
 import com.nerdvana.positiveoffline.view.login.LoginActivity;
@@ -88,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
     private CutOffViewModel cutOffViewModel;
     boolean hasError = false;
-
+    private boolean isDarkMode = false;
     private ImageView onlineImageIndicator;
     private TextView onlineTextIndicator;
     private TextView tvTime;
@@ -105,6 +113,14 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
     private ILocalizeReceipts iLocalizeReceipts;
     private StarIOPort starIoPort;
+
+    private Switch toggleTheme;
+
+    private FrameLayout leftFrame;
+    private FrameLayout rightFrame;
+    private FrameLayout bottomFrame;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,7 +131,6 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         openFragment(R.id.rightFrame, new RightFrameFragment());
         myPrintJobs = new ArrayList<>();
         initViews();
-
         tvTime.setText(Utils.getDateTimeToday());
 
 
@@ -125,11 +140,60 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         initILocalizeReceipts();
         startTimerService();
         initCutOffViewModel();
+        initToggleThemeListener();
 
 
+
+        initThemeSelectionListener();
+    }
+
+    private void updateThemeSelection(boolean isChecked) throws ExecutionException, InterruptedException {
+        List<ThemeSelection> myList = new ArrayList<>();
+        ThemeSelection themeSelection = null;
+        for (ThemeSelection tsl : dataSyncViewModel.getThemeSelectionList()) {
+            if (isChecked) {
+                if (tsl.getTheme_id() == 101) { // DARK MODE
+                    tsl.setIs_selected(true);
+                } else {
+                    tsl.setIs_selected(false);
+                }
+            } else {
+                if (tsl.getTheme_id() == 100) { // DARK MODE
+                    tsl.setIs_selected(true);
+                } else {
+                    tsl.setIs_selected(false);
+                }
+            }
+            myList.add(tsl);
+        }
+
+        dataSyncViewModel.updateThemeSelection(myList);
+//        dataSyncViewModel.getThemeSelectionLiveData().postValue(myList);
 
 
     }
+
+    private void initToggleThemeListener() {
+
+        toggleTheme.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                //update theme selected db
+                Log.d("THEMESELECTION", String.valueOf(isChecked));
+                try {
+                    updateThemeSelection(isChecked);
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
+
+    }
+
 
     private void initCutOffViewModel() {
         cutOffViewModel = new ViewModelProvider(this).get(CutOffViewModel.class);
@@ -151,6 +215,11 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     }
 
     private void initViews() {
+        leftFrame = findViewById(R.id.leftFrame);
+        rightFrame = findViewById(R.id.rightFrame);
+        bottomFrame = findViewById(R.id.bottomFrame);
+
+        toggleTheme = findViewById(R.id.toggleTheme);
         onlineImageIndicator = findViewById(R.id.onlineImageIndicator);
         onlineTextIndicator = findViewById(R.id.onlineTextIndicator);
         tvTime = findViewById(R.id.tvTime);
@@ -365,6 +434,10 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         String finalString = "";
         try {
             switch (printModel.getType()) {
+                case "PRINT_PAYOUT":
+                    Payout payoutDetails = GsonHelper.getGson().fromJson(printModel.getData(), Payout.class);
+                    finalString = EJFileCreator.payoutString(payoutDetails, MainActivity.this);
+                    break;
                 case "POST_VOID":
                     TransactionCompleteDetails postVoidDetails = GsonHelper.getGson().fromJson(printModel.getData(), TransactionCompleteDetails.class);
                     finalString = EJFileCreator.postVoidString(postVoidDetails, MainActivity.this, false, printModel);
@@ -379,7 +452,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                     break;
                 case "PRINT_XREAD":
                     CutOff cutOff = GsonHelper.getGson().fromJson(printModel.getData(), CutOff.class);
-                    finalString = EJFileCreator.cutOffString(cutOff, MainActivity.this, false);
+                    finalString = EJFileCreator.cutOffString(cutOff, MainActivity.this, false, false);
                     break;
                 case "PRINT_ZREAD":
                     EndOfDay endOfDay = GsonHelper.getGson().fromJson(printModel.getData(), EndOfDay.class);
@@ -406,9 +479,12 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void print(PrintModel printModel) {
 
-        Log.d("QWEQEQ", printModel.getType());
-
         switch (printModel.getType()) {
+            case "PRINT_PAYOUT":
+                addAsync(new PayoutAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "print_payout");
+                break;
             case "PRINT_INTRANSIT":
                 addAsync(new IntransitAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
@@ -466,6 +542,11 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                         this, dataSyncViewModel,
                         iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_xread");
                 break;
+            case "PRINT_SHORTOVER":
+                addAsync(new ShortOverAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_shortover");
+                break;
             case "PRINT_XREAD":
                 saveEjFile(printModel);
                 addAsync(new CutOffAsync(printModel, MainActivity.this,
@@ -500,6 +581,10 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     private void runTask(String taskName, AsyncTask asyncTask) {
 
         switch (taskName) {
+            case "print_payout":
+                PayoutAsync payoutAsync = (PayoutAsync) asyncTask;
+                payoutAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                break;
             case "intransit":
                 IntransitAsync intransitAsync = (IntransitAsync) asyncTask;
                 intransitAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
@@ -535,6 +620,10 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
             case "print_receipt":
                 PrintReceiptAsync printReceiptAsync = (PrintReceiptAsync) asyncTask;
                 printReceiptAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                break;
+            case "print_shortover":
+                ShortOverAsync shortOverAsync = (ShortOverAsync) asyncTask;
+                shortOverAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
                 break;
             case "print_xread":
                 CutOffAsync offAsync = (CutOffAsync) asyncTask;
@@ -813,12 +902,42 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void shiftUpdate(ShiftUpdateModel shiftUpdateModel) {
         try {
-            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1));
+            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 1.0.12");
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+
+    private void initThemeSelectionListener() {
+        DataSyncViewModel dataSyncViewModel = new ViewModelProvider(this).get(DataSyncViewModel.class);
+        dataSyncViewModel.getThemeSelectionLiveData().observe(this, new Observer<List<ThemeSelection>>() {
+            @Override
+            public void onChanged(List<ThemeSelection> themeSelectionList) {
+                for (ThemeSelection tsl : themeSelectionList) {
+                    if (tsl.getIs_selected()) {
+                        if (tsl.getTheme_id() == 100) { // LIGHT MODE
+                            leftFrame.setBackgroundColor(getResources().getColor(R.color.colorLtGrey));
+                            rightFrame.setBackgroundColor(getResources().getColor(R.color.colorLtGrey));
+                            isDarkMode = false;
+                            toggleTheme.setChecked(false);
+                            break;
+                        } else { // DARK MODE
+                            isDarkMode = true;
+                            toggleTheme.setChecked(true);
+                            leftFrame.setBackgroundColor(getResources().getColor(R.color.colorBlack));
+                            rightFrame.setBackgroundColor(getResources().getColor(R.color.colorBlack));
+                            break;
+                        }
+                    }
+                }
+            }
+
+        });
+
+
     }
 
 

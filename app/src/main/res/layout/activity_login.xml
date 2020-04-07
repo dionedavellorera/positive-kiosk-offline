@@ -47,60 +47,80 @@
                 android:background="@color/colorWhite"
                 android:alpha="0.9"/>
 
-            <com.nerdvana.positiveoffline.view.HidingEditText
-                android:layout_below="@id/logo"
-                android:id="@+id/username"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginRight="15dp"
-                android:gravity="center"
-                android:hint="USERNAME"
-                android:inputType="textAutoComplete"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:imeOptions="actionDone"
-                android:textColor="@color/colorBlack"
-                android:textColorHint="@color/colorBlack"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent" />
-
-
-            <com.nerdvana.positiveoffline.view.HidingEditText
-                android:maxLines="1"
-                android:singleLine="true"
-                android:imeOptions="actionDone"
-                android:gravity="center"
-                android:layout_below="@id/username"
-                android:id="@+id/password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginRight="15dp"
-                android:hint="PASSWORD"
-                android:inputType="textPassword"
-                android:textColor="@color/colorBlack"
-                android:textColorHint="@color/colorBlack"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilUsername"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/username" />
+                android:layout_below="@id/logo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginRight="10dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                <com.nerdvana.positiveoffline.view.HidingEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/username"
+                    android:gravity="left"
+                    android:hint="Username"
+                    android:inputType="textAutoComplete"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:textColor="@color/colorBlack"
+                    android:textColorHint="@color/colorBlack" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPassword"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tilUsername"
+                android:layout_below="@id/tilUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginRight="10dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                >
+
+                <com.nerdvana.positiveoffline.view.HidingEditText
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:gravity="left"
+                    android:id="@+id/password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Password"
+                    android:inputType="textPassword"
+                    android:textColor="@color/colorBlack"
+                    android:textColorHint="@color/colorBlack" />
+
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+
+
 
             <com.nerdvana.positiveoffline.view.ProgressButton
                 android:textAlignment="center"
-                android:textColor="@color/colorWhite"
+                app:textColor="@color/colorBlack"
                 android:alpha="0.8"
                 android:visibility="visible"
-                android:layout_below="@id/password"
+                android:layout_below="@id/tilPassword"
                 android:id="@+id/proceed"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="15dp"
+                android:layout_marginLeft="10dp"
                 android:layout_marginTop="24dp"
-                android:layout_marginEnd="15dp"
+                android:layout_marginRight="10dp"
                 android:background="@drawable/button_selector"
                 app:text="PROCEED" />
 
@@ -116,12 +136,12 @@
 
             <ImageView
                 android:id="@+id/setup"
-                android:layout_marginRight="20dp"
+                android:layout_marginRight="15dp"
                 android:layout_marginBottom="15dp"
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentRight="true"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:src="@mipmap/baseline_settings_black_24"/>
 
 

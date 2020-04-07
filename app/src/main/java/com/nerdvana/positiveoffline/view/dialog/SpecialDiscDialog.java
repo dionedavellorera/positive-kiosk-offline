@@ -69,7 +69,7 @@ public abstract class SpecialDiscDialog extends BaseDialog implements View.OnCli
         setDialogLayout(R.layout.dialog_specialdiscount, header);
         setCancelable(false);
         initViews();
-        tvCardNumber.setText(String.format("%s NUMBER", header));
+//        tvCardNumber.setText(String.format("%s NUMBER", header));
     }
 
     private void initViews() {
@@ -78,7 +78,7 @@ public abstract class SpecialDiscDialog extends BaseDialog implements View.OnCli
         etCardNumber = findViewById(R.id.etCardNumber);
         etName = findViewById(R.id.etName);
         etAddress = findViewById(R.id.etAddress);
-        tvCardNumber = findViewById(R.id.tvCardNumber);
+//        tvCardNumber = findViewById(R.id.tvCardNumber);
     }
 
     @Override

@@ -23,7 +23,8 @@ public interface ProductsDao {
     @Query("SELECT * FROM Products WHERE product_barcode=:barcode")
     Products productViaBarCode(String barcode);
 
-    @Query("SELECT * FROM Products WHERE departmentId = 3 OR departmentId = 4 OR departmentId = 5")
+    @Query("SELECT * FROM Products")
+//    @Query("SELECT * FROM Products WHERE departmentId = 3 OR departmentId = 4 OR departmentId = 5")
     List<Products> productsList();
 
     @Query("DELETE FROM Products")

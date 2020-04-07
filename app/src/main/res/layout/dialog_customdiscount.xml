@@ -12,60 +12,76 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <TextView
-        android:id="@+id/tvCardNumber"
-        android:layout_margin="15dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_card_number"/>
-
-    <com.nerdvana.positiveoffline.view.HidingEditText
-        android:id="@+id/etCardNumber"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
-        android:padding="10dp"
-        android:background="@drawable/edittext_round"
+        android:id="@+id/tilCardNumber"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/hint_card_number"/>
+        android:layout_height="wrap_content">
+        <com.nerdvana.positiveoffline.view.HidingEditText
+            android:maxLines="1"
+            android:singleLine="true"
+            android:imeOptions="actionDone"
+            android:id="@+id/etCardNumber"
+            android:padding="10dp"
+            android:background="@drawable/edittext_round"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_enter_card_number"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
-        android:layout_margin="15dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_name"/>
-
-    <com.nerdvana.positiveoffline.view.HidingEditText
-        android:id="@+id/etName"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
-        android:padding="10dp"
-        android:background="@drawable/edittext_round"
+        android:id="@+id/tilName"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/hint_name"/>
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:layout_margin="15dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/label_address"/>
+        <com.nerdvana.positiveoffline.view.HidingEditText
+            android:maxLines="1"
+            android:singleLine="true"
+            android:imeOptions="actionDone"
+            android:id="@+id/etName"
+            android:padding="10dp"
+            android:background="@drawable/edittext_round"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_enter_name"/>
 
-    <com.nerdvana.positiveoffline.view.HidingEditText
-        android:id="@+id/etAddress"
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
-        android:padding="10dp"
-        android:background="@drawable/edittext_round"
+        android:id="@+id/tilAddress"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/hint_enter_address"/>
+        android:layout_height="wrap_content">
+        <com.nerdvana.positiveoffline.view.HidingEditText
+            android:maxLines="1"
+            android:singleLine="true"
+            android:imeOptions="actionDone"
+            android:id="@+id/etAddress"
+            android:padding="10dp"
+            android:background="@drawable/edittext_round"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_enter_address"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+
 
     <Button
         android:layout_marginLeft="15dp"

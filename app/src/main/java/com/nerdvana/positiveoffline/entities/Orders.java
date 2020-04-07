@@ -51,6 +51,8 @@ public class Orders {
     private int product_group_id = 0;
     private int orders_incremental_id = 0;
 
+    private String notes = "";
+
     public Orders(int transaction_id, int core_id,
                   int qty, @NonNull Double amount,
                   @NonNull Double original_amount,
@@ -60,7 +62,9 @@ public class Orders {
                   String departmentName, String categoryName,
                   int categoryId, int is_sent_to_server,
                   int machine_id, int branch_id,
-                  String treg, int is_room_rate) {
+                  String treg, int is_room_rate,
+                  String notes) {
+        this.notes = notes;
         this.is_room_rate = is_room_rate;
         this.treg = treg;
         this.is_sent_to_server = is_sent_to_server;
@@ -80,6 +84,14 @@ public class Orders {
         this.vatable = vatable;
         this.vatExempt = vatExempt;
         this.discountAmount = discountAmount;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     public int getOrders_incremental_id() {

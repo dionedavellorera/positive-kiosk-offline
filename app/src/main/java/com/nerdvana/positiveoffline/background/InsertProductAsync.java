@@ -56,7 +56,6 @@ public class InsertProductAsync extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... voids) {
         List<Products> productsList = new ArrayList<>();
         for (final FetchProductsResponse.Result r : list) {
-
             Products product = new Products(
                     r.getCoreId(),
                     r.getProduct(),

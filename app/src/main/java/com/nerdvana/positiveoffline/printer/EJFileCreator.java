@@ -19,6 +19,7 @@ import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.Payout;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.model.OtherPrinterModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
@@ -36,10 +37,35 @@ import java.util.concurrent.ExecutionException;
 
 import static com.nerdvana.positiveoffline.printer.PrinterUtils.addPrinterSpace;
 import static com.nerdvana.positiveoffline.printer.PrinterUtils.addTextToPrinter;
+import static com.nerdvana.positiveoffline.printer.PrinterUtils.twoColumns;
 
 public class EJFileCreator {
 
-    public static String cutOffString(CutOff cutOff, Context context, boolean isReprint) {
+    public static String shortOverString(CutOff cutOff, Context context, boolean isReprint) {
+        String finalString = "";
+
+        finalString += PrinterUtils.receiptString("ABC COMPANY", "", context, true);
+        finalString += PrinterUtils.receiptString("1 ABC ST. DE AVE", "", context, true);
+        finalString += PrinterUtils.receiptString("PASIG CITY 1600", "", context, true);
+        finalString += PrinterUtils.receiptString("TEL NO: 8123-4567", "", context, true);
+        finalString += PrinterUtils.receiptString("MIN NO: *****************", "", context, true);
+        finalString += PrinterUtils.receiptString("SERIAL NO: ********", "", context, true);
+
+
+
+        finalString += PrinterUtils.receiptString("", "", context, true);
+
+        finalString += PrinterUtils.receiptString("DATE:" + cutOff.getTreg(), "", context, true);
+
+        finalString += PrinterUtils.receiptString("", "", context, true);
+
+        finalString += PrinterUtils.receiptString("SHORT/OVER", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_cash_amount() - (cutOff.getTotal_cash_payments() - cutOff.getTotal_change()))), context, false);
+
+        return finalString;
+    }
+
+    public static String cutOffString(CutOff cutOff, Context context,
+                                      boolean isReprint, boolean isPrintShortOver) {
         String finalString = "";
 
         finalString += PrinterUtils.receiptString("ABC COMPANY", "", context, true);
@@ -80,6 +106,12 @@ public class EJFileCreator {
         finalString += PrinterUtils.receiptString("PWD(COUNT)", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getPwdCount())), context, false);
         finalString += PrinterUtils.receiptString("OTHERS", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getOthersAmount())), context, false);
         finalString += PrinterUtils.receiptString("OTHERS(COUNT)", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getOthersCount())), context, false);
+        if (cutOff.getTotal_payout() > 0) {
+            finalString += PrinterUtils.receiptString("PAYOUT", "-"+PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_payout())), context, false);
+        } else {
+            finalString += PrinterUtils.receiptString("PAYOUT", "0.00", context, false);
+        }
+
         finalString += PrinterUtils.receiptString("", "", context, true);
 
         finalString += PrinterUtils.receiptString(
@@ -159,7 +191,9 @@ public class EJFileCreator {
                 "",
                 context,
                 true);
-
+        if (isPrintShortOver) {
+            BusProvider.getInstance().post(new PrintModel("PRINT_SHORTOVER", GsonHelper.getGson().toJson(cutOff)));
+        }
 
 
         return finalString;
@@ -500,25 +534,35 @@ public class EJFileCreator {
 
         Double amountDue = 0.00;
         for (Orders orders : transactionCompleteDetails.ordersList) {
+            if (!orders.getIs_void()) {
+                String qty = "";
 
-            String qty = "";
+                qty += orders.getQty();
 
-            qty += orders.getQty();
+                if (String.valueOf(orders.getQty()).length() < 4) {
+                    for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
+                        qty += " ";
+                    }
+                }
 
-            if (String.valueOf(orders.getQty()).length() < 4) {
-                for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
-                    qty += " ";
+                if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+                    finalString += PrinterUtils.receiptString("-" + qty +  " " + orders.getName(), "0.00", context, false);
+                } else {
+                    finalString += PrinterUtils.receiptString(qty +  " " + orders.getName(), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount())), context, false);
+                }
+
+                if (orders.getDiscountAmount() > 0) {
+                     finalString += PrinterUtils.receiptString("LESS", PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getDiscountAmount())), context, false);
+                }
+
+
+                if (orders.getVatExempt() <= 0) {
+                    amountDue += orders.getOriginal_amount();
+                } else {
+                    amountDue += orders.getAmount();
                 }
             }
 
-            finalString += PrinterUtils.receiptString(qty +  " " + orders.getName(), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount())), context, false);
-
-
-            if (orders.getVatExempt() <= 0) {
-                amountDue += orders.getOriginal_amount();
-            } else {
-                amountDue += orders.getAmount();
-            }
         }
 
 
@@ -569,6 +613,20 @@ public class EJFileCreator {
                 "0.00",
                 context,
                 false);
+        if (transactionCompleteDetails.transactions.getService_charge_value() > 0) {
+            finalString += PrinterUtils.receiptString(
+                    "SERVICE CHARGE",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(transactionCompleteDetails.transactions.getService_charge_value())),
+                    context,
+                    false);
+        } else {
+            finalString += PrinterUtils.receiptString(
+                    "SERVICE CHARGE",
+                    "0.00",
+                    context,
+                    false);
+        }
+
 
         finalString += PrinterUtils.receiptString(
                 "",
@@ -578,13 +636,25 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "SUB TOTAL",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getGross_sales()))),
+                PrinterUtils.returnWithTwoDecimal(
+                        String.valueOf(
+                                Utils.roundedOffTwoDecimal(
+                                        transactionCompleteDetails.transactions.getGross_sales()
+                                ) +
+                                Utils.roundedOffTwoDecimal(
+                                        transactionCompleteDetails.transactions.getService_charge_value()
+                                )
+                        )),
                 context,
                 false);
 
         finalString += PrinterUtils.receiptString(
                 "AMOUNT DUE",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue)),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue)
+                        +
+                        Utils.roundedOffTwoDecimal(
+                                transactionCompleteDetails.transactions.getService_charge_value()
+                        )),
                 context,
                 false);
 
@@ -1072,6 +1142,21 @@ public class EJFileCreator {
                 "",
                 context,
                 true);
+        return finalString;
+    }
+
+    public static String payoutString(Payout payout, Context context) {
+        String finalString = "";
+
+        finalString += PrinterUtils.receiptString("PAYOUT SLIP", "", context, true);
+
+        finalString += PrinterUtils.receiptString("", "", context, true);
+        finalString += PrinterUtils.receiptString("AMOUNT", "-" + PrinterUtils.returnWithTwoDecimal(String.valueOf(payout.getAmount())), context, false);
+        finalString += PrinterUtils.receiptString("CASHIER", payout.getUsername(), context, false);
+        finalString += PrinterUtils.receiptString("MANAGER", payout.getManager_username(), context, false);
+        finalString += PrinterUtils.receiptString("DATE", payout.getTreg(), context, false);
+        finalString += PrinterUtils.receiptString("", "", context, true);
+
         return finalString;
     }
 

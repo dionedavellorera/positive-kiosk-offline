@@ -15,6 +15,7 @@ import com.nerdvana.positiveoffline.dao.OrderDiscountsDao;
 import com.nerdvana.positiveoffline.dao.OrdersDao;
 import com.nerdvana.positiveoffline.dao.PaymentTypeDao;
 import com.nerdvana.positiveoffline.dao.PaymentsDao;
+import com.nerdvana.positiveoffline.dao.PayoutDao;
 import com.nerdvana.positiveoffline.dao.PostedDiscountsDao;
 import com.nerdvana.positiveoffline.dao.PrinterLanguageDao;
 import com.nerdvana.positiveoffline.dao.PrinterSeriesDao;
@@ -22,6 +23,8 @@ import com.nerdvana.positiveoffline.dao.ProductsDao;
 import com.nerdvana.positiveoffline.dao.RoomRatesDao;
 import com.nerdvana.positiveoffline.dao.RoomStatusDao;
 import com.nerdvana.positiveoffline.dao.RoomsDao;
+import com.nerdvana.positiveoffline.dao.ServiceChargeDao;
+import com.nerdvana.positiveoffline.dao.ThemeSelectionDao;
 import com.nerdvana.positiveoffline.dao.TransactionsDao;
 import com.nerdvana.positiveoffline.dao.UserDao;
 import com.nerdvana.positiveoffline.entities.BranchGroup;
@@ -37,6 +40,7 @@ import com.nerdvana.positiveoffline.entities.OrderDiscounts;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
 import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.Payout;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.PrinterLanguage;
 import com.nerdvana.positiveoffline.entities.PrinterSeries;
@@ -45,6 +49,8 @@ import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.RoomRates;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
+import com.nerdvana.positiveoffline.entities.ServiceCharge;
+import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 
@@ -59,9 +65,9 @@ import com.nerdvana.positiveoffline.entities.User;
                         PrinterLanguage.class, OrDetails.class,
                         Rooms.class, RoomRates.class,
                         RoomStatus.class, ProductAlacart.class,
-
-        BranchGroup.class},
-          version = 116)
+                        ThemeSelection.class, BranchGroup.class,
+                        Payout.class, ServiceCharge.class},
+          version = 131)
 
 public abstract class PosDatabase extends RoomDatabase {
     public abstract UserDao userDao();
@@ -83,6 +89,9 @@ public abstract class PosDatabase extends RoomDatabase {
     public abstract RoomStatusDao roomStatusDao();
     public abstract PrinterLanguageDao printerLanguageDao();
     public abstract OrDetailsDao orDetailsDao();
+    public abstract PayoutDao payoutDao();
     public abstract RoomsDao roomsDao();
     public abstract RoomRatesDao roomRatesDao();
+    public abstract ThemeSelectionDao themeSelectionDao();
+    public abstract ServiceChargeDao serviceChargeDao();
 }

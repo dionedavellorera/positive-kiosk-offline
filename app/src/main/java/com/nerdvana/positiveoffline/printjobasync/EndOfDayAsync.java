@@ -249,6 +249,24 @@ public class EndOfDayAsync extends AsyncTask<Void, Void, Void> {
                     context)
                     ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
 
+            if (endOfDay.getTotal_payout() > 0) {
+                addTextToPrinter(printer, twoColumns(
+                        "OTHERS(COUNT)",
+                        "-" + PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getTotal_payout())),
+                        40,
+                        2,
+                        context)
+                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            } else {
+                addTextToPrinter(printer, twoColumns(
+                        "PAYOUT",
+                        "0.00",
+                        40,
+                        2,
+                        context)
+                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            }
+
             addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             addTextToPrinter(printer, twoColumns(
                     "BEG. OR NO",

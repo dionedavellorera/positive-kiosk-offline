@@ -13,8 +13,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
+import com.nerdvana.positiveoffline.model.RefreshMenuModel;
 
 public class SystemTypeFragment extends Fragment implements RadioGroup.OnCheckedChangeListener {
     private View view;
@@ -55,6 +57,9 @@ public class SystemTypeFragment extends Fragment implements RadioGroup.OnChecked
 
     @Override
     public void onCheckedChanged(RadioGroup radioGroup, int i) {
+
+
+
         SharedPreferenceManager.saveString(null, "1", AppConstants.HAS_CHANGED);
         if (radioGroup.getCheckedRadioButtonId() == R.id.rbQuickServe) {
             SharedPreferenceManager.saveString(getContext(), "QS",AppConstants.SELECTED_SYSTEM_TYPE);
@@ -63,5 +68,7 @@ public class SystemTypeFragment extends Fragment implements RadioGroup.OnChecked
         } else if (radioGroup.getCheckedRadioButtonId() == R.id.rbRestaurant) {
             SharedPreferenceManager.saveString(getContext(), "restaurant",AppConstants.SELECTED_SYSTEM_TYPE);
         }
+
+        BusProvider.getInstance().post(new RefreshMenuModel("test"));
     }
 }

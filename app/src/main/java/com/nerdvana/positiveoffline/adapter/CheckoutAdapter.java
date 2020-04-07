@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.adapter;
 
 import android.content.Context;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,10 +32,15 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private List<Orders> checkoutList;
     private OrdersContract ordersContract;
     private Context context;
-    public CheckoutAdapter(List<Orders> checkoutList, OrdersContract ordersContract, Context context) {
+    private Boolean isDarkMode;
+    public CheckoutAdapter(List<Orders> checkoutList,
+                           OrdersContract ordersContract,
+                           Context context,
+                           Boolean isDarkMode) {
         this.checkoutList = checkoutList;
         this.context = context;
         this.ordersContract = ordersContract;
+        this.isDarkMode = isDarkMode;
 
     }
 
@@ -61,13 +67,13 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int i) {
+    public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, final int i) {
         final Orders productsModel = checkoutList.get(i);
         if (productsModel.getProduct_alacart_id() == 0 && productsModel.getProduct_group_id() == 0) {
             ((CheckoutAdapter.ViewHolder)holder).rootView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
-                    ordersContract.longClicked(productsModel);
+                    ordersContract.longClicked(productsModel, ((CheckoutAdapter.ViewHolder)holder).rootView);
                     return true;
                 }
             });
@@ -79,28 +85,54 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             });
         }
 
-        if (productsModel.getIs_editing()) {
-            ((CheckoutAdapter.ViewHolder)holder).rootView.setBackgroundColor(context.getResources().getColor(R.color.colorGreen));
-        } else {
-            ((CheckoutAdapter.ViewHolder)holder).rootView.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
-        }
+
 
         if (productsModel.getProduct_alacart_id() != 0 || productsModel.getProduct_group_id() != 0) {
             ((CheckoutAdapter.ViewHolder)holder).listItemName.setText("  " +productsModel.getName());
-            ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setText(Utils.digitsWithComma(0.00));
+//            ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setText(Utils.digitsWithComma(0.00));
         } else {
             if (productsModel.getIs_discount_exempt() == 1) {
                 ((CheckoutAdapter.ViewHolder)holder).listItemName.setText("(DE)" +productsModel.getName());
             } else {
                 ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(productsModel.getName());
             }
-            ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setText(Utils.digitsWithComma(productsModel.getOriginal_amount() * productsModel.getQty()));
+
         }
+
+        if (!TextUtils.isEmpty(productsModel.getNotes())) {
+            ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(
+                "*" + ((CheckoutAdapter.ViewHolder)holder).listItemName.getText().toString()
+            );
+        }
+
+        ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setText(Utils.digitsWithComma(productsModel.getOriginal_amount() * productsModel.getQty()));
 
 
         ((CheckoutAdapter.ViewHolder)holder).listItemQty.setText(String.valueOf(productsModel.getQty()));
 
+        if (!productsModel.getIs_editing()) {
+            if (isDarkMode) {
+                ((CheckoutAdapter.ViewHolder)holder).rootView.setBackgroundColor(context.getResources().getColor(R.color.colorDarkLighter));
+                ((CheckoutAdapter.ViewHolder)holder).listItemName.setBackgroundColor(context.getResources().getColor(R.color.colorDarkLighter));
+                ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setBackgroundColor(context.getResources().getColor(R.color.colorDarkLighter));
+                ((CheckoutAdapter.ViewHolder)holder).listItemQty.setBackgroundColor(context.getResources().getColor(R.color.colorDarkLighter));
 
+                ((CheckoutAdapter.ViewHolder)holder).listItemName.setTextColor(context.getResources().getColor(R.color.colorWhite));
+                ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setTextColor(context.getResources().getColor(R.color.colorWhite));
+                ((CheckoutAdapter.ViewHolder)holder).listItemQty.setTextColor(context.getResources().getColor(R.color.colorWhite));
+            } else {
+                ((CheckoutAdapter.ViewHolder)holder).rootView.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
+                ((CheckoutAdapter.ViewHolder)holder).listItemName.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
+                ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
+                ((CheckoutAdapter.ViewHolder)holder).listItemQty.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
+
+                ((CheckoutAdapter.ViewHolder)holder).listItemName.setTextColor(context.getResources().getColor(R.color.colorBlack));
+                ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setTextColor(context.getResources().getColor(R.color.colorBlack));
+                ((CheckoutAdapter.ViewHolder)holder).listItemQty.setTextColor(context.getResources().getColor(R.color.colorBlack));
+            }
+        } else {
+            ((CheckoutAdapter.ViewHolder)holder).rootView.setBackgroundColor(context.getResources().getColor(R.color.colorGreen));
+        }
     }
 
 

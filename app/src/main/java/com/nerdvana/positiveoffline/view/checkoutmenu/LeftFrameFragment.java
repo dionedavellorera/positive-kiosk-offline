@@ -9,12 +9,17 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -34,12 +39,14 @@ import com.nerdvana.positiveoffline.entities.BranchGroup;
 import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.Payout;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.RoomRates;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
+import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.OrdersContract;
@@ -57,6 +64,7 @@ import com.nerdvana.positiveoffline.view.dialog.IntransitDialog;
 import com.nerdvana.positiveoffline.view.dialog.OpenPriceDialog;
 import com.nerdvana.positiveoffline.view.dialog.PasswordDialog;
 import com.nerdvana.positiveoffline.view.dialog.PaymentDialog;
+import com.nerdvana.positiveoffline.view.dialog.PayoutDialog;
 import com.nerdvana.positiveoffline.view.dialog.TransactionDialog;
 import com.nerdvana.positiveoffline.view.resumetransaction.ResumeTransactionActivity;
 import com.nerdvana.positiveoffline.view.rooms.RoomsActivity;
@@ -65,6 +73,7 @@ import com.nerdvana.positiveoffline.viewmodel.CutOffViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DiscountViewModel;
 import com.nerdvana.positiveoffline.viewmodel.RoomsViewModel;
+import com.nerdvana.positiveoffline.viewmodel.ServiceChargeViewModel;
 import com.nerdvana.positiveoffline.viewmodel.SettingsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
@@ -80,9 +89,12 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private int mQty = 1;
     private List<BranchGroup> mBranchGroupList = new ArrayList<>();
 
+    private boolean isDarkMode = false;
+
     int lastIncrementalId = 0;
     //regiondialogs
     private CollectionDialog collectionDialog;
+    private PayoutDialog payoutDialog;
     private IntransitDialog intransitDialog;
     private DiscountMenuDialog discountMenuDialog;
     private PaymentDialog paymentDialog;
@@ -102,6 +114,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private DiscountViewModel discountViewModel;
     private CutOffViewModel cutOffViewModel;
     private SettingsViewModel settingsViewModel;
+    private ServiceChargeViewModel serviceChargeViewModel;
     //endregion
 
     private final int RESUME_TRANS_RETURN = 100;
@@ -109,12 +122,31 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
     private Products selectedProduct;
     private RoomRates selectedRoomRate;
+    private int pRoomId = 0;
 
+    private RelativeLayout rootRel;
+    private CardView rootCard;
     private View view;
     private TextView subTotalValue;
     private TextView totalValue;
     private TextView discountValue;
     private RecyclerView listCheckoutItems;
+
+//    private TextView header;
+    private TextView cardHeader;
+    private TextView cardHeaderRoot;
+    private TextView subTotal;
+    private TextView deposit;
+    private TextView discount;
+    private TextView depositLabel;
+    private TextView discountLabel;
+    private TextView subTotalLabel;
+    private TextView totalLabel;
+    private TextView listItemName;
+    private TextView listItemQty;
+    private TextView listItemPrice;
+
+
 
     private String transactionId = "";
     @Nullable
@@ -127,15 +159,32 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     }
 
     private void initViews(View view) {
+        rootRel = view.findViewById(R.id.rootRel);
+        rootCard = view.findViewById(R.id.rootCard);
+        listItemName = view.findViewById(R.id.listItemName);
+        listItemQty = view.findViewById(R.id.listItemQty);
+        listItemPrice = view.findViewById(R.id.listItemPrice);
+
         discountValue = view.findViewById(R.id.discountValue);
         listCheckoutItems = view.findViewById(R.id.listCheckoutItems);
         subTotalValue = view.findViewById(R.id.subTotalValue);
         totalValue = view.findViewById(R.id.totalValue);
+
+//        header = view.findViewById(R.id.header);
+        deposit = view.findViewById(R.id.depositValue);
+        discount = view.findViewById(R.id.discountValue);
+
+        depositLabel = view.findViewById(R.id.depositLabel);
+        discountLabel = view.findViewById(R.id.discountLabel);
+        subTotalLabel = view.findViewById(R.id.subTotalLabel);
+        totalLabel = view.findViewById(R.id.totalLabel);
+
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        initServiceChargeViewModel();
         initUserViewModel();
         initRoomViewModel();
         initTransactionsViewModel();
@@ -154,6 +203,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
         } catch (InterruptedException e) {
 
         }
+    }
+
+    private void initServiceChargeViewModel() {
+        serviceChargeViewModel = new ViewModelProvider(this).get(ServiceChargeViewModel.class);
     }
 
     private void initRoomViewModel() {
@@ -271,7 +324,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
         computeTotal(orderList);
 
-        CheckoutAdapter checkoutAdapter = new CheckoutAdapter(orderList, this, getContext());
+        CheckoutAdapter checkoutAdapter = new CheckoutAdapter(orderList, this, getContext(), isDarkMode);
         listCheckoutItems.setAdapter(checkoutAdapter);
         listCheckoutItems.setLayoutManager(new LinearLayoutManager(getContext()));
         checkoutAdapter.notifyDataSetChanged();
@@ -367,13 +420,113 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
         }
     }
-
+    private void doPayoutFunction(String amount, String user) {
+    }
 
 
 
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 200://PAYOUT
+                if (payoutDialog == null) {
+                    payoutDialog = new PayoutDialog(getActivity()) {
+                        @Override
+                        public void payoutSuccess(final String amount, final String reason) {
+                            try {
+                                String payoutNumber = "";
+                                if (transactionsViewModel.lastPayoutSeriesNumber() == null) {
+                                    payoutNumber = Utils.getPayoutSeriesFormat("1");
+                                } else {
+                                    if (TextUtils.isEmpty(transactionsViewModel.lastPayoutSeriesNumber().getSeries_number())) {
+                                        payoutNumber = Utils.getPayoutSeriesFormat("1");
+                                    } else {
+                                        payoutNumber =
+                                                Utils.getPayoutSeriesFormat(
+                                                        String.valueOf(
+                                                                Integer.valueOf(
+                                                                        transactionsViewModel.lastPayoutSeriesNumber().getSeries_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                    }
+
+                                }
+
+                                if (passwordDialog == null) {
+                                    final String finalPayoutNumber = payoutNumber;
+                                    passwordDialog = new PasswordDialog(getActivity(), "Payout Confirmation", userViewModel, transactionsViewModel) {
+                                        @Override
+                                        public void success(String username) {
+                                            try {
+
+                                                payoutDialog.dismiss();
+                                                Payout payout =
+                                                        new Payout(finalPayoutNumber,
+                                                                userViewModel.searchLoggedInUser().get(0).getUsername(),
+                                                                Double.valueOf(amount),
+                                                                reason,
+                                                                username,
+                                                                Utils.getDateTimeToday(),
+                                                                0,
+                                                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)));
+
+                                                transactionsViewModel.insertPayoutData(payout);
+
+                                                //add payout printout here
+                                                BusProvider.getInstance().post(new PrintModel("PRINT_PAYOUT", GsonHelper.getGson().toJson(payout)));
+
+                                            } catch (Exception e) {
+
+                                            }
+
+                                        }
+                                    };
+
+                                    passwordDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                        @Override
+                                        public void onCancel(DialogInterface dialogInterface) {
+                                            passwordDialog = null;
+                                        }
+                                    });
+
+                                    passwordDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                        @Override
+                                        public void onDismiss(DialogInterface dialogInterface) {
+                                            passwordDialog = null;
+                                        }
+                                    });
+                                    passwordDialog.show();
+                                }
+
+
+
+
+
+
+
+                            } catch (Exception e) {
+
+                            }
+
+
+
+
+                        }
+                    };
+                    payoutDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            payoutDialog = null;
+                        }
+                    });
+                    payoutDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialogInterface) {
+                            payoutDialog = null;
+                        }
+                    });
+                    payoutDialog.show();
+                }
+                break;
             case 124://INTRANSIT
                 if (intransitDialog == null) {
                     intransitDialog = new IntransitDialog(getActivity(), transactionsViewModel);
@@ -414,7 +567,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                         "",
                                         0,
                                         Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                                        0.00
                                 );
                                 cutOff.setId(996699);
                                         /*
@@ -449,13 +603,14 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                 Double total_cash_payments = 0.00;
                                 Double total_card_payments = 0.00;
                                 Double total_change = 0.00;
-
+                                Double total_service_charge = 0.00;
                                 int seniorCount = 0;
                                 Double seniorAmount = 0.00;
                                 int pwdCount = 0;
                                 Double pwdAmount = 0.00;
                                 int othersCount = 0;
                                 Double othersAmount = 0.00;
+
 
                                 String begOrNo = "";
                                 String endOrNo = "";
@@ -468,7 +623,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                         if (tr.getIs_void()) {
                                             void_amount += tr.getNet_sales();
                                         } else {
-
+                                            total_service_charge += tr.getService_charge_value();
                                             gross_sales += tr.getGross_sales();
                                             net_sales += tr.getNet_sales();
                                             vatable_sales += tr.getVatable_sales();
@@ -478,6 +633,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                         }
                                         number_of_transaction += 1;
 
+                                        tr.setService_charge_value(total_service_charge);
                                         tr.setIs_sent_to_server(0);
                                         tr.setIs_cut_off(true);
                                         tr.setIs_cut_off_by(userViewModel.searchLoggedInUser().get(0).getUsername());
@@ -588,7 +744,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     if (passwordDialog == null) {
                         passwordDialog = new PasswordDialog(getActivity(), "SOA", userViewModel, transactionsViewModel) {
                             @Override
-                            public void success() {
+                            public void success(String username) {
                                 doSoaFunction();
                             }
                         };
@@ -622,7 +778,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     if (passwordDialog == null) {
                         passwordDialog = new PasswordDialog(getActivity(),"TRANSFER ROOM", userViewModel, transactionsViewModel) {
                             @Override
-                            public void success() {
+                            public void success(String username) {
                                 doTransferRoomFunction();
                             }
                         };
@@ -656,7 +812,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     if (passwordDialog == null) {
                         passwordDialog = new PasswordDialog(getActivity(), "VIEW RECEIPT", userViewModel, transactionsViewModel) {
                             @Override
-                            public void success() {
+                            public void success(String username) {
                                 doViewReceiptFunction();
                             }
                         };
@@ -685,7 +841,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     if (passwordDialog == null) {
                         passwordDialog = new PasswordDialog(getActivity(), "SETTINGS", userViewModel, transactionsViewModel) {
                             @Override
-                            public void success() {
+                            public void success(String username) {
                                 startActivity(new Intent(getContext(), SettingsActivity.class));
                             }
                         };
@@ -714,7 +870,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
                         passwordDialog = new PasswordDialog(getActivity(), "DISCOUNT", userViewModel, transactionsViewModel) {
                             @Override
-                            public void success() {
+                            public void success(String username) {
                                 doDiscountFunction();
                             }
                         };
@@ -767,7 +923,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     if (passwordDialog == null) {
                         passwordDialog = new PasswordDialog(getActivity(), "POST VOID", userViewModel, transactionsViewModel) {
                             @Override
-                            public void success() {
+                            public void success(String username) {
                                 doVoidTransactionFunction();
                             }
                         };
@@ -796,7 +952,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     if (passwordDialog == null) {
                         passwordDialog = new PasswordDialog(getActivity(), "PAYMENT", userViewModel, transactionsViewModel) {
                             @Override
-                            public void success() {
+                            public void success(String username) {
                                 doPaymentFunction();
                             }
                         };
@@ -829,7 +985,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                     userViewModel,
                                     transactionsViewModel) {
                                 @Override
-                                public void success() {
+                                public void success(String username) {
                                     doItemVoidFunction();
                                 }
                             };
@@ -922,7 +1078,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     if (passwordDialog == null) {
                         passwordDialog = new PasswordDialog(getActivity(), "SAVE TRANSACTION", userViewModel, transactionsViewModel) {
                             @Override
-                            public void success() {
+                            public void success(String username) {
                                 doSaveTransactionFunction();
                             }
                         };
@@ -950,7 +1106,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     if (passwordDialog == null) {
                         passwordDialog = new PasswordDialog(getActivity(), "RESUME TRANSACTION", userViewModel, transactionsViewModel) {
                             @Override
-                            public void success() {
+                            public void success(String username) {
                                 doResumeTransaction();
                             }
                         };
@@ -1005,7 +1161,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
         try {
             if (transactionsList().size() > 0) {
                 if (inputDialog == null) {
-                    inputDialog = new InputDialog(getActivity()) {
+                    inputDialog = new InputDialog(getActivity(), "Enter name of guest" , "") {
                         @Override
                         public void confirm(String str) {
 
@@ -1098,7 +1254,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     if (paymentDialog == null) {
                         paymentDialog = new PaymentDialog(getActivity(), dataSyncViewModel,
                                 transactionsViewModel, transactionId,
-                                userViewModel, roomsViewModel) {
+                                userViewModel, roomsViewModel,
+                                serviceChargeViewModel) {
                             @Override
                             public void completed(String receiptNumber) {
 
@@ -1635,28 +1792,32 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private void insertSelectedRoomRate() {
         List<Orders> orderList = new ArrayList<>();
         if (!TextUtils.isEmpty(transactionId)) {
-            orderList.add(new Orders(
-                    Integer.valueOf(transactionId),
-                    selectedRoomRate.getRoom_rate_price_id(),
-                    1,
-                    selectedRoomRate.getAmount(),
-                    selectedRoomRate.getAmount(),
-                    selectedRoomRate.getRoom_rate_description(),
-                    selectedRoomRate.getRoom_type_id(),
-                    Utils.roundedOffTwoDecimal((selectedRoomRate.getAmount() / 1.12) * .12),
-                    Utils.roundedOffTwoDecimal(selectedRoomRate.getAmount() / 1.12),
-                    0.00,
-                    0.00,
-                    "ROOM RATE",
-                    "ROOM RATE",
-                    0,
-                    0,
-                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
-                    Utils.getDateTimeToday(),
-                    1
-            ));
-            transactionsViewModel.insertOrder(orderList);
+            if (selectedRoomRate != null) {
+                orderList.add(new Orders(
+                        Integer.valueOf(transactionId),
+                        selectedRoomRate.getRoom_rate_price_id(),
+                        1,
+                        selectedRoomRate.getAmount(),
+                        selectedRoomRate.getAmount(),
+                        selectedRoomRate.getRoom_rate_description(),
+                        selectedRoomRate.getRoom_type_id(),
+                        Utils.roundedOffTwoDecimal((selectedRoomRate.getAmount() / 1.12) * .12),
+                        Utils.roundedOffTwoDecimal(selectedRoomRate.getAmount() / 1.12),
+                        0.00,
+                        0.00,
+                        "ROOM RATE",
+                        "ROOM RATE",
+                        0,
+                        0,
+                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                        Utils.getDateTimeToday(),
+                        1,
+                        ""
+                ));
+                transactionsViewModel.insertOrder(orderList);
+            }
+
         }
 
         selectedRoomRate = null;
@@ -1692,7 +1853,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                         Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
                         Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
                         Utils.getDateTimeToday(),
-                        0
+                        0,
+                        ""
                 );
 //                orders.setIs_editing(true);
                 orderList.add(orders);
@@ -1742,7 +1904,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                     Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
                                     Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
                                     Utils.getDateTimeToday(),
-                                    0
+                                    0,
+                                    ""
                             );
                             orders.setProduct_alacart_id(palac.getProduct_alacart_id());
                             orders.setIs_editing(false);
@@ -1789,8 +1952,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                     Integer.valueOf(transactionId),
                                     palac.getProduct_id(),
                                     (int) palac.getSelectedQty(),
-                                    0.00,
-                                    0.00,
+                                    palac.getPrice(),
+                                    palac.getPrice(),
                                     palac.getProduct(),
                                     0,
                                     0.00,
@@ -1804,7 +1967,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                     Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
                                     Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
                                     Utils.getDateTimeToday(),
-                                    0
+                                    0,
+                                    ""
                             );
                             orders.setProduct_alacart_id(palac.getProduct_group_id());
                             orders.setIs_editing(false);
@@ -1824,31 +1988,82 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     }
 
     @Override
-    public void longClicked(Orders orders) {
-        if (openPriceDialog == null) {
-            openPriceDialog = new OpenPriceDialog(getActivity(), transactionsViewModel, orders) {
-                @Override
-                public void openPriceSuccess(Orders orders) {
-                    transactionsViewModel.recomputeTransactionWithDiscount(transactionId, discountViewModel);
-                }
-            };
+    public void longClicked(final Orders orders, View v) {
 
-            openPriceDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                @Override
-                public void onCancel(DialogInterface dialogInterface) {
-                    openPriceDialog = null;
-                }
-            });
+        PopupMenu popup = new PopupMenu(getContext(), v);
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.actionOpenPrice:
+                        if (openPriceDialog == null) {
+                            openPriceDialog = new OpenPriceDialog(getActivity(), transactionsViewModel, orders) {
+                                @Override
+                                public void openPriceSuccess(Orders orders) {
+                                    transactionsViewModel.recomputeTransactionWithDiscount(transactionId, discountViewModel);
+                                }
+                            };
 
-            openPriceDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialogInterface) {
-                    openPriceDialog = null;
-                }
-            });
+                            openPriceDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialogInterface) {
+                                    openPriceDialog = null;
+                                }
+                            });
 
-            openPriceDialog.show();
-        }
+                            openPriceDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+                                    openPriceDialog = null;
+                                }
+                            });
+
+                            openPriceDialog.show();
+                        }
+
+
+                        return true;
+                    case R.id.actionItemModifier:
+
+                        if (inputDialog == null) {
+                            inputDialog = new InputDialog(getActivity(), "Item request modifier for " + orders.getName() , orders.getNotes()) {
+                                @Override
+                                public void confirm(String str) {
+
+                                    orders.setNotes(str);
+
+                                    transactionsViewModel.updateOrder(orders);
+                                }
+                            };
+                            inputDialog.show();
+
+                            inputDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialogInterface) {
+                                    inputDialog = null;
+                                }
+                            });
+
+                            inputDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+                                    inputDialog = null;
+                                }
+                            });
+                        }
+
+
+
+                        return true;
+                }
+                return false;
+            }
+        });
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.menu_checkout_item, popup.getMenu());
+        popup.show();
+
+
     }
 
     @Override
@@ -1868,6 +2083,123 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
     private User getUser() throws ExecutionException, InterruptedException {
         return userViewModel.searchLoggedInUser().get(0);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        initThemeSelectionListener();
+    }
+
+    private void initThemeSelectionListener() {
+        DataSyncViewModel dataSyncViewModel = new ViewModelProvider(this).get(DataSyncViewModel.class);
+        dataSyncViewModel.getThemeSelectionLiveData().observe(this, new Observer<List<ThemeSelection>>() {
+            @Override
+            public void onChanged(List<ThemeSelection> themeSelectionList) {
+                for (ThemeSelection tsl : themeSelectionList) {
+                    if (tsl.getIs_selected()) {
+                        if (tsl.getTheme_id() == 100) { // LIGHT MODE
+                            isDarkMode = false;
+                            listCheckoutItems.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+//                            header.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+                            subTotalValue.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+                            deposit.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+                            discountValue.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+                            depositLabel.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+                            discountLabel.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+                            subTotalLabel.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+                            totalLabel.setBackgroundColor(getResources().getColor(R.color.colorLtGrey));
+                            totalValue.setBackgroundColor(getResources().getColor(R.color.colorLtGrey));
+                            listItemName.setBackgroundColor(getResources().getColor(R.color.colorLtGrey));
+                            listItemQty.setBackgroundColor(getResources().getColor(R.color.colorLtGrey));
+                            listItemPrice.setBackgroundColor(getResources().getColor(R.color.colorLtGrey));
+                            rootRel.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+                            rootCard.setBackgroundColor(getResources().getColor(R.color.colorWhite));
+
+
+
+//                            header.setTextColor(getResources().getColor(R.color.colorBlack));
+
+                            listItemName.setTextColor(getResources().getColor(R.color.colorBlack));
+                            listItemQty.setTextColor(getResources().getColor(R.color.colorBlack));
+                            listItemPrice.setTextColor(getResources().getColor(R.color.colorBlack));
+
+                            subTotalValue.setTextColor(getResources().getColor(R.color.colorBlack));
+                            discountValue.setTextColor(getResources().getColor(R.color.colorBlack));
+                            deposit.setTextColor(getResources().getColor(R.color.colorBlack));
+                            totalValue.setTextColor(getResources().getColor(R.color.colorBlack));
+                            depositLabel.setTextColor(getResources().getColor(R.color.colorBlack));
+                            discountLabel.setTextColor(getResources().getColor(R.color.colorBlack));
+                            subTotalLabel.setTextColor(getResources().getColor(R.color.colorBlack));
+                            totalLabel.setTextColor(getResources().getColor(R.color.colorBlack));
+
+                            try {
+                                if (transactionsList().size() > 0) {
+                                    transactionId = String.valueOf(transactionsList().get(0).getId());
+                                    setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                                } else {
+                                    defaults();
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            }
+
+
+                            break;
+                        } else { // DARK MODE
+                            isDarkMode = true;
+                            listCheckoutItems.setBackgroundColor(getResources().getColor(R.color.colorDarkLighter));
+//                            header.setBackgroundColor(getResources().getColor(R.color.colorDarkLighter));
+                            subTotalValue.setBackgroundColor(getResources().getColor(R.color.colorDarkLighter));
+                            deposit.setBackgroundColor(getResources().getColor(R.color.colorDarkLighter));
+                            discountValue.setBackgroundColor(getResources().getColor(R.color.colorDarkLighter));
+                            depositLabel.setBackgroundColor(getResources().getColor(R.color.colorDarkLighter));
+                            discountLabel.setBackgroundColor(getResources().getColor(R.color.colorDarkLighter));
+                            subTotalLabel.setBackgroundColor(getResources().getColor(R.color.colorDarkLighter));
+                            totalLabel.setBackgroundColor(getResources().getColor(R.color.colorBlack));
+                            totalValue.setBackgroundColor(getResources().getColor(R.color.colorBlack));
+                            listItemName.setBackgroundColor(getResources().getColor(R.color.colorBlack));
+                            listItemQty.setBackgroundColor(getResources().getColor(R.color.colorBlack));
+                            listItemPrice.setBackgroundColor(getResources().getColor(R.color.colorBlack));
+                            rootRel.setBackgroundColor(getResources().getColor(R.color.colorDarkLighter));
+                            rootCard.setBackgroundColor(getResources().getColor(R.color.colorBlack));
+
+
+
+//                            header.setTextColor(getResources().getColor(R.color.colorWhite));
+                            listItemName.setTextColor(getResources().getColor(R.color.colorWhite));
+                            listItemQty.setTextColor(getResources().getColor(R.color.colorWhite));
+                            listItemPrice.setTextColor(getResources().getColor(R.color.colorWhite));
+                            subTotalValue.setTextColor(getResources().getColor(R.color.colorWhite));
+                            discountValue.setTextColor(getResources().getColor(R.color.colorWhite));
+                            deposit.setTextColor(getResources().getColor(R.color.colorWhite));
+                            totalValue.setTextColor(getResources().getColor(R.color.colorWhite));
+                            depositLabel.setTextColor(getResources().getColor(R.color.colorWhite));
+                            discountLabel.setTextColor(getResources().getColor(R.color.colorWhite));
+                            subTotalLabel.setTextColor(getResources().getColor(R.color.colorWhite));
+                            totalLabel.setTextColor(getResources().getColor(R.color.colorWhite));
+
+                            try {
+                                if (transactionsList().size() > 0) {
+                                    transactionId = String.valueOf(transactionsList().get(0).getId());
+                                    setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                                } else {
+                                    defaults();
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+
+        });
     }
 
 

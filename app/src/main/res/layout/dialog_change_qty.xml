@@ -7,24 +7,25 @@
 
     <include layout="@layout/partial_header" />
 
-    <TextView
-        android:layout_margin="15dp"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilNewQty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/label_quantity"/>
-
-    <com.nerdvana.positiveoffline.view.HidingEditText
-        android:inputType="number"
-        android:id="@+id/etQuantity"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
-        android:padding="10dp"
-        android:background="@drawable/edittext_round"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/hint_quantity"/>
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        >
+        <com.nerdvana.positiveoffline.view.HidingEditText
+            android:inputType="number"
+            android:id="@+id/etQuantity"
+            android:padding="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_quantity"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
 
     <com.nerdvana.positiveoffline.view.ProgressButton
         android:id="@+id/btnConfirm"

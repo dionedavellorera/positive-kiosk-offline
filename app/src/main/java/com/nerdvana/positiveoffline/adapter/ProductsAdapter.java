@@ -1,6 +1,7 @@
 package com.nerdvana.positiveoffline.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,7 +32,10 @@ public class ProductsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private List<Products> productsFilteredList;
     private ProductsContract productsContract;
     private Context context;
-    public ProductsAdapter(List<Products> productsModelList, ProductsContract productsContract, Context context) {
+    private boolean isDarkMode;
+    public ProductsAdapter(List<Products> productsModelList, ProductsContract productsContract,
+                           Context context, boolean isDarkMode) {
+        this.isDarkMode = isDarkMode;
         this.productsModelList = new ArrayList<>(productsModelList);
         this.context = context;
         this.productsContract = productsContract;
@@ -132,6 +136,20 @@ public class ProductsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 .load(direct)
                 .placeholder(R.drawable.pos_logo_edited)
                 .into(((ProductsViewHolder)holder).imageUrl);
+
+        if (!isDarkMode) {
+            ((ProductsViewHolder)holder).productBg.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
+            ((ProductsViewHolder)holder).name.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
+            ((ProductsViewHolder)holder).price.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
+            ((ProductsViewHolder)holder).name.setTextColor(Color.BLACK);
+            ((ProductsViewHolder)holder).price.setTextColor(Color.BLACK);
+        } else {
+            ((ProductsViewHolder)holder).productBg.setBackgroundColor(context.getResources().getColor(R.color.colorDarkLighter));
+            ((ProductsViewHolder)holder).name.setBackgroundColor(context.getResources().getColor(R.color.colorDarkLighter));
+            ((ProductsViewHolder)holder).price.setBackgroundColor(context.getResources().getColor(R.color.colorDarkLighter));
+            ((ProductsViewHolder)holder).name.setTextColor(Color.WHITE);
+            ((ProductsViewHolder)holder).price.setTextColor(Color.WHITE);
+        }
 
     }
 

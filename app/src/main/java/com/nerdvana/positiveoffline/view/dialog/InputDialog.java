@@ -15,17 +15,22 @@ public abstract class InputDialog extends BaseDialog implements View.OnClickList
 
     private Button btnSave;
     private EditText input;
-
-    public InputDialog(Context context) {
+    private String header;
+    private String defaultText;
+    public InputDialog(Context context, String header, String defaultText) {
         super(context);
+        this.header = header;
+        this.defaultText = defaultText;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setDialogLayout(R.layout.dialog_input_name, "ENTER NAME");
+        setDialogLayout(R.layout.dialog_input_name, header);
 
         initViews();
+
+        input.setText(defaultText);
     }
 
     private void initViews() {

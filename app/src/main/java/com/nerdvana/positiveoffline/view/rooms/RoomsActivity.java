@@ -20,6 +20,7 @@ import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.RoomTablesAdapter;
 import com.nerdvana.positiveoffline.entities.Orders;
@@ -28,6 +29,7 @@ import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.intf.RoomContract;
+import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.TransactionWithDiscounts;
 import com.nerdvana.positiveoffline.view.dialog.ChangeRoomStatusDialog;
 import com.nerdvana.positiveoffline.view.dialog.RoomRateSelectionDialog;
@@ -231,7 +233,83 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
 
 
                 } else {
-                    Helper.showDialogMessage(RoomsActivity.this, "ROOM IN USE", getString(R.string.header_message));
+                    if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                         Helper.showDialogMessage(RoomsActivity.this, "ROOM IN USE", getString(R.string.header_message));
+                    } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+                         Helper.showDialogMessage(RoomsActivity.this, "TABLE IN USE", getString(R.string.header_message));
+                    }
+
+                }
+            }
+
+
+
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void showTableOptions(int room_id) {
+        try {
+            final Rooms rooms = roomsViewModel.getRoomViaId(room_id);
+            if (isTransfer.equalsIgnoreCase("y")) {
+                if (rooms.getStatus_id() == 1) {
+                    Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(transactionId);
+
+                    changeRoomStatus(tmpRm, 3, true);
+
+                    changeRoomStatus(rooms, 2, false);
+
+                    Intent intent = new Intent();
+                    intent.putExtra("selected_room", room_id);
+                    setResult(RESULT_OK, intent);
+                    finish();
+                }
+            } else {
+                if (rooms.getStatus_id() == 1 || rooms.getStatus_id() == 2) {
+                    Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(transactionId);
+
+                    attachRoomToTransaction(room_id, transactionId);
+
+                    changeRoomStatus(rooms, 2, false);
+
+
+                    Intent intent = new Intent();
+                    intent.putExtra("selected_room", room_id);
+                    setResult(RESULT_OK, intent);
+                    finish();
+
+//                    if (tmpRm != null) {
+//                        if (tmpRm.getRoom_id() == room_id) {
+//
+//                        }
+//                        else {
+//                            Helper.showDialogMessage(RoomsActivity.this, "You have selected another room, your room is " + tmpRm.getRoom_name(), getString(R.string.header_message));
+//                        }
+//
+//                    } else {
+//                        attachRoomToTransaction(room_id, transactionId);
+//
+//                        changeRoomStatus(rooms, 2, false);
+//
+//                        Intent intent = new Intent();
+//                        intent.putExtra("selected_room", room_id);
+//                        setResult(RESULT_OK, intent);
+//                        finish();
+//                    }
+
+
+
+                } else {
+                    if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                        Helper.showDialogMessage(RoomsActivity.this, "ROOM IN USE", getString(R.string.header_message));
+                    } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+                        Helper.showDialogMessage(RoomsActivity.this, "TABLE IN USE", getString(R.string.header_message));
+                    }
+
                 }
             }
 

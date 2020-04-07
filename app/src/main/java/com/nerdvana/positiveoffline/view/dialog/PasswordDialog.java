@@ -27,6 +27,7 @@ public abstract class PasswordDialog extends BaseDialog implements PasswordCheck
     private HidingEditText etUsername;
     private HidingEditText etPassword;
     private ProgressButton btnConfirm;
+    private Button btnResetPw;
     private UserViewModel userViewModel;
     private TransactionsViewModel transactionsViewModel;
     public PasswordDialog(Context context, String header, UserViewModel userViewModel, TransactionsViewModel transactionsViewModel) {
@@ -45,17 +46,23 @@ public abstract class PasswordDialog extends BaseDialog implements PasswordCheck
     }
 
     private void initViews() {
+        btnResetPw = findViewById(R.id.btnResetPw);
+        btnResetPw.setOnClickListener(this);
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         btnConfirm = findViewById(R.id.btnConfirm);
         btnConfirm.setOnClickListener(this);
     }
 
-    public abstract void success();
+    public abstract void success(String username);
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.btnResetPw:
+                etPassword.setText("" +
+                        "");
+                break;
             case R.id.btnConfirm:
                 if (!TextUtils.isEmpty(etUsername.getText().toString()) &&
                     !TextUtils.isEmpty(etPassword.getText().toString())) {
@@ -64,7 +71,8 @@ public abstract class PasswordDialog extends BaseDialog implements PasswordCheck
                             etUsername.getText().toString(),
                             etPassword.getText().toString(),
                             userViewModel,
-                            transactionsViewModel).execute();
+                            transactionsViewModel,
+                            false).execute();
                 } else {
                     Helper.showDialogMessage(getContext(), "Please fill up username and password", "Information");
                 }
@@ -77,7 +85,7 @@ public abstract class PasswordDialog extends BaseDialog implements PasswordCheck
         btnConfirm.stopLoading(btnConfirm);
 
         if (errorMessage.equalsIgnoreCase("success")) {
-            success();
+            success(etUsername.getText().toString());
             dismiss();
         } else {
             Helper.showDialogMessage(getContext(), errorMessage, getContext().getString(R.string.header_message));

@@ -29,6 +29,7 @@ public class CutOff {
     private Double pwdAmount = 0.00;
     private int othersCount = 0;
     private Double othersAmount = 0.00;
+    private Double total_payout = 0.00;
 
     private String begOrNo = "";
     private String endOrNo = "";
@@ -37,6 +38,8 @@ public class CutOff {
     private int machine_id;
     private int branch_id;
 
+    private Double total_service_charge = 0.00;
+
     public CutOff(int number_of_transactions, Double gross_sales,
                   Double net_sales, Double vatable_sales,
                   Double vat_exempt_sales, Double vat_amount,
@@ -44,7 +47,7 @@ public class CutOff {
                   int z_read_id, String treg,
                   String begOrNo, String endOrNo,
                   int is_sent_to_server, int machine_id,
-                  int branch_id) {
+                  int branch_id, Double total_service_charge) {
         this.branch_id = branch_id;
         this.is_sent_to_server = is_sent_to_server;
         this.machine_id = machine_id;
@@ -60,6 +63,15 @@ public class CutOff {
         this.treg = treg;
         this.begOrNo = begOrNo;
         this.endOrNo = endOrNo;
+        this.total_service_charge = total_service_charge;
+    }
+
+    public Double getTotal_service_charge() {
+        return total_service_charge;
+    }
+
+    public void setTotal_service_charge(Double total_service_charge) {
+        this.total_service_charge = total_service_charge;
     }
 
     public int getBranch_id() {
@@ -260,5 +272,13 @@ public class CutOff {
 
     public void setVoid_amount(Double void_amount) {
         this.void_amount = void_amount;
+    }
+
+    public Double getTotal_payout() {
+        return total_payout;
+    }
+
+    public void setTotal_payout(Double total_payout) {
+        this.total_payout = total_payout;
     }
 }

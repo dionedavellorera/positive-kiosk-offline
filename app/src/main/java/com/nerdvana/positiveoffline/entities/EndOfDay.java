@@ -24,6 +24,8 @@ public class EndOfDay {
     private Double total_change = 0.00;
     private String treg;
 
+    private Double total_service_charge = 0.00;
+
     private int seniorCount = 0;
     private Double seniorAmount = 0.00;
     private int pwdCount = 0;
@@ -41,6 +43,8 @@ public class EndOfDay {
     private int machine_id;
     private int branch_id;
 
+    private Double total_payout = 0.00;
+
 
     public EndOfDay(int number_of_transactions, Double gross_sales,
                     Double net_sales, Double vatable_sales,
@@ -49,7 +53,8 @@ public class EndOfDay {
                     String treg, String begOrNo, String endOrNo,
                     Double begSales, Double endSales,
                     int is_sent_to_server, int machine_id,
-                    int branch_id) {
+                    int branch_id, Double total_service_charge) {
+        this.total_service_charge = total_service_charge;
         this.branch_id = branch_id;
         this.machine_id = machine_id;
         this.is_sent_to_server = is_sent_to_server;
@@ -66,6 +71,14 @@ public class EndOfDay {
         this.treg = treg;
         this.begOrNo = begOrNo;
         this.endOrNo = endOrNo;
+    }
+
+    public Double getTotal_service_charge() {
+        return total_service_charge;
+    }
+
+    public void setTotal_service_charge(Double total_service_charge) {
+        this.total_service_charge = total_service_charge;
     }
 
     public int getBranch_id() {
@@ -274,5 +287,13 @@ public class EndOfDay {
 
     public void setTreg(String treg) {
         this.treg = treg;
+    }
+
+    public Double getTotal_payout() {
+        return total_payout;
+    }
+
+    public void setTotal_payout(Double total_payout) {
+        this.total_payout = total_payout;
     }
 }

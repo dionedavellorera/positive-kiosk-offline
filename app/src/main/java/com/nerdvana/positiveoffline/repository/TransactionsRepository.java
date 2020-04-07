@@ -12,6 +12,7 @@ import com.nerdvana.positiveoffline.dao.DataSyncDao;
 import com.nerdvana.positiveoffline.dao.OrDetailsDao;
 import com.nerdvana.positiveoffline.dao.OrdersDao;
 import com.nerdvana.positiveoffline.dao.PaymentsDao;
+import com.nerdvana.positiveoffline.dao.PayoutDao;
 import com.nerdvana.positiveoffline.dao.ProductsDao;
 import com.nerdvana.positiveoffline.dao.TransactionsDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
@@ -21,6 +22,7 @@ import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.Payout;
 import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
@@ -39,6 +41,7 @@ public class TransactionsRepository {
     private PaymentsDao paymentsDao;
     private OrDetailsDao orDetailsDao;
     private ProductsDao productsDao;
+    private PayoutDao payoutDao;
     private MutableLiveData<FetchProductsResponse> fetchProductLiveData;
 
     public TransactionsRepository(Application application) {
@@ -48,6 +51,7 @@ public class TransactionsRepository {
         productsDao = posDatabase.productsDao();
         paymentsDao = posDatabase.paymentsDao();
         orDetailsDao = posDatabase.orDetailsDao();
+        payoutDao = posDatabase.payoutDao();
 
 
     }
@@ -138,6 +142,21 @@ public class TransactionsRepository {
         Future<Transactions> future = Executors.newSingleThreadExecutor().submit(callable);
         return future.get();
     }
+
+
+    public Payout getLastPayoutSeries() throws ExecutionException, InterruptedException {
+        Callable<Payout> callable = new Callable<Payout>() {
+            @Override
+            public Payout call() throws Exception {
+                return payoutDao.lastPayoutSeries();
+            }
+        };
+
+        Future<Payout> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
 
     public Transactions getLastOrNumber() throws ExecutionException, InterruptedException {
         Callable<Transactions> callable = new Callable<Transactions>() {
@@ -280,6 +299,10 @@ public class TransactionsRepository {
 
     public void insertPayment(List<Payments> payment) {
         new TransactionsRepository.insertPaymentAsyncTask(paymentsDao).execute(payment);
+    }
+
+    public void insertPayout(Payout payout) {
+        new TransactionsRepository.insertPayoutAsyncTask(payoutDao).execute(payout);
     }
 
     public void insertOrder(List<Orders> order) {
@@ -449,6 +472,22 @@ public class TransactionsRepository {
         }
     }
 
+
+
+    private static class insertPayoutAsyncTask extends AsyncTask<Payout, Void, Void> {
+
+        private PayoutDao mAsyncTaskDao;
+
+        insertPayoutAsyncTask(PayoutDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final Payout... params) {
+            mAsyncTaskDao.insert(params[0]);
+            return null;
+        }
+    }
 
     private static class insertPaymentAsyncTask extends AsyncTask<List<Payments>, Void, Void> {
 

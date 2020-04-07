@@ -35,6 +35,7 @@ import com.nerdvana.positiveoffline.dao.ProductsDao;
 import com.nerdvana.positiveoffline.dao.RoomRatesDao;
 import com.nerdvana.positiveoffline.dao.RoomStatusDao;
 import com.nerdvana.positiveoffline.dao.RoomsDao;
+import com.nerdvana.positiveoffline.dao.ThemeSelectionDao;
 import com.nerdvana.positiveoffline.dao.UserDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
@@ -50,6 +51,7 @@ import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.RoomRates;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
+import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.User;
 
 import java.lang.ref.WeakReference;
@@ -78,6 +80,8 @@ public class DataSyncRepository {
     private ProductsDao productsDao;
     private PrinterLanguageDao printerLanguageDao;
     private RoomStatusDao roomStatusDao;
+    private ThemeSelectionDao themeSelectionDao;
+
     private LiveData<List<DataSync>> allSyncList;
     private List<DataSync> syncList = new ArrayList<>();
 
@@ -87,6 +91,7 @@ public class DataSyncRepository {
     private MutableLiveData<FetchDiscountResponse> fetchDiscountLiveData;
     private MutableLiveData<FetchRoomResponse> fetchRoomLiveData;
     private MutableLiveData<FetchRoomStatusResponse> fetchRoomStatusLiveData;
+    private MutableLiveData<ThemeSelection> themeSelectionMutableLiveData;
 
     public DataSyncRepository(Application application) {
         PosDatabase posDatabase = DatabaseHelper.getDatabase(application);
@@ -102,6 +107,7 @@ public class DataSyncRepository {
         productsDao = posDatabase.productsDao();
         roomStatusDao = posDatabase.roomStatusDao();
         printerLanguageDao = posDatabase.printerLanguageDao();
+        themeSelectionDao = posDatabase.themeSelectionDao();
         allSyncList = dataSyncDao.syncList();
 
         fetchPaymentTypeLiveData = new MutableLiveData<>();
@@ -110,6 +116,12 @@ public class DataSyncRepository {
         fetchDiscountLiveData = new MutableLiveData<>();
         fetchRoomLiveData = new MutableLiveData<>();
         fetchRoomStatusLiveData = new MutableLiveData<>();
+        themeSelectionMutableLiveData = new MutableLiveData<>();
+    }
+
+
+    public LiveData<List<ThemeSelection>> getThemeSelectionLiveData() {
+        return themeSelectionDao.ldThemeSelection();
     }
 
     public MutableLiveData<FetchRoomStatusResponse> getFetchRoomStatusLiveData() {
@@ -119,6 +131,8 @@ public class DataSyncRepository {
     public MutableLiveData<FetchRoomResponse> getFetchRoomLiveData() {
         return fetchRoomLiveData;
     }
+
+
 
     public MutableLiveData<FetchPaymentTypeResponse> getFetchPaymentTypeLiveData() {
         return fetchPaymentTypeLiveData;
@@ -198,6 +212,21 @@ public class DataSyncRepository {
         return future.get();
     }
 
+
+
+    public List<ThemeSelection> getThemeSelectionList() throws ExecutionException, InterruptedException {
+        Callable<List<ThemeSelection>> callable = new Callable<List<ThemeSelection>>() {
+            @Override
+            public List<ThemeSelection> call() throws Exception {
+                return themeSelectionDao.themeSelectionList();
+            }
+        };
+
+        Future<List<ThemeSelection>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
     public List<PrinterLanguage> getPrinterLanguageList() throws ExecutionException, InterruptedException {
         Callable<List<PrinterLanguage>> callable = new Callable<List<PrinterLanguage>>() {
             @Override
@@ -244,6 +273,12 @@ public class DataSyncRepository {
         new DataSyncRepository.insertPrinterSeriesAsync(printerSeriesDao).execute(printerSeries);
     }
 
+    public void insertThemeSelection(List<ThemeSelection> themeSelectionList) {
+        new DataSyncRepository.insertThemeSelectionAsync(themeSelectionDao).execute(themeSelectionList);
+    }
+
+
+
     public void insertPrinterLanguage(List<PrinterLanguage> printerLanguages) {
         new DataSyncRepository.insertPrinterLanguageAsync(printerLanguageDao).execute(printerLanguages);
     }
@@ -289,12 +324,19 @@ public class DataSyncRepository {
         new DataSyncRepository.truncatePrinterLanguageAsyncTask(printerLanguageDao).execute();
     }
 
+    public void truncateThemeSelection() {
+        new DataSyncRepository.truncateThemeSelection(themeSelectionDao).execute();
+    }
     public void insert(List<DataSync> dataSync) {
         new DataSyncRepository.insertAsyncTask(dataSyncDao).execute(dataSync);
     }
 
     public void update(DataSync dataSync) {
         new DataSyncRepository.updateAsyncTask(dataSyncDao, dataSync).execute();
+    }
+
+    public void update(List<ThemeSelection> themeSelection) {
+        new DataSyncRepository.updateThemeSelectionAsyncTask(themeSelectionDao, themeSelection).execute();
     }
 
     public void update(PrinterSeries printerSeries) {
@@ -414,6 +456,21 @@ public class DataSyncRepository {
         }
     }
 
+    private static class insertThemeSelectionAsync extends AsyncTask<List<ThemeSelection>, Void, Void> {
+
+        private ThemeSelectionDao mAsyncTaskDao;
+
+        insertThemeSelectionAsync(ThemeSelectionDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final List<ThemeSelection>... params) {
+            mAsyncTaskDao.insert(params[0]);
+            return null;
+        }
+    }
+
 
     private static class insertCashDenominationAsync extends AsyncTask<List<CashDenomination>, Void, Void> {
 
@@ -517,6 +574,28 @@ public class DataSyncRepository {
         protected Void doInBackground(final List<DataSync>... params) {
             mAsyncTaskDao.insert(params[0]);
             return null;
+        }
+    }
+
+    private static class updateThemeSelectionAsyncTask extends AsyncTask<List<ThemeSelection>, Void, Void> {
+
+        private ThemeSelectionDao mAsyncTaskDao;
+
+        private List<ThemeSelection> themeSelection;
+        updateThemeSelectionAsyncTask(ThemeSelectionDao dao, List<ThemeSelection> themeSelection) {
+            mAsyncTaskDao = dao;
+            this.themeSelection = themeSelection;
+        }
+
+        @Override
+        protected Void doInBackground(final List<ThemeSelection>... params) {
+            mAsyncTaskDao.update(themeSelection);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
         }
     }
 
@@ -720,6 +799,28 @@ public class DataSyncRepository {
             super.onPostExecute(aVoid);
         }
     }
+
+    private static class truncateThemeSelection extends AsyncTask<List<Void>, Void, Void> {
+
+        private ThemeSelectionDao mAsyncTaskDao;
+
+        truncateThemeSelection(ThemeSelectionDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(List<Void>... lists) {
+            mAsyncTaskDao.truncateThemeSelection();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+
+
 
 
 }

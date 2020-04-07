@@ -18,9 +18,13 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.entities.Rooms;
 import com.nerdvana.positiveoffline.intf.RoomContract;
+import com.nerdvana.positiveoffline.view.rooms.RoomsActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +111,15 @@ public class RoomTablesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         ((ProductsViewHolder)holder).rel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                roomContract.showRates(rooms.getRoom_id());
+
+                if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                    roomContract.showRates(rooms.getRoom_id());
+                } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+                    roomContract.showTableOptions(rooms.getRoom_id());
+                }
+
+
+
             }
         });
 

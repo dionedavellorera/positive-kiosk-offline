@@ -102,7 +102,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                             username.getText().toString(),
                             password.getText().toString(),
                             userViewModel,
-                            transactionsViewModel).execute();
+                            transactionsViewModel,
+                            true).execute();
                 } else {
                     Helper.showDialogMessage(LoginActivity.this, getString(R.string.error_no_usernamepassword), getString(R.string.header_message));
                 }

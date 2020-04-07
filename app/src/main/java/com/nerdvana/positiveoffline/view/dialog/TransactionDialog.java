@@ -225,7 +225,7 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                 if (Utils.isPasswordProtected(userViewModel, "74")) {
                     PasswordDialog passwordDialog = new PasswordDialog(getContext(), "REPRINT OR", userViewModel, transactionsViewModel) {
                         @Override
-                        public void success() {
+                        public void success(String username) {
                             doReprintFunction(transactionWithOrders.transactions.getReceipt_number());
                         }
                     };

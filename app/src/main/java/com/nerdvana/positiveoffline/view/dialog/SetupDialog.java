@@ -129,14 +129,21 @@ public abstract class SetupDialog extends BaseDialog implements View.OnClickList
                 request.enqueue(new Callback<TestResponse>() {
                     @Override
                     public void onResponse(Call<TestResponse> call, Response<TestResponse> response) {
-                        if (response.body().getStatus().equalsIgnoreCase("1")) {
-                            sendVerifyMachineRequest(etProductKey.getText().toString().toUpperCase());
+                        if (response.body() != null) {
+                            if (response.body().getStatus().equalsIgnoreCase("1")) {
+                                sendVerifyMachineRequest(etProductKey.getText().toString().toUpperCase());
 
+                            } else {
+                                btnConfirm.stopLoading(btnConfirm);
+                                progressDialog.dismiss();
+                                Helper.showDialogMessage(getContext(), response.body().getMessage(), getContext().getString(R.string.text_header_error));
+                            }
                         } else {
                             btnConfirm.stopLoading(btnConfirm);
                             progressDialog.dismiss();
-                            Helper.showDialogMessage(getContext(), response.body().getMessage(), getContext().getString(R.string.text_header_error));
+                            Helper.showDialogMessage(getContext(), "You have entered an invalid url", getContext().getString(R.string.text_header_error));
                         }
+
 
                     }
 

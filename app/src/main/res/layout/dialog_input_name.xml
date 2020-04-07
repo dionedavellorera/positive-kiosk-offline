@@ -5,14 +5,24 @@
 
     <include layout="@layout/partial_header" />
 
-    <EditText
-        android:id="@+id/input"
-        android:layout_margin="10dp"
-        android:padding="10dp"
-        android:background="@drawable/edittext_round"
-        android:hint="@string/hint_name"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:id="@+id/tilGuestName"
+        android:layout_margin="10dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        >
+        <EditText
+            android:maxLines="1"
+            android:singleLine="true"
+            android:imeOptions="actionDone"
+            android:id="@+id/input"
+            android:padding="10dp"
+            android:hint="@string/hint_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.textfield.TextInputLayout>
+
 
 
     <Button

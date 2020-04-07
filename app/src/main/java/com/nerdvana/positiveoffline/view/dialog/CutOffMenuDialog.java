@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -18,6 +19,7 @@ import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.Payout;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
@@ -128,7 +130,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                     if (passwordDialog == null) {
                         passwordDialog = new PasswordDialog(getContext(), "XREADING", userViewModel, transactionsViewModel) {
                             @Override
-                            public void success() {
+                            public void success(String username) {
                                 doXReadFunction();
                             }
                         };
@@ -156,7 +158,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                     if (passwordDialog == null) {
                         passwordDialog = new PasswordDialog(getContext(), "XREADING", userViewModel, transactionsViewModel) {
                             @Override
-                            public void success() {
+                            public void success(String username) {
                                 doZReadFunction();
                             }
                         };
@@ -188,7 +190,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                     if (passwordDialog == null) {
                         passwordDialog = new PasswordDialog(getContext(), "XREADING", userViewModel, transactionsViewModel) {
                             @Override
-                            public void success() {
+                            public void success(String username) {
                                 doReprintXReading();
                             }
                         };
@@ -219,7 +221,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                     if (passwordDialog == null) {
                         passwordDialog = new PasswordDialog(getContext(), "ZREADING", userViewModel, transactionsViewModel) {
                             @Override
-                            public void success() {
+                            public void success(String username) {
                                 doReprintZReading();
                             }
                         };
@@ -394,7 +396,8 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         0.00,
                         0,
                         Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                        0.00
                 ));
 
                 for (PostedDiscounts postedDiscounts : cutOffViewModel.getZeroEndOfDay()) {
@@ -413,6 +416,8 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                 Double total_cash_payments = 0.00;
                 Double total_card_payments = 0.00;
                 Double total_change = 0.00;
+                Double total_payout = 0.00;
+                Double total_service_charge = 0.00;
 
                 int seniorCount = 0;
                 Double seniorAmount = 0.00;
@@ -420,16 +425,17 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                 Double pwdAmount = 0.00;
                 int othersCount = 0;
                 Double othersAmount = 0.00;
-
                 List<String> orNumberArray = new ArrayList<>();
 
                 for (CutOff cutOff : cutOffViewModel.getUnCutOffData()) {
+                    total_service_charge += cutOff.getTotal_service_charge();
                     cutOff.setIs_sent_to_server(0);
                     orNumberArray.add(cutOff.getBegOrNo());
                     orNumberArray.add(cutOff.getEndOrNo());
                     cutOff.setTreg(Utils.getDateTimeToday());
                     cutOff.setZ_read_id((int) end_of_day_id);
                     cutOffViewModel.update(cutOff);
+                    total_payout += cutOff.getTotal_payout();
                     void_amount += cutOff.getVoid_amount();
                     gross_sales += cutOff.getGross_sales();
                     net_sales += cutOff.getNet_sales();
@@ -451,6 +457,8 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                 }
 
                 EndOfDay endOfDay = cutOffViewModel.getEndOfDay(end_of_day_id);
+                endOfDay.setTotal_service_charge(total_service_charge);
+                endOfDay.setTotal_payout(total_payout);
                 endOfDay.setIs_sent_to_server(0);
                 endOfDay.setGross_sales(Utils.roundedOffTwoDecimal(gross_sales));
                 endOfDay.setNet_sales(Utils.roundedOffTwoDecimal(net_sales));
@@ -523,7 +531,8 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                             "",
                             0,
                             Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                            0.00
                     ));
 
                     List<Transactions> transactionsList = transactionsViewModel.unCutOffTransactions(userViewModel.searchLoggedInUser().get(0).getUsername());
@@ -538,6 +547,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                     Double total_cash_payments = 0.00;
                     Double total_card_payments = 0.00;
                     Double total_change = 0.00;
+                    Double total_service_charge = 0.00;
 
                     int seniorCount = 0;
                     Double seniorAmount = 0.00;
@@ -545,6 +555,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                     Double pwdAmount = 0.00;
                     int othersCount = 0;
                     Double othersAmount = 0.00;
+                    Double total_payout = 0.00;
 
                     String begOrNo = "";
                     String endOrNo = "";
@@ -563,9 +574,11 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                 vat_exempt_sales += tr.getVat_exempt_sales();
                                 vat_amount += tr.getVat_amount();
                                 total_change += tr.getChange();
+                                total_service_charge += tr.getService_charge_value();
                             }
                             number_of_transaction += 1;
 
+//                            tr.setService_charge_value(total_service_charge);
                             tr.setIs_sent_to_server(0);
                             tr.setIs_cut_off(true);
                             tr.setIs_cut_off_by(userViewModel.searchLoggedInUser().get(0).getUsername());
@@ -592,6 +605,18 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         }
                     }
 
+                    for (Payout payout : cutOffViewModel.getUnCutOffPayouts()) {
+
+                        total_payout += payout.getAmount();
+                        payout.setIs_sent_to_server(0);
+                        payout.setIs_cut_off(true);
+                        payout.setIs_cut_off_by(userViewModel.searchLoggedInUser().get(0).getUsername());
+                        payout.setCut_off_id((int)cut_off_id);
+                        payout.setIs_cut_off_at(Utils.getDateTimeToday());
+                        cutOffViewModel.update(payout);
+
+                    }
+
                     for (PostedDiscounts postedDiscounts : cutOffViewModel.getUnCutOffPostedDiscount()) {
                         postedDiscounts.setCut_off_id((int)cut_off_id);
                         postedDiscounts.setIs_sent_to_server(0);
@@ -607,8 +632,22 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         }
                     }
 
+
+                    Log.d("DATA-CASHPAY", String.valueOf(total_cash_payments));
+                    Log.d("DATA-GROSSSALE", String.valueOf(gross_sales));
+                    Log.d("DATA-NETSALES", String.valueOf(net_sales));
+                    Log.d("DATA-VATSALES", String.valueOf(vatable_sales));
+                    Log.d("DATA-VATEXESALES", String.valueOf(vat_exempt_sales));
+                    Log.d("DATA-CHANGE", String.valueOf(total_change));
+                    Log.d("DATA-TOTALCASH", String.valueOf(totalCash));
+                    Log.d("DATA-SHORTOVER", String.valueOf(totalCash - (total_cash_payments - total_change)));
+
                     CutOff cutOff = cutOffViewModel.getCutOff(cut_off_id);
+                    //SHORT OVER COMPUTATION
+                    //cutOff.getTotal_cash_amount() - (cutOff.getTotal_cash_payments() - cutOff.getTotal_change())
+                    cutOff.setTotal_service_charge(total_service_charge);
                     cutOff.setIs_sent_to_server(0);
+                    cutOff.setTotal_payout(total_payout);
                     cutOff.setTotal_change(Utils.roundedOffTwoDecimal(total_change));
                     cutOff.setGross_sales(Utils.roundedOffTwoDecimal(gross_sales));
                     cutOff.setNet_sales(Utils.roundedOffTwoDecimal(net_sales));

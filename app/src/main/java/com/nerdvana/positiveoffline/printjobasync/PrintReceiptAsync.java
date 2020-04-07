@@ -204,41 +204,55 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
             addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             Double amountDue = 0.00;
             for (Orders orders : transactionCompleteDetails.ordersList) {
+                if (!orders.getIs_void()) {
+                    String qty = "";
 
-                String qty = "";
+                    qty += orders.getQty();
 
-                qty += orders.getQty();
+                    if (String.valueOf(orders.getQty()).length() < 4) {
+                        for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
+                            qty += " ";
+                        }
+                    }
 
-                if (String.valueOf(orders.getQty()).length() < 4) {
-                    for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
-                        qty += " ";
+                    if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+                        addTextToPrinter(printer, twoColumns(
+                                "-" + qty +  " " + orders.getName(),
+                                "0.00",
+                                40,
+                                2,
+                                context)
+                                ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+                    } else {
+                        addTextToPrinter(printer, twoColumns(
+                                qty +  " " + orders.getName(),
+                                PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount())),
+                                40,
+                                2,
+                                context)
+                                ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+                    }
+                    if (orders.getDiscountAmount() > 0) {
+                        addTextToPrinter(printer, twoColumns(
+                                "LESS",
+                                PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getDiscountAmount())),
+                                40,
+                                2,
+                                context)
+                                ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+                    }
+
+
+
+
+
+                    if (orders.getVatExempt() <= 0) {
+                        amountDue += orders.getOriginal_amount();
+                    } else {
+                        amountDue += orders.getAmount();
                     }
                 }
 
-                if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
-                    addTextToPrinter(printer, twoColumns(
-                            "-" + qty +  " " + orders.getName(),
-                            "0.00",
-                            40,
-                            2,
-                            context)
-                            ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-                } else {
-                    addTextToPrinter(printer, twoColumns(
-                            qty +  " " + orders.getName(),
-                            PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount())),
-                            40,
-                            2,
-                            context)
-                            ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-                }
-
-
-                if (orders.getVatExempt() <= 0) {
-                    amountDue += orders.getOriginal_amount();
-                } else {
-                    amountDue += orders.getAmount();
-                }
             }
 
 
@@ -262,11 +276,7 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                                 context)
                                 ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
                     }
-
-
                 }
-
-
             }
 
             addPrinterSpace(1, printer);
@@ -306,11 +316,38 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                     context)
                     ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
 
+            if (transactionCompleteDetails.transactions.getService_charge_value() > 0) {
+                addTextToPrinter(printer, twoColumns(
+                        "SERVICE CHARGE",
+                        PrinterUtils.returnWithTwoDecimal(String.valueOf(transactionCompleteDetails.transactions.getService_charge_value())),
+                        40,
+                        2,
+                        context)
+                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            } else {
+                addTextToPrinter(printer, twoColumns(
+                        "SERVICE CHARGE",
+                        "0.00",
+                        40,
+                        2,
+                        context)
+                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            }
+
+
             addPrinterSpace(1, printer);
 
             addTextToPrinter(printer, twoColumns(
                     "SUB TOTAL",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getGross_sales()))),
+                    PrinterUtils.returnWithTwoDecimal(
+                            String.valueOf(
+                                    Utils.roundedOffTwoDecimal(
+                                            transactionCompleteDetails.transactions.getGross_sales()
+                                    ) +
+                                    Utils.roundedOffTwoDecimal(
+                                            transactionCompleteDetails.transactions.getService_charge_value()
+                                    )
+                            )),
                     40,
                     2,
                     context)
@@ -318,7 +355,9 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
 
             addTextToPrinter(printer, twoColumns(
                     "AMOUNT DUE",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue)),
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue) + Utils.roundedOffTwoDecimal(
+                            transactionCompleteDetails.transactions.getService_charge_value()
+                    )),
                     40,
                     2,
                     context)

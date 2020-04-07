@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.view.dialog;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -27,6 +28,7 @@ import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
+import com.nerdvana.positiveoffline.adapter.CreditCardAdapter;
 import com.nerdvana.positiveoffline.adapter.PaymentTypeAdapter;
 import com.nerdvana.positiveoffline.adapter.PaymentsAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
@@ -39,12 +41,17 @@ import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
+import com.nerdvana.positiveoffline.intf.CreditCardContract;
 import com.nerdvana.positiveoffline.intf.PaymentTypeContract;
 import com.nerdvana.positiveoffline.intf.PaymentsContract;
+import com.nerdvana.positiveoffline.model.CreditCardListModel;
+import com.nerdvana.positiveoffline.model.SettingsMenuModel;
+import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.view.HidingEditText;
 import com.nerdvana.positiveoffline.view.ProgressButton;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.RoomsViewModel;
+import com.nerdvana.positiveoffline.viewmodel.ServiceChargeViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 import com.whiteelephant.monthpicker.MonthPickerDialog;
@@ -59,7 +66,9 @@ import java.util.concurrent.ExecutionException;
 import static android.view.View.GONE;
 
 public abstract class PaymentDialog extends BaseDialog implements PaymentTypeContract, View.OnClickListener, PaymentsContract {
-
+    private int selectedCreditCardId = 0;
+    private String selectedCreditCardName = "";
+    private CreditCardAdapter creditCardAdapter;
     private RecyclerView listPayments;
     private RelativeLayout formCash;
     private LinearLayout formCard;
@@ -68,6 +77,9 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     private LinearLayout formForex;
     private LinearLayout formGuestInfo;
     private Button add;
+    private Button addCash;
+    private Button addCard;
+    private Button addGuestInfo;
     private ProgressButton pay;
     private HidingEditText cashAmount;
     private RecyclerView listPostedPayments;
@@ -93,11 +105,12 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     private TextView displayBusinessStyle;
     private TextView guestDetailsHeader;
 
-    private RadioGroup rgCards;
+    private RecyclerView rvCreditCard;
 
     private DataSyncViewModel dataSyncViewModel;
     private RoomsViewModel roomsViewModel;
     private TransactionsViewModel transactionsViewModel;
+    private ServiceChargeViewModel serviceChargeViewModel;
     private UserViewModel userViewModel;
     private String transactionId;
     private PaymentTypes paymentTypes;
@@ -108,7 +121,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
     public PaymentDialog(Context context, DataSyncViewModel dataSyncViewModel,
                          TransactionsViewModel transactionsViewModel, String transactionId,
-                         UserViewModel userViewModel, RoomsViewModel roomsViewModel) {
+                         UserViewModel userViewModel, RoomsViewModel roomsViewModel,
+                         ServiceChargeViewModel serviceChargeViewModel) {
         super(context);
         this.context = context;
         this.dataSyncViewModel = dataSyncViewModel;
@@ -116,6 +130,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         this.transactionId =transactionId;
         this.userViewModel = userViewModel;
         this.roomsViewModel = roomsViewModel;
+        this.serviceChargeViewModel = serviceChargeViewModel;
     }
 
     @Override
@@ -170,12 +185,11 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     }
 
     private void loadCreditCardTypes() {
+        final List<CreditCardListModel> ccArray = new ArrayList<>();
+
         try {
             for (CreditCards card : dataSyncViewModel.getCreditCardList()) {
-                RadioButton rb = new RadioButton(getContext());
-                rb.setId(card.getCore_id());
-                rb.setText(card.getCredit_card().toUpperCase());
-                rgCards.addView(rb);
+                ccArray.add(new CreditCardListModel(card.getCore_id(), card.getCredit_card(), false, 0));
             }
 
         } catch (ExecutionException e) {
@@ -183,6 +197,35 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+
+        CreditCardContract creditCardContract = new CreditCardContract() {
+            @Override
+            public void clicked(CreditCardListModel creditCardListModel, int position) {
+                for (CreditCardListModel ccm : ccArray) {
+
+                    if (ccm.getCore_id() == ccArray.get(position).getCore_id()) {
+                        ccm.setIs_selected(true);
+                        selectedCreditCardName = String.valueOf(ccm.getCredit_card());
+                        selectedCreditCardId = ccm.getCore_id();
+                    } else {
+                        ccm.setIs_selected(false);
+                    }
+                    if (creditCardAdapter != null) {
+                        creditCardAdapter.notifyDataSetChanged();
+                    }
+                }
+
+            }
+        };
+        creditCardAdapter = new CreditCardAdapter(ccArray, creditCardContract);
+        rvCreditCard.setAdapter(creditCardAdapter);
+        rvCreditCard.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
+        creditCardAdapter.notifyDataSetChanged();
+
+
+
+
 
     }
 
@@ -206,11 +249,44 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             for (Orders order : transactionsViewModel.orderList(transactionId)) {
                 amountDue += Utils.roundedOffTwoDecimal(order.getAmount()) * order.getQty();
             }
+            Double surCharge = 0.00;
+
+            if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel") ||
+                    SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+
+                if (serviceChargeViewModel.getActiveServiceCharge() != null) {
+
+                    if (serviceChargeViewModel.getActiveServiceCharge().isIs_percentage()) {
+                        surCharge = amountDue * (serviceChargeViewModel.getActiveServiceCharge().getValue() / 100);
+                    } else {
+                        surCharge = serviceChargeViewModel.getActiveServiceCharge().getValue();
+                    }
+                    amountDue += surCharge;
+                }
+
+            }
+
+
+
 
             change = (tendered - amountDue < 1 ? 0.00 : tendered - amountDue);
 
             totalPayment.setText(Utils.digitsWithComma(tendered));
-            totalAmountDue.setText(Utils.digitsWithComma(tendered >= amountDue ? 0.00 : amountDue - tendered));
+
+            if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel") ||
+                    SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+                if (serviceChargeViewModel.getActiveServiceCharge() != null) {
+                    totalAmountDue.setText(Utils.digitsWithComma(tendered >= amountDue ? 0.00 : (amountDue - tendered)) +"(" + PrinterUtils.returnWithTwoDecimal(String.valueOf(surCharge)) + ")");
+                } else {
+                    totalAmountDue.setText(Utils.digitsWithComma(tendered >= amountDue ? 0.00 : amountDue - tendered));
+                }
+            } else {
+                totalAmountDue.setText(Utils.digitsWithComma(tendered >= amountDue ? 0.00 : amountDue - tendered));
+            }
+
+
+
+//            totalAmountDue.setText(Utils.digitsWithComma(tendered >= amountDue ? 0.00 : amountDue - tendered));
             totalChange.setText(Utils.digitsWithComma(change));
 
             cashAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
@@ -218,8 +294,10 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
             if (Utils.roundedOffTwoDecimal(tendered) >= Utils.roundedOffTwoDecimal(amountDue)) {
                 pay.setBackgroundResource(R.drawable.button_selector);
+//                pay.setEnabled(true);
             } else {
-                pay.setBackgroundResource(R.drawable.button_selector_red);
+                pay.setBackgroundResource(R.drawable.button_selector_disabled);
+//                pay.setEnabled(false);
             }
         } catch (ExecutionException e) {
             e.printStackTrace();
@@ -249,7 +327,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
     private void initViews() {
         guestDetailsHeader = findViewById(R.id.guestDetailsHeader);
-        rgCards = findViewById(R.id.rgCards);
+        rvCreditCard = findViewById(R.id.rvCreditCard);
         cardNumber = findViewById(R.id.cardNumber);
         cardHoldersName = findViewById(R.id.cardHoldersName);
         expiration = findViewById(R.id.expiration);
@@ -300,6 +378,16 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         formForex = findViewById(R.id.formForex);
         add = findViewById(R.id.add);
         add.setOnClickListener(this);
+
+        addCash = findViewById(R.id.addCash);
+        addCash.setOnClickListener(this);
+
+        addCard = findViewById(R.id.addCard);
+        addCard.setOnClickListener(this);
+
+        addGuestInfo = findViewById(R.id.addGuestInfo);
+        addGuestInfo.setOnClickListener(this );
+
         cashAmount = findViewById(R.id.amount);
         totalAmountDue = findViewById(R.id.totalAmountDue);
         listPostedPayments = findViewById(R.id.listPostedPayments);
@@ -401,9 +489,10 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.pay:
-                pay.startLoading(pay);
-                try {
 
+                try {
+                    boolean isPercentage = false;
+                    Double serviceCharge = 0.00;
                     Double tendered = 0.00;
                     Double amountDue = 0.00;
                     Double change = 0.00;
@@ -416,6 +505,26 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                     }
 
 
+                    if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel") ||
+                            SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+
+                        if (serviceChargeViewModel.getActiveServiceCharge() != null) {
+                            if (serviceChargeViewModel.getActiveServiceCharge().isIs_percentage()) {
+                                isPercentage = true;
+                                serviceCharge = amountDue * (serviceChargeViewModel.getActiveServiceCharge().getValue() / 100);
+                            } else {
+                                isPercentage = false;
+                                serviceCharge = serviceChargeViewModel.getActiveServiceCharge().getValue();
+                            }
+                            amountDue += serviceCharge;
+                        }
+
+                    }
+
+
+
+
+
                     change = (Utils.roundedOffTwoDecimal(tendered) - Utils.roundedOffTwoDecimal(amountDue) < 1 ? 0.00 : Utils.roundedOffTwoDecimal(tendered) - Utils.roundedOffTwoDecimal(amountDue));
 
                     totalPayment.setText(Utils.digitsWithComma(tendered));
@@ -424,6 +533,10 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
 
                     if (Utils.roundedOffTwoDecimal(tendered) >= Utils.roundedOffTwoDecimal(amountDue)) {
+
+                        pay.startLoading(pay);
+
+
                         String receiptNumber = "";
                         if (transactionsViewModel.lastOrNumber() == null) {
                             receiptNumber = Utils.getOrFormat("1");
@@ -473,6 +586,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                 tmp.getTin_number()
                         );
 
+                        transactions.setService_charge_is_percentage(isPercentage);
+                        transactions.setService_charge_value(serviceCharge);
 
                         transactions.setRoom_id(tmp.getRoom_id());
                         transactions.setRoom_number(tmp.getRoom_number());
@@ -501,7 +616,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                         pay.stopLoading(pay);
                     } else {
                         pay.stopLoading(pay);
-//                        Helper.showDialogMessage(getContext(), context.getString(R.string.error_has_balance), context.getString(R.string.header_message));
+                        Helper.showDialogMessage(getContext(), context.getString(R.string.error_has_balance), context.getString(R.string.header_message));
                     }
                 } catch (ExecutionException e) {
                     pay.stopLoading(pay);
@@ -514,6 +629,111 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
 
                 break;
+            case R.id.addCash:
+
+                if (!TextUtils.isEmpty(cashAmount.getText().toString())) {
+                    if (Double.valueOf(cashAmount.getText().toString()) > 0) {
+                        List<Payments> cashPayment = new ArrayList<>();
+                        Payments p = new Payments(
+                                Integer.valueOf(transactionId), paymentTypes.getCore_id(),
+                                Double.valueOf(cashAmount.getText().toString()), paymentTypes.getPayment_type(),
+                                0,
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                                Utils.getDateTimeToday());
+                        p.setOther_data("");
+                        cashPayment.add(p);
+
+                        transactionsViewModel.insertPayment(cashPayment);
+                    } else {
+                        Helper.showDialogMessage(getContext(), "Amount cannot be zero(0)", context.getString(R.string.header_message));
+                    }
+                } else {
+                    Helper.showDialogMessage(getContext(), context.getString(R.string.error_message_fill_up_all_fields), context.getString(R.string.header_message));
+                }
+
+
+                break;
+            case R.id.addCard:
+                if (!TextUtils.isEmpty(cardNumber.getText().toString()) &&
+                        !TextUtils.isEmpty(cardHoldersName.getText().toString()) &&
+                        !TextUtils.isEmpty(expiration.getText().toString()) &&
+                        !TextUtils.isEmpty(authorization.getText().toString()) &&
+                        !TextUtils.isEmpty(creditCardAmount.getText().toString())) {
+                    //fix validation for card
+                    if (selectedCreditCardId != 0) {
+                        Map<String, String> cardMap = new HashMap<>();
+                        cardMap.put("card_number", cardNumber.getText().toString());
+                        cardMap.put("cardholder_name", cardHoldersName.getText().toString());
+                        cardMap.put("expiration", expiration.getText().toString());
+                        cardMap.put("authorization", authorization.getText().toString());
+                        cardMap.put("credit_card_amount", creditCardAmount.getText().toString());
+                        cardMap.put("remarks", remarks.getText().toString());
+                        cardMap.put("core_id", String.valueOf(selectedCreditCardId));
+                        cardMap.put("card_type", selectedCreditCardName);
+
+                        List<Payments> cardPayment = new ArrayList<>();
+                        Payments p = new Payments(
+                                Integer.valueOf(transactionId), paymentTypes.getCore_id(),
+                                Double.valueOf(creditCardAmount.getText().toString()), paymentTypes.getPayment_type(),
+                                0,
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                                Utils.getDateTimeToday());
+                        p.setOther_data(GsonHelper.getGson().toJson(cardMap));
+                        cardPayment.add(p);
+                        transactionsViewModel.insertPayment(cardPayment);
+                    } else {
+                        Helper.showDialogMessage(getContext(), getContext().getString(R.string.error_select_card), getContext().getString(R.string.header_message));
+                    }
+
+                } else {
+                    Helper.showDialogMessage(getContext(), context.getString(R.string.error_message_fill_up_all_fields), context.getString(R.string.header_message));
+                }
+
+
+                break;
+            case R.id.addGuestInfo:
+
+                if (!TextUtils.isEmpty(guestNameInput.getText().toString()) &&
+                        !TextUtils.isEmpty(guestAddressinput.getText().toString()) &&
+                        !TextUtils.isEmpty(guestTinInput.getText().toString()) &&
+                        !TextUtils.isEmpty(guestBusinessStyle.getText().toString())) {
+
+                    OrDetails orDetails = new OrDetails();
+                    orDetails.setName(guestNameInput.getText().toString());
+                    orDetails.setAddress(guestAddressinput.getText().toString());
+                    orDetails.setTin_number(guestTinInput.getText().toString());
+                    orDetails.setBusiness_style(guestBusinessStyle.getText().toString());
+                    orDetails.setTransaction_id(Integer.valueOf(transactionId));
+                    orDetails.setMachine_id(Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)));
+                    orDetails.setBranch_id(Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)));
+                    orDetails.setIs_sent_to_server(0);
+                    orDetails.setTreg(Utils.getDateTimeToday());
+
+                    transactionsViewModel.insertOrDetails(orDetails);
+
+                    try {
+                        Transactions transactions = transactionsViewModel.loadedTransactionList(transactionId).get(0);
+                        transactions.setTin_number(guestTinInput.getText().toString());
+                        transactionsViewModel.update(transactions);
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    Helper.showDialogMessage(getContext(), context.getString(R.string.message_or_details_success), context.getString(R.string.header_message));
+
+                    loadOrDetails(transactionId);
+
+                } else {
+                    Helper.showDialogMessage(getContext(), context.getString(R.string.error_message_fill_up_all_fields), context.getString(R.string.header_message));
+                }
+
+
+                break;
+
             case R.id.add:
                 if (paymentTypes.getCore_id() == 1) { //cash
                     if (!TextUtils.isEmpty(cashAmount.getText().toString())) {
@@ -540,8 +760,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                     !TextUtils.isEmpty(expiration.getText().toString()) &&
                     !TextUtils.isEmpty(authorization.getText().toString()) &&
                     !TextUtils.isEmpty(creditCardAmount.getText().toString())) {
-
-                        if (rgCards.getCheckedRadioButtonId() != -1) {
+                        //fix validation for card
+                        if (selectedCreditCardId != 0) {
                             Map<String, String> cardMap = new HashMap<>();
                             cardMap.put("card_number", cardNumber.getText().toString());
                             cardMap.put("cardholder_name", cardHoldersName.getText().toString());
@@ -549,8 +769,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                             cardMap.put("authorization", authorization.getText().toString());
                             cardMap.put("credit_card_amount", creditCardAmount.getText().toString());
                             cardMap.put("remarks", remarks.getText().toString());
-                            cardMap.put("core_id", String.valueOf(rgCards.getCheckedRadioButtonId()));
-                            cardMap.put("card_type", ((RadioButton)findViewById(rgCards.getCheckedRadioButtonId())).getText().toString());
+                            cardMap.put("core_id", String.valueOf(selectedCreditCardId));
+                            cardMap.put("card_type", selectedCreditCardName);
 
                             List<Payments> cardPayment = new ArrayList<>();
                             Payments p = new Payments(

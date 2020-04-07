@@ -6,12 +6,14 @@ import android.os.AsyncTask;
 import com.nerdvana.positiveoffline.dao.CutOffDao;
 import com.nerdvana.positiveoffline.dao.EndOfDayDao;
 import com.nerdvana.positiveoffline.dao.PaymentsDao;
+import com.nerdvana.positiveoffline.dao.PayoutDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.Payout;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -23,12 +25,13 @@ public class CutOffRepository {
     private CutOffDao cutOffDao;
     private EndOfDayDao endOfDayDao;
     private PaymentsDao paymentsDao;
-
+    private PayoutDao payoutDao;
     public CutOffRepository(Application application) {
         PosDatabase posDatabase = DatabaseHelper.getDatabase(application);
         cutOffDao = posDatabase.cutOffDao();
         endOfDayDao = posDatabase.endOfDayDao();
         paymentsDao = posDatabase.paymentsDao();
+        payoutDao = posDatabase.payoutDao();
 
     }
 
@@ -43,6 +46,11 @@ public class CutOffRepository {
     public void update(CutOff cutOff) throws ExecutionException, InterruptedException {
         new CutOffRepository.updateAsyncTask(cutOffDao).execute(cutOff);
     }
+
+    public void update(Payout payout) throws ExecutionException, InterruptedException {
+        new CutOffRepository.updatePayoutAsyncTask(payoutDao).execute(payout);
+    }
+
 
     public void update(EndOfDay endOfDay) throws ExecutionException, InterruptedException {
         new CutOffRepository.updateEndOfDayAsyncTask(endOfDayDao).execute(endOfDay);
@@ -78,6 +86,21 @@ public class CutOffRepository {
 
         @Override
         protected Void doInBackground(final EndOfDay... params) {
+            mAsyncTaskDao.update(params[0]);
+            return null;
+        }
+    }
+
+    private static class updatePayoutAsyncTask extends AsyncTask<Payout, Void, Void> {
+
+        private PayoutDao mAsyncTaskDao;
+
+        updatePayoutAsyncTask(PayoutDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final Payout... params) {
             mAsyncTaskDao.update(params[0]);
             return null;
         }
@@ -138,6 +161,19 @@ public class CutOffRepository {
         Future<List<EndOfDay>> future = Executors.newSingleThreadExecutor().submit(callable);
         return future.get();
     }
+
+    public List<Payout> getUnCutOffPayouts() throws ExecutionException, InterruptedException {
+        Callable<List<Payout>> callable = new Callable<List<Payout>>() {
+            @Override
+            public List<Payout> call() throws Exception {
+                return payoutDao.getUnCutOffPayouts();
+            }
+        };
+
+        Future<List<Payout>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
 
     public CutOff getCutOff(final long cut_off_id) throws ExecutionException, InterruptedException {
         Callable<CutOff> callable = new Callable<CutOff>() {

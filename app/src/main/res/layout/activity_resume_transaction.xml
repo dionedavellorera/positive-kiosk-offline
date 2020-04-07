@@ -29,7 +29,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent" />
 
-                <EditText
+                <com.nerdvana.positiveoffline.view.HidingEditText
+                    android:maxLines="1"
+                    android:singleLine="true"
                     android:layout_centerVertical="true"
                     android:id="@+id/search"
                     android:layout_alignParentRight="true"
