@@ -489,7 +489,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                     endOfDay.setBegSales(eod.get(1).getEndSales());
                     endOfDay.setEndSales(gross_sales + eod.get(1).getEndSales());
                 } else {
-                    endOfDay.setBegSales(gross_sales);
+                    endOfDay.setBegSales(0.00);
                     endOfDay.setEndSales(gross_sales);
                 }
 

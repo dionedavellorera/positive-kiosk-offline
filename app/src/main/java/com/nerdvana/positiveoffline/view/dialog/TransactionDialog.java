@@ -191,7 +191,10 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                         reference.getIs_cancelled(),
                         reference.getIs_cancelled_by(),
                         reference.getIs_cancelled_at(),
-                        reference.getTin_number()
+                        reference.getTin_number(),
+                        reference.getIs_backed_out(),
+                        reference.getIs_backed_out_by(),
+                        reference.getIs_backed_out_at()
                 );
                 transactions.setRoom_id(reference.getRoom_id());
                 transactions.setRoom_number(reference.getRoom_number());

@@ -90,7 +90,7 @@ public class TimerService extends Service {
                     BusProvider.getInstance().post(new ReprintReceiptData(""));
                 }
 
-                boolean willSubmitToServer = true;
+                boolean willSubmitToServer = false;
                 if (willSubmitToServer) {
                     if (secsOfDate % 10 == 0) { //process sending of data to server
                         final PosDatabase posDatabase = DatabaseHelper.getDatabase(TimerService.this);

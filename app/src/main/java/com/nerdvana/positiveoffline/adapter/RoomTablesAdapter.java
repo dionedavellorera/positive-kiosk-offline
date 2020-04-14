@@ -22,9 +22,12 @@ import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
+import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.entities.Rooms;
 import com.nerdvana.positiveoffline.intf.RoomContract;
 import com.nerdvana.positiveoffline.view.rooms.RoomsActivity;
+
+import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,11 +85,13 @@ public class RoomTablesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     static class ProductsViewHolder extends RecyclerView.ViewHolder {
         private TextView name;
+        private TextView duration;
         private TextView status;
         private RelativeLayout rel;
         public ProductsViewHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.name);
+            duration = itemView.findViewById(R.id.duration);
             status = itemView.findViewById(R.id.status);
             rel = itemView.findViewById(R.id.rel);
         }
@@ -96,7 +101,14 @@ public class RoomTablesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     @Override
     public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, int i) {
         final Rooms rooms = roomsFilteredList.get(i);
-        ((ProductsViewHolder)holder).name.setText(rooms.getRoom_name());
+
+        if (rooms.getStatus_id() == 12) {
+            ((ProductsViewHolder)holder).name.setText(String.format("%s\nFor:%s\nTime:%s", rooms.getRoom_name(), rooms.getReservation_name(), rooms.getReservation_time()));
+        } else {
+            ((ProductsViewHolder)holder).name.setText(rooms.getRoom_name());
+        }
+
+
         ((ProductsViewHolder)holder).status.setText(rooms.getStatus_description());
 
         ((ProductsViewHolder)holder).rel.setBackgroundColor(Color.parseColor(rooms.getHex_color()));
@@ -123,27 +135,13 @@ public class RoomTablesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             }
         });
 
-//        ((ProductsViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                selectionContract.listClicked(productsModel);
-//                ((ProductsViewHolder)holder).rel.setSelected(true);
-//            }
-//        });
-//        if (productsModel.getOtHours().equalsIgnoreCase("0.0") || TextUtils.isEmpty(productsModel.getOtHours())) {
-//            ((RoomsTablesAdapter.ProductsViewHolder)holder).name.setText(productsModel.getName());
-//        } else {
-//            ((RoomsTablesAdapter.ProductsViewHolder)holder).name.setText(productsModel.getName() + "(" + productsModel.getOtHours()+")");
-//        }
-
-
-//        if (productsModel.getStatus().equalsIgnoreCase(RoomConstants.CLEAN)) {
-//            ((ProductsViewHolder)holder).price.setVisibility(View.GONE);
-//        } else {
-//            ((ProductsViewHolder)holder).price.setVisibility(View.VISIBLE);
-//        }
-
-
+        if (!rooms.getCheck_in_time().isEmpty()) {
+            ((ProductsViewHolder)holder).duration.setVisibility(View.VISIBLE);
+            ((ProductsViewHolder)holder).duration.setText(Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), rooms.getCheck_in_time()));
+        } else {
+            ((ProductsViewHolder)holder).duration.setVisibility(View.GONE);
+        }
+//        duration
 
 
 

@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.view.View;
 
 import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
@@ -159,7 +160,26 @@ public class SoaAsync extends AsyncTask<Void, Void, Void> {
             addTextToPrinter(printer, "STATEMENT OF ACCOUNT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
 
 
+
             addPrinterSpace(1, printer);
+            if (!transactionCompleteDetails.transactions.getRoom_number().isEmpty()) {
+                String tblLabel = "";
+                if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+//                    lin00.setVisibility(View.GONE);
+                } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                    tblLabel = "ROOM NO";
+                } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+                    tblLabel = "TABLE NO";
+                }
+
+                addTextToPrinter(printer, twoColumns(
+                        tblLabel,
+                        transactionCompleteDetails.transactions.getRoom_number(),
+                        40,
+                        2,
+                        context)
+                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            }
             addTextToPrinter(printer, twoColumns(
                     "OR NO",
                     "NA",

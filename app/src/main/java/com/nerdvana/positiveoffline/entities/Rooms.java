@@ -19,6 +19,11 @@ public class Rooms {
     private String status_description;
     private String hex_color;
     private String transaction_id;
+    private String check_in_time = "";
+
+    private String reservation_name;
+    private String reservation_time;
+    private String time_reservation_made;
 
     public Rooms(int room_id, String area_name,
                  int area_id, String room_name,
@@ -37,6 +42,30 @@ public class Rooms {
         this.room_type = room_type;
         this.room_type_id = room_type_id;
         this.is_available = is_available;
+    }
+
+    public String getTime_reservation_made() {
+        return time_reservation_made;
+    }
+
+    public void setTime_reservation_made(String time_reservation_made) {
+        this.time_reservation_made = time_reservation_made;
+    }
+
+    public String getReservation_name() {
+        return reservation_name;
+    }
+
+    public void setReservation_name(String reservation_name) {
+        this.reservation_name = reservation_name;
+    }
+
+    public String getReservation_time() {
+        return reservation_time;
+    }
+
+    public void setReservation_time(String reservation_time) {
+        this.reservation_time = reservation_time;
     }
 
     public String getTransaction_id() {
@@ -98,5 +127,14 @@ public class Rooms {
 
     public void setTransaction_id(String transaction_id) {
         this.transaction_id = transaction_id;
+    }
+
+
+    public String getCheck_in_time() {
+        return check_in_time;
+    }
+
+    public void setCheck_in_time(String check_in_time) {
+        this.check_in_time = check_in_time;
     }
 }

@@ -5,6 +5,15 @@
     android:layout_height="wrap_content"
     android:id="@+id/rootView">
 
+    <TextView
+        android:id="@+id/listItemToIndicator"
+        android:visibility="gone"
+        android:textColor="@color/colorRed"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.2"
+        android:text="TAKEOUT |"
+        android:textStyle="bold"/>
     
     <TextView
         android:gravity="center_vertical"
@@ -12,7 +21,7 @@
         android:id="@+id/listItemName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="0.5"
+        android:layout_weight="0.3"
         android:text="Dione\ndioe"/>
 
     <TextView

@@ -188,7 +188,10 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
                 true,
                 transactions.getIs_cancelled_by(),
                 Utils.getDateTimeToday(),
-                transactions.getTin_number()
+                transactions.getTin_number(),
+                transactions.getIs_backed_out(),
+                transactions.getIs_backed_out_by(),
+                transactions.getIs_backed_out_at()
         );
         tr.setRoom_id(transactions.getRoom_id());
         tr.setRoom_number(transactions.getRoom_number());

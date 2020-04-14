@@ -65,7 +65,7 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
         buttonsModelList.add(new ButtonsModel(124,"INTRANSIT", "",2, 0));
         buttonsModelList.add(new ButtonsModel(125,"SPOT AUDIT", "",2, 0));
         buttonsModelList.add(new ButtonsModel(200,"PAYOUT", "",10, 0));
-
+        buttonsModelList.add(new ButtonsModel(108,"BACKOUT", "",1, 0));
         if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
 
         } else {
@@ -74,6 +74,7 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
             } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
                 //"label": "Branch > POS > Function > Switch Room"
                 buttonsModelList.add(new ButtonsModel(107,"TRANSFER ROOM", "",1, 69));
+
                 //"label": "Branch > POS > Function > SOA"
                 buttonsModelList.add(new ButtonsModel(109,"SOA", "",4, 123));
                 //0 FOR ALL
@@ -81,6 +82,9 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
 
             } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
                 //"label": "Branch > POS > Function > SOA"
+                buttonsModelList.add(new ButtonsModel(107,"SWITCH TABLE", "",1, 69));
+                buttonsModelList.add(new ButtonsModel(111,"DINE IN/TAKE OUT", "",1, 69));
+
                 buttonsModelList.add(new ButtonsModel(109,"SOA", "",4, 123));
                 //0 FOR ALL
                 buttonsModelList.add(new ButtonsModel(106,"TABLES", "",1, 0));

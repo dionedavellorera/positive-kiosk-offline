@@ -14,7 +14,37 @@
         android:layout_height="match_parent">
 
         <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorWhite02"
+            android:id="@+id/lin00">
 
+
+            <TextView
+                android:padding="5dp"
+                android:gravity="left"
+                android:id="@+id/tvRoomTableNumber"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.8"
+                android:text="QTY"/>
+
+            <Button
+                android:background="@drawable/button_selector_red"
+                android:layout_margin="3dp"
+                android:gravity="center"
+                android:id="@+id/btnRemoveRoomTable"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+
+                android:text="REMOVE"/>
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_below="@id/lin00"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

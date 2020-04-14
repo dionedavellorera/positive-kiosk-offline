@@ -32,6 +32,7 @@ import com.nerdvana.positiveoffline.intf.RoomContract;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.TransactionWithDiscounts;
 import com.nerdvana.positiveoffline.view.dialog.ChangeRoomStatusDialog;
+import com.nerdvana.positiveoffline.view.dialog.InputWithTimeDialog;
 import com.nerdvana.positiveoffline.view.dialog.RoomRateSelectionDialog;
 import com.nerdvana.positiveoffline.view.sync.SyncActivity;
 import com.nerdvana.positiveoffline.viewmodel.RoomsViewModel;
@@ -124,16 +125,48 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
     @Override
     public void clicked(final Rooms rooms) {
 
-        if (rooms.getStatus_id() != 2) {
+        if (rooms.getStatus_id() != 222) {
             try {
+
                 ChangeRoomStatusDialog changeRoomStatusDialog =
                         new ChangeRoomStatusDialog(RoomsActivity.this, roomsViewModel.getRoomStatus()) {
                             @Override
-                            public void changeStatus(int room_status_id, String status_description, String hex_color) {
-                                rooms.setStatus_description(status_description);
-                                rooms.setStatus_id(room_status_id);
-                                rooms.setHex_color(hex_color);
-                                roomsViewModel.update(rooms);
+                            public void changeStatus(final int room_status_id, final String status_description, final String hex_color) {
+                                if (room_status_id != rooms.getStatus_id()) {
+                                    if (room_status_id == 12) {
+
+                                        InputWithTimeDialog inputWithTimeDialog = new InputWithTimeDialog(RoomsActivity.this, "Reservation", rooms.getReservation_name()) {
+                                            @Override
+                                            public void confirm(String str1, String str2) {
+                                                rooms.setStatus_description(status_description);
+                                                rooms.setStatus_id(room_status_id);
+                                                rooms.setHex_color(hex_color);
+
+                                                rooms.setReservation_name(str1);
+                                                rooms.setReservation_time(str2);
+                                                rooms.setTime_reservation_made(Utils.getDateTimeToday());
+                                                roomsViewModel.update(rooms);
+                                            }
+                                        };
+                                        inputWithTimeDialog.show();
+
+                                    } else {
+                                        rooms.setStatus_description(status_description);
+                                        rooms.setStatus_id(room_status_id);
+                                        rooms.setHex_color(hex_color);
+
+                                        rooms.setReservation_name("");
+                                        rooms.setReservation_time("");
+                                        rooms.setTime_reservation_made("");
+                                        roomsViewModel.update(rooms);
+
+
+                                    }
+                                } else {
+                                    Helper.showDialogMessage(RoomsActivity.this, "No change in room status", getString(R.string.header_message));
+                                }
+
+
 
 
                             }
@@ -169,6 +202,7 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
                                 changeRoomStatus(rooms, 2, false);
 
                                 Intent intent = new Intent();
+                                intent.putExtra("type", "room");
                                 intent.putExtra("selected_room", GsonHelper.getGson().toJson(roomRates));
                                 setResult(RESULT_OK, intent);
                                 finish();
@@ -201,6 +235,7 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
 
 
                                     Intent intent = new Intent();
+                                    intent.putExtra("type", "room");
                                     intent.putExtra("selected_room", GsonHelper.getGson().toJson(roomRates));
                                     setResult(RESULT_OK, intent);
                                     finish();
@@ -222,6 +257,7 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
                                 changeRoomStatus(rooms, 2, false);
 
                                 Intent intent = new Intent();
+                                intent.putExtra("type", "room");
                                 intent.putExtra("selected_room", GsonHelper.getGson().toJson(roomRates));
                                 setResult(RESULT_OK, intent);
                                 finish();
@@ -264,53 +300,120 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
                     changeRoomStatus(rooms, 2, false);
 
                     Intent intent = new Intent();
-                    intent.putExtra("selected_room", room_id);
+                    intent.putExtra("type", "table");
+                    intent.putExtra("case", "transfer_table");
+                    intent.putExtra("selected_room", GsonHelper.getGson().toJson(rooms));
                     setResult(RESULT_OK, intent);
                     finish();
                 }
             } else {
-                if (rooms.getStatus_id() == 1 || rooms.getStatus_id() == 2) {
+                if (transactionId != 0) {
+                    //CHECK IF TRANSACTION IS ALREADY EXISTING ON OTHER ROOM
+                    //IF NOT EXISTING ATTACH IT TO ROOM
+                    //ELSE PROMT THAT IT IS ALREADY ATTACHED TO THIS ROOM
                     Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(transactionId);
 
-                    attachRoomToTransaction(room_id, transactionId);
+                    if (tmpRm == null) {
 
-                    changeRoomStatus(rooms, 2, false);
+                        Log.d("CHECKDATA", "WITWIT");
+
+                        if (rooms.getStatus_id() == 1 || rooms.getStatus_id() == 12) {
+                            Log.d("CHECKDATA", "WITH TRANSACTION ATTACH TO ROOM");
+                            attachRoomToTransaction(room_id, transactionId);
+                            changeRoomStatus(rooms, 2, false);
+
+                            Intent intent = new Intent();
+                            intent.putExtra("type", "table");
+                            intent.putExtra("case", "existing_trans_new_room");
+                            intent.putExtra("selected_room", GsonHelper.getGson().toJson(rooms));
+                            setResult(RESULT_OK, intent);
+                            finish();
+                        } else if (rooms.getStatus_id() == 2) {
+                            Log.d("CHECKDATA", "WITH TRANSACTION BUT LOAD DATA OF SELECTED ROOM");
+                            Intent intent = new Intent();
+                            intent.putExtra("type", "table");
+                            intent.putExtra("case", "load_existing_data");
+                            intent.putExtra("selected_room", GsonHelper.getGson().toJson(rooms));
+                            setResult(RESULT_OK, intent);
+                            //LOAD DETAILS OF SELECTED ROOM
+                        } else {
+                            Log.d("CHECKDATA", "WITH TRANSACTION BUT ROOM IS IN USE");
+//                            Helper.showDialogMessage(RoomsActivity.this, "Room is in use", getString(R.string.header_message));
+                        }
+
+                    } else {
+                        Log.d("CHECKDATA", "WITHOUT TRANSACTION ");
+                        if (rooms.getRoom_name().equalsIgnoreCase(tmpRm.getRoom_name())) {
+                            Log.d("CHECKDATA", "LOAD EXIST ");
+                            Intent intent = new Intent();
+                            intent.putExtra("type", "table");
+                            intent.putExtra("case", "load_existing_data");
+                            intent.putExtra("selected_room", GsonHelper.getGson().toJson(rooms));
+                            setResult(RESULT_OK, intent);
+                            finish();
+                        } else {
+                            if (rooms.getStatus_id() == 1 || rooms.getStatus_id() == 12) {
+                                Log.d("CHECKDATA", "CREATE ");
+                                changeRoomStatus(rooms, 2, false);
+
+                                Intent intent = new Intent();
+                                intent.putExtra("type", "table");
+                                intent.putExtra("case", "new_trans_with_room");
+                                intent.putExtra("selected_room", GsonHelper.getGson().toJson(rooms));
+                                setResult(RESULT_OK, intent);
+                                finish();
+                            } else {
+                                if (rooms.getStatus_id() == 2) {
+                                    Log.d("CHECKDATA", "WITHOUT TRANSACTION BUT LOAD DATA OF SELECTED ROOM");
+                                    Intent intent = new Intent();
+                                    intent.putExtra("type", "table");
+                                    intent.putExtra("case", "load_existing_data");
+                                    intent.putExtra("selected_room", GsonHelper.getGson().toJson(rooms));
+                                    setResult(RESULT_OK, intent);
+                                    finish();
+                                    //LOAD DETAILS OF SELECTED ROOM
+                                } else {
+                                    Helper.showDialogMessage(RoomsActivity.this, "Your transaction is already attached to room " + tmpRm.getRoom_name(), getString(R.string.header_message));
+                                    Log.d("CHECKDATA", "WITH TRANSACTION BUT ROOM IS IN USE");
+//                            Helper.showDialogMessage(RoomsActivity.this, "Room is in use", getString(R.string.header_message));
+                                }
 
 
-                    Intent intent = new Intent();
-                    intent.putExtra("selected_room", room_id);
-                    setResult(RESULT_OK, intent);
-                    finish();
+                            }
 
-//                    if (tmpRm != null) {
-//                        if (tmpRm.getRoom_id() == room_id) {
-//
-//                        }
-//                        else {
-//                            Helper.showDialogMessage(RoomsActivity.this, "You have selected another room, your room is " + tmpRm.getRoom_name(), getString(R.string.header_message));
-//                        }
-//
-//                    } else {
-//                        attachRoomToTransaction(room_id, transactionId);
-//
-//                        changeRoomStatus(rooms, 2, false);
-//
-//                        Intent intent = new Intent();
-//                        intent.putExtra("selected_room", room_id);
-//                        setResult(RESULT_OK, intent);
-//                        finish();
-//                    }
+                        }
 
-
-
-                } else {
-                    if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
-                        Helper.showDialogMessage(RoomsActivity.this, "ROOM IN USE", getString(R.string.header_message));
-                    } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
-                        Helper.showDialogMessage(RoomsActivity.this, "TABLE IN USE", getString(R.string.header_message));
                     }
+                } else {
 
+
+                    Log.d("CHECKDATA", "WALA TRANS ID");
+                    if (rooms.getStatus_id() == 1 || rooms.getStatus_id() == 12) {
+                        //CREATE TRANSACTION
+                        changeRoomStatus(rooms, 2, false);
+
+                        Intent intent = new Intent();
+                        intent.putExtra("type", "table");
+                        intent.putExtra("case", "new_trans_with_room");
+                        intent.putExtra("selected_room", GsonHelper.getGson().toJson(rooms));
+                        setResult(RESULT_OK, intent);
+                        finish();
+
+
+                    } else if (rooms.getStatus_id() == 2) {
+                        //LOAD DETAILS OF SELECTED ROOM
+                        Intent intent = new Intent();
+                        intent.putExtra("type", "table");
+                        intent.putExtra("case", "load_existing_data");
+                        intent.putExtra("selected_room", GsonHelper.getGson().toJson(rooms));
+                        setResult(RESULT_OK, intent);
+                        finish();
+                    } else {
+                        Helper.showDialogMessage(RoomsActivity.this, "Room is in use", getString(R.string.header_message));
+                    }
                 }
+
+
             }
 
 
@@ -347,6 +450,7 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
             room.setHex_color(roomStatus.getHex_color());
             if (is_transfer) {
                 room.setTransaction_id("");
+                room.setCheck_in_time("");
             }
             roomsViewModel.update(room);
         } catch (Exception e) {

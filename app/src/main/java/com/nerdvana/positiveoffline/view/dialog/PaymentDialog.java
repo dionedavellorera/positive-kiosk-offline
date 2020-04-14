@@ -583,7 +583,11 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                 tmp.getIs_cancelled(),
                                 tmp.getIs_cancelled_by(),
                                 tmp.getIs_cancelled_at(),
-                                tmp.getTin_number()
+                                tmp.getTin_number(),
+                                tmp.getIs_backed_out(),
+                                tmp.getIs_backed_out_by(),
+                                tmp.getIs_backed_out_at()
+
                         );
 
                         transactions.setService_charge_is_percentage(isPercentage);
@@ -610,6 +614,11 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                             rooms.setHex_color(roomStatus.getHex_color());
                             rooms.setStatus_description(roomStatus.getRoom_status());
                             rooms.setTransaction_id("");
+                            rooms.setCheck_in_time("");
+
+                            rooms.setTime_reservation_made("");
+                            rooms.setReservation_time("");
+                            rooms.setReservation_name("");
                             roomsViewModel.update(rooms);
                         }
                         completed(receiptNumber);

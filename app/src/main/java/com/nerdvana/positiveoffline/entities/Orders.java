@@ -53,6 +53,8 @@ public class Orders {
 
     private String notes = "";
 
+    private int is_take_out;
+
     public Orders(int transaction_id, int core_id,
                   int qty, @NonNull Double amount,
                   @NonNull Double original_amount,
@@ -63,7 +65,8 @@ public class Orders {
                   int categoryId, int is_sent_to_server,
                   int machine_id, int branch_id,
                   String treg, int is_room_rate,
-                  String notes) {
+                  String notes, int is_take_out) {
+        this.is_take_out = is_take_out;
         this.notes = notes;
         this.is_room_rate = is_room_rate;
         this.treg = treg;
@@ -84,6 +87,14 @@ public class Orders {
         this.vatable = vatable;
         this.vatExempt = vatExempt;
         this.discountAmount = discountAmount;
+    }
+
+    public int getIs_take_out() {
+        return is_take_out;
+    }
+
+    public void setIs_take_out(int is_take_out) {
+        this.is_take_out = is_take_out;
     }
 
     public String getNotes() {

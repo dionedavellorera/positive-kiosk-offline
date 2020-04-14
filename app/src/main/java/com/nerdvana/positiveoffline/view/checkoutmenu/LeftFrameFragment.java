@@ -13,8 +13,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,7 +28,9 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 
+import com.facebook.stetho.common.Util;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
@@ -53,6 +58,7 @@ import com.nerdvana.positiveoffline.intf.OrdersContract;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
+import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.view.dialog.AlacartCompositionDialog;
 import com.nerdvana.positiveoffline.view.dialog.BundleCompositionDialog;
 import com.nerdvana.positiveoffline.view.dialog.ChangeQtyDialog;
@@ -79,11 +85,13 @@ import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 import com.squareup.otto.Subscribe;
 
+import org.joda.time.DateTime;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class LeftFrameFragment extends Fragment implements OrdersContract {
+public class LeftFrameFragment extends Fragment implements OrdersContract, View.OnClickListener {
 
     private List<ProductAlacart> mAlacartList = new ArrayList<>();
     private int mQty = 1;
@@ -122,6 +130,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
     private Products selectedProduct;
     private RoomRates selectedRoomRate;
+    private Rooms selectedTable;
     private int pRoomId = 0;
 
     private RelativeLayout rootRel;
@@ -145,6 +154,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     private TextView listItemName;
     private TextView listItemQty;
     private TextView listItemPrice;
+    private TextView tvRoomTableNumber;
+    private LinearLayout lin00;
+    private Button btnRemoveRoomTable;
 
 
 
@@ -159,7 +171,11 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     }
 
     private void initViews(View view) {
+        btnRemoveRoomTable = view.findViewById(R.id.btnRemoveRoomTable);
+        btnRemoveRoomTable.setOnClickListener(this);
         rootRel = view.findViewById(R.id.rootRel);
+        lin00 = view.findViewById(R.id.lin00);
+        tvRoomTableNumber = view.findViewById(R.id.tvRoomTableNumber);
         rootCard = view.findViewById(R.id.rootCard);
         listItemName = view.findViewById(R.id.listItemName);
         listItemQty = view.findViewById(R.id.listItemQty);
@@ -238,12 +254,78 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
             @Override
             public void onChanged(List<Transactions> transactions) {
 
+
+                if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+                    lin00.setVisibility(View.GONE);
+                } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                    lin00.setVisibility(View.VISIBLE);
+                } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+                    lin00.setVisibility(View.VISIBLE);
+                }
+
+
                 try {
                     if (!TextUtils.isEmpty(transactionId)) {
+                        if (selectedTable != null) {
+                            transactionId = String.valueOf(transactions.get(transactions.size() - 1).getId());
+                            selectedTable.setTransaction_id(transactionId);
+                            if (selectedTable.getCheck_in_time().isEmpty()) {
+                                selectedTable.setCheck_in_time(Utils.getDateTimeToday());
+                            }
+                            if (!TextUtils.isEmpty(selectedTable.getCheck_in_time())) {
+                                tvRoomTableNumber.setText("TABLE:" + selectedTable.getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), selectedTable.getCheck_in_time()));
+                            } else {
+                                tvRoomTableNumber.setText("TABLE:NA");
+                            }
+
+
+                            roomsViewModel.update(selectedTable);
+                        } else {
+                            if (roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)) != null) {
+                                if (!TextUtils.isEmpty(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time())) {
+                                    tvRoomTableNumber.setText("TABLE:" + roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time()));
+                                } else {
+                                    tvRoomTableNumber.setText("TABLE:" + "NA");
+                                }
+
+                            } else {
+                                tvRoomTableNumber.setText("TABLE:" + "NA");
+                            }
+
+                        }
                         setOrderAdapter(transactionsViewModel.orderList(transactionId));
                     } else {
+                        Log.d("LOADDATA", "Y00000");
                         if (transactions.size() > 0) {
+                            Log.d("LOADDATA", "Y");
                             transactionId = String.valueOf(transactions.get(0).getId());
+
+                            if (!TextUtils.isEmpty(transactions.get(0).getCheck_in_time())) {
+                                tvRoomTableNumber.setText("TABLE:" + transactions.get(0).getRoom_number() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), transactions.get(0).getCheck_in_time()));
+                            } else {
+                                tvRoomTableNumber.setText("TABLE:NA");
+                            }
+
+
+                            if (selectedTable != null) {
+                                selectedTable.setTransaction_id(transactionId);
+                                if (selectedTable.getCheck_in_time().isEmpty()) {
+                                    selectedTable.setCheck_in_time(Utils.getDateTimeToday());
+                                }
+                                roomsViewModel.update(selectedTable);
+                            } else {
+                                if (roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)) != null) {
+
+                                    if (!TextUtils.isEmpty(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time())) {
+                                        tvRoomTableNumber.setText("TABLE:" + roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time()));
+                                    } else {
+                                        tvRoomTableNumber.setText("TABLE:" + "NA");
+                                    }
+
+                                } else {
+                                    tvRoomTableNumber.setText("TABLE:" + "NA");
+                                }
+                            }
 
                             if (selectedProduct != null) {
                                 insertSelectedOrder();
@@ -272,6 +354,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                             }
                             setOrderAdapter(transactionsViewModel.orderList(transactionId));
                         } else {
+                            Log.d("LOADDATA", "Y3");
                             defaults();
                         }
                     }
@@ -385,7 +468,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                     transactions.getIs_cancelled(),
                     transactions.getIs_cancelled_by(),
                     transactions.getIs_cancelled_at(),
-                    transactions.getTin_number()
+                    transactions.getTin_number(),
+                    transactions.getIs_backed_out(),
+                    transactions.getIs_backed_out_by(),
+                    transactions.getIs_backed_out_at()
             );
             tr.setRoom_id(transactions.getRoom_id());
             tr.setRoom_number(transactions.getRoom_number());
@@ -406,16 +492,18 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
     private void changeRoomStatus(Rooms room, int status_id, boolean is_transfer) {
         try {
+            if (room != null) {
+                RoomStatus roomStatus = roomsViewModel.getRoomStatusViaId(status_id);
+                room.setStatus_id(roomStatus.getCore_id());
+                room.setStatus_description(roomStatus.getRoom_status());
+                room.setHex_color(roomStatus.getHex_color());
 
-            RoomStatus roomStatus = roomsViewModel.getRoomStatusViaId(status_id);
-            room.setStatus_id(roomStatus.getCore_id());
-            room.setStatus_description(roomStatus.getRoom_status());
-            room.setHex_color(roomStatus.getHex_color());
-
-            if (is_transfer) {
-                room.setTransaction_id("");
+                if (is_transfer) {
+                    room.setTransaction_id("");
+                }
+                roomsViewModel.update(room);
             }
-            roomsViewModel.update(room);
+
         } catch (Exception e) {
 
         }
@@ -428,6 +516,78 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 111://DINE IN OR TAKE OUT TOGGLE
+                if (!TextUtils.isEmpty(transactionId)) {
+                    boolean hasRoom = false;
+                    try {
+                        Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
+                        if (tmpRm != null) {
+                            hasRoom = true;
+                        }
+
+                        if (!hasRoom) {
+                            Helper.showDialogMessage(getActivity(), "No table, cannot proceed to dine in, please select table first", getContext().getString(R.string.header_message));
+                        } else {
+                            if (getEditingOrderList().size() > 0) {
+                                for (Orders ord : getEditingOrderList()) {
+                                    if (ord.getIs_take_out() == 1) {
+                                        ord.setIs_take_out(0);
+                                    } else {
+                                        ord.setIs_take_out(1);
+                                    }
+                                    transactionsViewModel.updateOrder(ord);
+                                }
+                            } else {
+                                Helper.showDialogMessage(getActivity(), "No item selected", getContext().getString(R.string.header_message));
+                            }
+
+                        }
+                    } catch (Exception e) {
+
+                    }
+
+
+
+                } else {
+                    Helper.showDialogMessage(getActivity(), "No transaction", getContext().getString(R.string.header_message));
+                }
+                break;
+            case 108://BACKOUT
+                if (!TextUtils.isEmpty(transactionId)) {
+                    try {
+                        if (transactionsViewModel.loadedTransactionList(transactionId).size() > 0) {
+                            Transactions mTmpTr = transactionsViewModel.loadedTransactionList(transactionId).get(0);
+                            mTmpTr.setIs_backed_out(true);
+                            mTmpTr.setIs_backed_out_by(userViewModel.searchLoggedInUser().get(0).getUsername());
+                            mTmpTr.setIs_backed_out_at(Utils.getDateTimeToday());
+                            transactionsViewModel.update(mTmpTr);
+                        }
+
+                        Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
+                        changeRoomStatus(tmpRm, 3, true);
+
+                        final TransactionCompleteDetails tr = transactionsViewModel.getTransactionViaTransactionId(transactionId);
+
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                BusProvider.getInstance().post(new PrintModel("BACKOUT", GsonHelper.getGson().toJson(tr)));
+
+                            }
+                        }, 300);
+
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    defaults();
+                    Helper.showDialogMessage(getActivity(), "back out success", getContext().getString(R.string.header_message));
+                } else {
+                    Helper.showDialogMessage(getActivity(), "No transaction to backout", getContext().getString(R.string.header_message));
+                }
+                break;
             case 200://PAYOUT
                 if (payoutDialog == null) {
                     payoutDialog = new PayoutDialog(getActivity()) {
@@ -893,10 +1053,6 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                 } else {
                     doDiscountFunction();
                 }
-
-
-
-
                 break;
             case 133://OPEN SHIFT CUT OFF DIALOG
                 if (cutOffMenuDialog == null) {
@@ -1271,8 +1427,11 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
                                 try {
                                     if (transactionsList().size() > 0) {
+                                        selectedTable = null;
                                         transactionId = String.valueOf(transactionsList().get(0).getId());
                                         setOrderAdapter(transactionsViewModel.orderList(transactionId));
+
+
                                     } else {
                                         defaults();
                                     }
@@ -1496,68 +1655,191 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
         switch (requestCode) {
             case ROOM_SELECTED_RETURN:
                 if (resultCode == Activity.RESULT_OK) {
-
-                    selectedRoomRate = GsonHelper.getGson().fromJson(data.getExtras().getString("selected_room"), RoomRates.class);
-
-                    try {
-                        if (!TextUtils.isEmpty(transactionId)) {
-
-                            Rooms rooms = roomsViewModel.getRoomViaId(selectedRoomRate.getRoom_id());
-                            rooms.setTransaction_id(transactionId);
-                            roomsViewModel.update(rooms);
-
-                            insertSelectedRoomRate();
-                        } else {
-                            if (transactionsList().size() > 0) {
-
-                                Rooms rooms = roomsViewModel.getRoomViaId(selectedRoomRate.getRoom_id());
-                                rooms.setTransaction_id(transactionId);
-                                roomsViewModel.update(rooms);
-
-
-                                insertSelectedRoomRate();
-                            } else {
-                                String controlNumber = "";
-                                try {
-                                    if (transactionsViewModel.lastTransactionId() == null) {
-                                        controlNumber = Utils.getCtrlNumberFormat("1");
+                    switch (data.getExtras().getString("type")) {
+                        case "table":
+                            Rooms mSelectedRoom = GsonHelper.getGson().fromJson(data.getExtras().getString("selected_room"), Rooms.class);
+                            selectedTable = mSelectedRoom;
+                            switch (data.getExtras().getString("case")) {
+                                case "transfer_table":
+                                    selectedTable.setTransaction_id(transactionId);
+                                    selectedTable.setCheck_in_time(Utils.getDateTimeToday());
+                                    roomsViewModel.update(mSelectedRoom);
+                                    if (!TextUtils.isEmpty(mSelectedRoom.getCheck_in_time())) {
+                                        tvRoomTableNumber.setText("TABLE:" + mSelectedRoom.getRoom_name() +"-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), mSelectedRoom.getCheck_in_time()));
                                     } else {
-                                        if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
-                                            controlNumber = Utils.getCtrlNumberFormat("1");
-                                        } else {
-                                            controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                        tvRoomTableNumber.setText("TABLE:NA");
+                                    }
+
+                                    try {
+                                        List<Transactions> tmpTrList = loadedTransactionsList(transactionId);
+                                        if (tmpTrList.size() > 0) {
+                                            Transactions tr = tmpTrList.get(0);
+                                            tr.setRoom_number(mSelectedRoom.getRoom_name());
+                                            tr.setRoom_id(mSelectedRoom.getRoom_id());
+                                            transactionsViewModel.update(tr);
                                         }
+                                    } catch (Exception e) {
 
                                     }
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
+
+                                    break;
+                                case "load_existing_data":
+                                    try {
+                                        transactionId = mSelectedRoom.getTransaction_id();
+
+                                        if (roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)) != null) {
+                                            if (!TextUtils.isEmpty(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time())) {
+                                                tvRoomTableNumber.setText("TABLE:" + roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time()));
+                                            } else {
+                                                tvRoomTableNumber.setText("TABLE:NA");
+                                            }
+
+                                        } else {
+                                            tvRoomTableNumber.setText("TABLE:" + "NA");
+                                        }
+
+                                        setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                                    }catch (Exception e) {
+
+                                    }
+
+                                    break;
+                                case "new_trans_with_room":
+
+                                    String controlNumber = "";
+                                    try {
+                                        if (transactionsViewModel.lastTransactionId() == null) {
+                                            controlNumber = Utils.getCtrlNumberFormat("1");
+                                        } else {
+                                            if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
+                                                controlNumber = Utils.getCtrlNumberFormat("1");
+                                            } else {
+                                                controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                            }
+
+                                        }
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+
+
+                                    List<Transactions> tr = new ArrayList<>();
+
+                                    try {
+                                        Transactions trs = new Transactions(
+                                                controlNumber,
+                                                getUser().getUsername(),
+                                                Utils.getDateTimeToday(),
+                                                0,
+                                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                        );
+                                        trs.setRoom_number(selectedTable.getRoom_name());
+                                        trs.setRoom_id(selectedTable.getRoom_id());
+                                        trs.setCheck_in_time(Utils.getDateTimeToday());
+                                        tr.add(trs);
+
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    transactionsViewModel.insert(tr);
+
+                                    break;
+                                case "existing_trans_new_room":
+                                    try {
+                                        Rooms rooms = roomsViewModel.getRoomViaId(mSelectedRoom.getRoom_id());
+                                        rooms.setTransaction_id(transactionId);
+                                        rooms.setCheck_in_time(Utils.getDateTimeToday());
+                                        roomsViewModel.update(rooms);
+
+                                        List<Orders> tmpOrds = transactionsViewModel.orderList(transactionId);
+                                        if (tmpOrds.size() > 0) {
+                                            for (Orders ord : tmpOrds) {
+                                                ord.setIs_take_out(0);
+                                                transactionsViewModel.updateOrder(ord);
+                                            }
+                                        }
+                                    }catch (Exception e) {
+
+                                    }
+                                    break;
+                            }
+
+                            break;
+                        case "room":
+
+                            selectedRoomRate = GsonHelper.getGson().fromJson(data.getExtras().getString("selected_room"), RoomRates.class);
+
+                            try {
+                                if (!TextUtils.isEmpty(transactionId)) {
+
+                                    Rooms rooms = roomsViewModel.getRoomViaId(selectedRoomRate.getRoom_id());
+                                    rooms.setTransaction_id(transactionId);
+                                    roomsViewModel.update(rooms);
+
+                                    insertSelectedRoomRate();
+                                } else {
+                                    if (transactionsList().size() > 0) {
+
+                                        Rooms rooms = roomsViewModel.getRoomViaId(selectedRoomRate.getRoom_id());
+                                        rooms.setTransaction_id(transactionId);
+                                        roomsViewModel.update(rooms);
+
+
+                                        insertSelectedRoomRate();
+                                    } else {
+                                        String controlNumber = "";
+                                        try {
+                                            if (transactionsViewModel.lastTransactionId() == null) {
+                                                controlNumber = Utils.getCtrlNumberFormat("1");
+                                            } else {
+                                                if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
+                                                    controlNumber = Utils.getCtrlNumberFormat("1");
+                                                } else {
+                                                    controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                                }
+
+                                            }
+                                        } catch (ExecutionException e) {
+                                            e.printStackTrace();
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+
+
+                                        List<Transactions> tr = new ArrayList<>();
+
+                                        tr.add(new Transactions(
+                                                controlNumber,
+                                                getUser().getUsername(),
+                                                Utils.getDateTimeToday(),
+                                                0,
+                                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                        ));
+
+                                        transactionsViewModel.insert(tr);
+
+
+                                    }
                                 }
 
-
-                                List<Transactions> tr = new ArrayList<>();
-
-                                tr.add(new Transactions(
-                                        controlNumber,
-                                        getUser().getUsername(),
-                                        Utils.getDateTimeToday(),
-                                        0,
-                                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                                        Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
-                                ));
-
-                                transactionsViewModel.insert(tr);
-
-
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
                             }
-                        }
 
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+
+
+                            break;
                     }
+
 
                 }
                 break;
@@ -1590,7 +1872,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     }
 
     private void defaults() {
+        selectedTable = null;
         transactionId = "";
+        tvRoomTableNumber.setText("TABLE:NA");
         setOrderAdapter(new ArrayList<Orders>());
     }
 
@@ -1813,7 +2097,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                         Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
                         Utils.getDateTimeToday(),
                         1,
-                        ""
+                        "",
+                        0
                 ));
                 transactionsViewModel.insertOrder(orderList);
             }
@@ -1826,12 +2111,19 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
 
     private void insertSelectedOrder() {
-
+        int is_to = 1;
         if (!TextUtils.isEmpty(transactionId)) {
             if (selectedProduct != null) {
 
 
                 List<Orders> orderList = new ArrayList<>();
+
+                try {
+                    Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
+                    if (tmpRm != null) is_to = 0;
+                } catch (Exception e) {
+
+                }
 
 
                 Orders orders = new Orders(
@@ -1854,7 +2146,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                         Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
                         Utils.getDateTimeToday(),
                         0,
-                        ""
+                        "",
+                        is_to
                 );
 //                orders.setIs_editing(true);
                 orderList.add(orders);
@@ -1866,6 +2159,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
             if (mAlacartList.size() > 0) {
                 final Handler handler = new Handler();
+                final int finalIs_to = is_to;
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -1905,7 +2199,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                     Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
                                     Utils.getDateTimeToday(),
                                     0,
-                                    ""
+                                    "",
+                                    finalIs_to
                             );
                             orders.setProduct_alacart_id(palac.getProduct_alacart_id());
                             orders.setIs_editing(false);
@@ -1926,6 +2221,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
 
             if (mBranchGroupList.size() > 0) {
                 final Handler handler = new Handler();
+                final int finalIs_to1 = is_to;
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -1968,7 +2264,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
                                     Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
                                     Utils.getDateTimeToday(),
                                     0,
-                                    ""
+                                    "",
+                                    finalIs_to1
                             );
                             orders.setProduct_alacart_id(palac.getProduct_group_id());
                             orders.setIs_editing(false);
@@ -2203,5 +2500,68 @@ public class LeftFrameFragment extends Fragment implements OrdersContract {
     }
 
 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.btnRemoveRoomTable:
+                try {
+                    if (!TextUtils.isEmpty(transactionId)) {
+                        Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
+                        List<Transactions> tmpTrLst = transactionsViewModel.loadedTransactionList(transactionId);
 
+
+                        if (tmpRm != null) {
+                            if (!TextUtils.isEmpty(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time())) {
+                                tvRoomTableNumber.setText("TABLE:" + roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time()));
+                            } else {
+                                tvRoomTableNumber.setText("TABLE:NA");
+                            }
+
+                            tmpRm.setTransaction_id("");
+                            tmpRm.setStatus_description("DIRTY");
+                            tmpRm.setStatus_id(3);
+                            tmpRm.setHex_color("#009cff");
+                            tmpRm.setCheck_in_time("");
+
+                            tmpRm.setReservation_name("");
+                            tmpRm.setReservation_time("");
+                            tmpRm.setTime_reservation_made("");
+                            roomsViewModel.update(tmpRm);
+
+                            List<Orders> tmpOrds = transactionsViewModel.orderList(transactionId);
+                            if (tmpOrds.size() > 0) {
+                                for (Orders ord : tmpOrds) {
+                                    ord.setIs_take_out(1);
+                                    transactionsViewModel.updateOrder(ord);
+                                }
+                            }
+                        } else {
+                            tvRoomTableNumber.setText("TABLE:" + "NA");
+                        }
+
+
+                        if (tmpTrLst.size() > 0) {
+                            Transactions tns = tmpTrLst.get(0);
+                            tns.setCheck_in_time("");
+                            tns.setRoom_id(0);
+                            tns.setRoom_number("");
+                            transactionsViewModel.update(tns);
+                        }
+
+                        selectedTable = null;
+
+
+                    } else {
+                        Helper.showDialogMessage(getActivity(), "No Table to remove", getString(R.string.header_message));
+                    }
+
+                } catch (Exception e) {
+
+                }
+
+
+
+                break;
+        }
+    }
 }

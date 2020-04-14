@@ -26,6 +26,11 @@ public class Transactions {
     private Boolean is_cut_off = false;
     private String is_cut_off_by = "";
     private String is_cut_off_at = "";
+
+    private Boolean is_backed_out = false;
+    private String is_backed_out_by = "";
+    private String is_backed_out_at = "";
+
     private String trans_name;
     private String treg;
     private String receipt_number = "";
@@ -89,8 +94,11 @@ public class Transactions {
                         Double change, String void_at,
                         String completed_at, String saved_at, String is_cut_off_at,
                         Boolean is_cancelled, String is_cancelled_by, String is_cancelled_at,
-                        String tin_number) {
-
+                        String tin_number,
+                        Boolean is_backed_out, String is_backed_out_by, String is_backed_out_at) {
+        this.is_backed_out_by = is_backed_out_by;
+        this.is_backed_out_at = is_backed_out_at;
+        this.is_backed_out = is_backed_out;
         this.tin_number = tin_number;
         this.is_cancelled = is_cancelled;
         this.is_cancelled_by = is_cancelled_by;
@@ -120,6 +128,30 @@ public class Transactions {
         this.vat_amount = vat_amount;
         this.discount_amount = discountAmount;
         this.change = change;
+    }
+
+    public Boolean getIs_backed_out() {
+        return is_backed_out;
+    }
+
+    public void setIs_backed_out(Boolean is_backed_out) {
+        this.is_backed_out = is_backed_out;
+    }
+
+    public String getIs_backed_out_by() {
+        return is_backed_out_by;
+    }
+
+    public void setIs_backed_out_by(String is_backed_out_by) {
+        this.is_backed_out_by = is_backed_out_by;
+    }
+
+    public String getIs_backed_out_at() {
+        return is_backed_out_at;
+    }
+
+    public void setIs_backed_out_at(String is_backed_out_at) {
+        this.is_backed_out_at = is_backed_out_at;
     }
 
     public String getCheck_in_time() {

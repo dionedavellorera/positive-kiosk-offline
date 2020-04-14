@@ -52,6 +52,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+        private TextView listItemToIndicator;
         private TextView listItemName;
         private TextView listItemQty;
         private TextView listItemPrice;
@@ -59,6 +60,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             listItemName = itemView.findViewById(R.id.listItemName);
+            listItemToIndicator = itemView.findViewById(R.id.listItemToIndicator);
             listItemQty = itemView.findViewById(R.id.listItemQty);
             listItemPrice = itemView.findViewById(R.id.listItemPrice);
             rootView = itemView.findViewById(R.id.rootView);
@@ -97,6 +99,26 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(productsModel.getName());
             }
 
+        }
+
+
+
+        if (productsModel.getIs_take_out() == 1) {
+            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    0.3f
+            );
+            ((ViewHolder)holder).listItemName.setLayoutParams(param);
+            ((CheckoutAdapter.ViewHolder)holder).listItemToIndicator.setVisibility(View.VISIBLE);
+        } else {
+            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    0.5f
+            );
+            ((CheckoutAdapter.ViewHolder)holder).listItemName.setLayoutParams(param);
+            ((CheckoutAdapter.ViewHolder)holder).listItemToIndicator.setVisibility(View.GONE);
         }
 
         if (!TextUtils.isEmpty(productsModel.getNotes())) {

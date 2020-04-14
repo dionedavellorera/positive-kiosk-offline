@@ -868,7 +868,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString("BACKOUT", "", context, true);
         finalString += PrinterUtils.receiptString("", "", context, true);
-        finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
+        finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getIs_backed_out_at(), context, false);
         finalString += PrinterUtils.receiptString("", "", context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
         finalString += PrinterUtils.receiptString("QTY  DESCRIPTION          AMOUNT", "", context, true);

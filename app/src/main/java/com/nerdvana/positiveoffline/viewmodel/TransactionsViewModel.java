@@ -226,7 +226,8 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
                                 Utils.getDateTimeToday(),
                                 owd.orders.getIs_room_rate(),
-                                owd.orders.getNotes()
+                                owd.orders.getNotes(),
+                                owd.orders.getIs_take_out()
 
                         );
 
@@ -292,7 +293,8 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
                                 Utils.getDateTimeToday(),
                                 selectedProduct.getIs_room_rate(),
-                                selectedProduct.getNotes()
+                                selectedProduct.getNotes(),
+                                selectedProduct.getIs_take_out()
                         );
                         ord.setId(selectedProduct.getId());
                         updateOrder(ord);
