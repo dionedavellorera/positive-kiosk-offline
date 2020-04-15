@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 //update theme selected db
-                Log.d("THEMESELECTION", String.valueOf(isChecked));
+
                 try {
                     updateThemeSelection(isChecked);
                 } catch (ExecutionException e) {

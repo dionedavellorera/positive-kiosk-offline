@@ -297,9 +297,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         }
                         setOrderAdapter(transactionsViewModel.orderList(transactionId));
                     } else {
-                        Log.d("LOADDATA", "Y00000");
+
                         if (transactions.size() > 0) {
-                            Log.d("LOADDATA", "Y");
+                        
                             transactionId = String.valueOf(transactions.get(0).getId());
 
                             if (!TextUtils.isEmpty(transactions.get(0).getCheck_in_time())) {
@@ -356,7 +356,6 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                             }
                             setOrderAdapter(transactionsViewModel.orderList(transactionId));
                         } else {
-                            Log.d("LOADDATA", "Y3");
                             defaults();
                         }
                     }

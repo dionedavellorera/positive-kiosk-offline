@@ -191,14 +191,14 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         fetchProducts();
-        Log.d("LIFECYCLE", " ON VIEW CREATED");
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
         fetchProducts();
-        Log.d("LIFECYCLE", " ON RESUME");
+
     }
 
     private void setProductAdapter(List<Products> productsList) {

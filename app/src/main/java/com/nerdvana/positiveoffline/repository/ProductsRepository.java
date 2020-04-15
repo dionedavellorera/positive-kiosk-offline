@@ -129,13 +129,12 @@ public class ProductsRepository {
         call.enqueue(new Callback<FetchProductsResponse>() {
             @Override
             public void onResponse(Call<FetchProductsResponse> call, Response<FetchProductsResponse> response) {
-                Log.d("WEKWEK", "RESP OK");
                 fetchProductLiveData.postValue(response.body());
             }
 
             @Override
             public void onFailure(Call<FetchProductsResponse> call, Throwable t) {
-                Log.d("WEKWEK", t.getMessage());
+
             }
         });
     }

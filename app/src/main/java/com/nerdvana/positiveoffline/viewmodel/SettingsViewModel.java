@@ -30,7 +30,7 @@ public class SettingsViewModel extends AndroidViewModel {
        list.add(new SettingsMenuModel(3, "RECEIPT SETUP", false));
        list.add(new SettingsMenuModel(4, "SYSTEM TYPE", false));
 
-        Log.d("QWEQEQ", SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE));
+
         if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
             list.add(new SettingsMenuModel(5, "SERVICE CHARGE SETUP", false));
         } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
