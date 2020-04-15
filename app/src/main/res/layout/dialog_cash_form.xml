@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:layout_margin="10dp"
+    android:orientation="vertical"
+    android:visibility="visible"
+    android:id="@+id/formCash"
+    android:layout_toRightOf="@id/cardPayments"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--<TextView-->
+        <!--android:id="@+id/tvCash"-->
+        <!--android:padding="5dp"-->
+        <!--android:textSize="16sp"-->
+        <!--android:textColor="@color/colorBlack"-->
+        <!--android:text="Cash"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content" />-->
+
+    <include layout="@layout/partial_header" android:id="@+id/header"/>
+
+    <View
+        android:id="@+id/lineCash"
+        android:layout_below="@id/header"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorLtGrey"/>
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_margin="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:id="@+id/tilPayment"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.nerdvana.positiveoffline.view.HidingEditText
+            android:background="@drawable/edittext_round"
+            android:textSize="22sp"
+            android:selectAllOnFocus="true"
+            android:maxLines="1"
+            android:maxLength="10"
+            android:padding="10dp"
+            android:imeOptions="actionDone"
+            android:inputType="numberDecimal"
+            android:gravity="left"
+            android:hint="Amount to pay"
+            android:id="@+id/amount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <Button
+        android:textColor="@color/colorWhite"
+        android:layout_margin="10dp"
+        android:background="@drawable/button_selector"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/addCash"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ADD CASH PAYMENT"/>
+
+</RelativeLayout>

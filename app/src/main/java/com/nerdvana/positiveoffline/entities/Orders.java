@@ -8,6 +8,8 @@ import androidx.room.PrimaryKey;
 
 @Entity(tableName = "Orders")
 public class Orders {
+
+
     @NonNull
     private int transaction_id;
     @NonNull

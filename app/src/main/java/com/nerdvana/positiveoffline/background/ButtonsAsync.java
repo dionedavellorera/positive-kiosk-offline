@@ -84,6 +84,7 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
                 //"label": "Branch > POS > Function > SOA"
                 buttonsModelList.add(new ButtonsModel(107,"SWITCH TABLE", "",1, 69));
                 buttonsModelList.add(new ButtonsModel(111,"DINE IN/TAKE OUT", "",1, 69));
+                buttonsModelList.add(new ButtonsModel(112,"SHARE TRANSACTION", "",1, 69));
 
                 buttonsModelList.add(new ButtonsModel(109,"SOA", "",4, 123));
                 //0 FOR ALL

@@ -71,6 +71,7 @@ import com.nerdvana.positiveoffline.view.dialog.OpenPriceDialog;
 import com.nerdvana.positiveoffline.view.dialog.PasswordDialog;
 import com.nerdvana.positiveoffline.view.dialog.PaymentDialog;
 import com.nerdvana.positiveoffline.view.dialog.PayoutDialog;
+import com.nerdvana.positiveoffline.view.dialog.ShareTransactionDialog;
 import com.nerdvana.positiveoffline.view.dialog.TransactionDialog;
 import com.nerdvana.positiveoffline.view.resumetransaction.ResumeTransactionActivity;
 import com.nerdvana.positiveoffline.view.rooms.RoomsActivity;
@@ -101,6 +102,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
     int lastIncrementalId = 0;
     //regiondialogs
+    private ShareTransactionDialog shareTransactionDialog;
     private CollectionDialog collectionDialog;
     private PayoutDialog payoutDialog;
     private IntransitDialog intransitDialog;
@@ -516,6 +518,46 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 112://PER SHARE TRANSACTION
+                if (shareTransactionDialog == null) {
+                    if (!TextUtils.isEmpty(transactionId)) {
+                        List<Orders> orderList =  transactionsViewModel.orderList(transactionId);
+                        if (orderList.size() > 0) {
+                            int orderCount = 0;
+                            for (Orders tmpOrd : orderList) {
+                                orderCount += tmpOrd.getQty();
+                            }
+                            if (orderCount > 1) {
+                                shareTransactionDialog = new ShareTransactionDialog(getActivity(), orderList,
+                                        orderCount);
+
+                                shareTransactionDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                    @Override
+                                    public void onCancel(DialogInterface dialogInterface) {
+                                        shareTransactionDialog = null;
+                                    }
+                                });
+                                shareTransactionDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                    @Override
+                                    public void onDismiss(DialogInterface dialogInterface) {
+                                        shareTransactionDialog = null;
+                                    }
+                                });
+                                shareTransactionDialog.show();
+                            } else {
+                                Helper.showDialogMessage(getActivity(), "Cannot share a single item transaction", getContext().getString(R.string.header_message));
+                            }
+
+                        } else {
+                            Helper.showDialogMessage(getActivity(), "No transaction to share", getContext().getString(R.string.header_message));
+                        }
+
+                    } else {
+                        Helper.showDialogMessage(getActivity(), "No transaction to share", getContext().getString(R.string.header_message));
+                    }
+
+                }
+                break;
             case 111://DINE IN OR TAKE OUT TOGGLE
                 if (!TextUtils.isEmpty(transactionId)) {
                     boolean hasRoom = false;

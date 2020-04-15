@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="250dp"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    >
+
+    <Button
+        android:layout_marginTop="10dp"
+        android:layout_toLeftOf="@id/tvQty"
+        android:background="@drawable/button_selector"
+        android:id="@+id/btnMinus"
+        android:gravity="center"
+        android:textSize="50sp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:text="-"/>
+
+    <TextView
+
+        android:visibility="visible"
+        android:background="@color/colorLtGrey"
+        android:layout_margin="10dp"
+        android:layout_centerHorizontal="true"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:id="@+id/tvQty"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:text="100"/>
+
+
+    <Button
+        android:layout_marginTop="10dp"
+        android:layout_toRightOf="@id/tvQty"
+        android:background="@drawable/button_selector"
+        android:id="@+id/btnAdd"
+        android:gravity="center"
+        android:textSize="50sp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:text="+"/>
+
+    <Button
+        android:layout_below="@id/tvQty"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/button_selector"
+        android:id="@+id/btnConfirm"
+        android:gravity="center"
+        android:textSize="20sp"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:text="CONFIRM"/>
+
+</RelativeLayout>

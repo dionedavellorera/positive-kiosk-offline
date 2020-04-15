@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/rootView"
+    android:layout_margin="5dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_margin="7dp"
+            android:layout_weight="0.5"
+            android:textStyle="bold"
+            android:id="@+id/listItemName"
+            android:textSize="16sp"
+            android:padding="5dp"
+            android:text="Dione"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout
+            android:layout_weight="0.5"
+            android:id="@+id/paymentTypeContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:layout_gravity="center"
+                android:layout_weight="0.5"
+                android:id="@+id/btnCash"
+                android:layout_margin="5dp"
+                android:background="@drawable/button_selector"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:text="Cash"/>
+            <Button
+                android:layout_gravity="center"
+                android:layout_weight="0.5"
+                android:id="@+id/btnCard"
+                android:layout_margin="5dp"
+                android:background="@drawable/button_selector"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:text="Card"/>
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_weight="0.5"
+            android:orientation="vertical"
+            android:id="@+id/orderContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"/>
+        <LinearLayout
+            android:layout_weight="0.5"
+            android:orientation="vertical"
+            android:id="@+id/paymentContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:padding="5dp"
+            android:textStyle="bold"
+            android:id="@+id/stOrderTotal"
+            android:gravity="right"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="TOTAL:500.0"/>
+        <TextView
+            android:padding="5dp"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="|"/>
+        <TextView
+            android:padding="5dp"
+            android:textStyle="bold"
+            android:gravity="center_horizontal"
+            android:id="@+id/stOrderTendered"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:text="TENDERED:100.0"/>
+        <TextView
+            android:padding="5dp"
+            android:textStyle="bold"
+            android:id="@+id/stOrderChange"
+            android:gravity="center"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:text="CHANGE:0"/>
+    </LinearLayout>
+
+
+
+    <View
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/colorLtGrey"/>
+
+</LinearLayout>
