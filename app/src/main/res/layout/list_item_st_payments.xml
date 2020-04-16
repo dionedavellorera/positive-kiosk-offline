@@ -45,6 +45,15 @@
                 android:layout_height="35dp"
                 android:text="Card"/>
         </LinearLayout>
+
+        <Button
+            android:layout_gravity="center"
+            android:id="@+id/btnClose"
+            android:layout_margin="5dp"
+            android:background="@drawable/button_selector"
+            android:layout_width="30dp"
+            android:layout_height="35dp"
+            android:text="X"/>
     </LinearLayout>
 
 

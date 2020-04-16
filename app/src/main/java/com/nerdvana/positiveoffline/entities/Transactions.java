@@ -66,6 +66,8 @@ public class Transactions {
     private Double service_charge_value = 0.00;
     private boolean service_charge_is_percentage = false;
 
+    private int is_shared = 0;
+
 
     public Transactions(@NonNull String control_number,
                         String user_id, String treg,
@@ -473,5 +475,13 @@ public class Transactions {
 
     public void setService_charge_is_percentage(boolean service_charge_is_percentage) {
         this.service_charge_is_percentage = service_charge_is_percentage;
+    }
+
+    public int getIs_shared() {
+        return is_shared;
+    }
+
+    public void setIs_shared(int is_shared) {
+        this.is_shared = is_shared;
     }
 }

@@ -58,6 +58,7 @@ import com.nerdvana.positiveoffline.intf.OrdersContract;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
+import com.nerdvana.positiveoffline.model.StPaymentsModel;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.view.dialog.AlacartCompositionDialog;
 import com.nerdvana.positiveoffline.view.dialog.BundleCompositionDialog;
@@ -520,7 +521,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
             case 112://PER SHARE TRANSACTION
                 if (shareTransactionDialog == null) {
                     if (!TextUtils.isEmpty(transactionId)) {
-                        List<Orders> orderList =  transactionsViewModel.orderList(transactionId);
+                        List<Orders> orderList =  transactionsViewModel.orderListWithoutBundle(transactionId);
+//                        List<Orders> orderList =  transactionsViewModel.orderList(transactionId);
                         if (orderList.size() > 0) {
                             int orderCount = 0;
                             for (Orders tmpOrd : orderList) {
@@ -528,7 +530,161 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                             }
                             if (orderCount > 1) {
                                 shareTransactionDialog = new ShareTransactionDialog(getActivity(), orderList,
-                                        orderCount);
+                                        orderCount, dataSyncViewModel) {
+                                    @Override
+                                    public void confirmPayments(List<StPaymentsModel> list) {
+                                        //create transaction step 1
+                                        if (!TextUtils.isEmpty(transactionId)) {
+                                            try {
+                                                Transactions mTrans = transactionsViewModel.loadedTransactionList(transactionId).get(0);
+
+                                                mTrans.setIs_shared(1);
+
+                                                transactionsViewModel.update(mTrans);
+                                            } catch (Exception e) {
+
+                                            }
+
+                                        }
+
+
+                                        for (StPaymentsModel model : list) {
+                                            synchronized (model) {
+                                                try {
+                                                    Transactions tr = new Transactions(
+                                                            generatedControlNumber(),
+                                                            getUser().getUsername(),
+                                                            Utils.getDateTimeToday(),
+                                                            0,
+                                                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+                                                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                                    );
+                                                    tr.setIs_shared(0);
+                                                    tr.setIs_completed(true);
+                                                    tr.setIs_completed_by(getUser().getUsername());
+                                                    tr.setCompleted_at(Utils.getDateTimeToday());
+                                                    tr.setReceipt_number(generatedReceiptNumber());
+
+
+                                                    Double tendered = 0.00;
+                                                    Double amountDue = 0.00;
+                                                    boolean isPercentage = false;
+                                                    Double serviceCharge = 0.00;
+
+                                                    Double grossSales = 0.00;
+                                                    Double netSales = 0.00;
+                                                    Double vatableSales = 0.00;
+                                                    Double vatExemptSales = 0.00;
+                                                    Double vatAmount = 0.00;
+                                                    Double discountAmount = 0.00;
+
+
+                                                    for (Orders ord : model.getOrdersList()) {
+                                                        //create order step 2
+                                                        amountDue += Utils.roundedOffTwoDecimal(ord.getAmount()) * ord.getQty();
+
+                                                        grossSales += Utils.roundedOffTwoDecimal((ord.getVatAmount() + ord.getVatable() + ord.getVatExempt()));
+                                                        netSales += Utils.roundedOffTwoDecimal(((ord.getVatable() + ord.getVatExempt()) - ord.getDiscountAmount()));
+                                                        vatableSales += Utils.roundedOffTwoDecimal(ord.getVatable());
+                                                        vatAmount += Utils.roundedOffTwoDecimal(ord.getVatAmount());
+                                                        vatExemptSales += ord.getVatExempt();
+                                                        discountAmount += ord.getDiscountAmount();
+                                                    }
+
+                                                    tr.setGross_sales(Utils.roundedOffTwoDecimal(grossSales));
+                                                    tr.setNet_sales(Utils.roundedOffTwoDecimal(netSales));
+                                                    tr.setVatable_sales(Utils.roundedOffTwoDecimal(vatableSales));
+                                                    tr.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vatExemptSales));
+                                                    tr.setVat_amount(Utils.roundedOffTwoDecimal(vatAmount));
+                                                    tr.setDiscount_amount(Utils.roundedOffTwoDecimal(discountAmount));
+
+                                                    if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel") ||
+                                                            SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+
+                                                        if (serviceChargeViewModel.getActiveServiceCharge() != null) {
+                                                            if (serviceChargeViewModel.getActiveServiceCharge().isIs_percentage()) {
+                                                                isPercentage = true;
+                                                                serviceCharge = amountDue * (serviceChargeViewModel.getActiveServiceCharge().getValue() / 100);
+                                                            } else {
+                                                                isPercentage = false;
+                                                                serviceCharge = serviceChargeViewModel.getActiveServiceCharge().getValue();
+                                                            }
+                                                            amountDue += serviceCharge;
+                                                        }
+
+                                                    }
+
+
+
+                                                    //step 3
+                                                    Double change = 0.00;
+                                                    for (Payments pym : model.getPaymentsList()) {
+                                                        //create payment
+                                                        tendered += Utils.roundedOffTwoDecimal(pym.getAmount());
+                                                    }
+
+                                                    change = (Utils.roundedOffTwoDecimal(tendered) - Utils.roundedOffTwoDecimal(amountDue) < 1 ? 0.00 : Utils.roundedOffTwoDecimal(tendered) - Utils.roundedOffTwoDecimal(amountDue));
+
+                                                    tr.setService_charge_is_percentage(isPercentage);
+                                                    tr.setService_charge_value(serviceCharge);
+
+                                                    tr.setCheck_out_time(!TextUtils.isEmpty(tr.getCheck_in_time()) ? Utils.getDateTimeToday() : "");
+                                                    tr.setChange(change);
+
+
+
+                                                    long returnTransId = transactionsViewModel.insertTransactionWaitData(tr);
+
+//                                                transactionsViewModel.recomputeTransaction(model.getOrdersList(), String.valueOf(returnTransId));
+                                                    //step 2
+
+
+                                                    for (Orders ord : model.getOrdersList()) {
+                                                        //create order step 2
+                                                        ord.setTransaction_id((int)returnTransId);
+
+                                                    }
+
+                                                    //step 3
+                                                    for (Payments pym : model.getPaymentsList()) {
+                                                        //create payment
+                                                        pym.setTransaction_id((int) returnTransId);
+                                                    }
+
+
+
+                                                    transactionsViewModel.insertOrder(model.getOrdersList());
+                                                    transactionsViewModel.insertPayment(model.getPaymentsList());
+
+
+
+                                                    //print receipt per transaction
+
+
+
+                                                    BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(tr.getReceipt_number())));
+
+
+
+
+
+                                                } catch (Exception e) {
+
+                                                }
+
+
+                                            }
+
+
+
+                                        }
+
+                                        defaults();
+
+
+                                        //checkout
+                                    }
+                                };
 
                                 shareTransactionDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                                     @Override
@@ -1335,6 +1491,46 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                 }
                 break;
         }
+    }
+
+    private String generatedReceiptNumber() throws ExecutionException, InterruptedException {
+        String receiptNumber = "";
+        if (transactionsViewModel.lastOrNumber() == null) {
+            receiptNumber = Utils.getOrFormat("1");
+        } else {
+            if (TextUtils.isEmpty(transactionsViewModel.lastOrNumber().getReceipt_number())) {
+                receiptNumber = Utils.getOrFormat("1");
+            } else {
+                receiptNumber =
+                        Utils.getOrFormat(
+                                String.valueOf(
+                                        Integer.valueOf(
+                                                transactionsViewModel.lastOrNumber().getReceipt_number().split("-")[1].replaceFirst("0", "")) + 1));
+            }
+
+        }
+        return receiptNumber;
+    }
+
+    private String generatedControlNumber() {
+        String controlNumber = "";
+        try {
+            if (transactionsViewModel.lastTransactionId() == null) {
+                controlNumber = Utils.getCtrlNumberFormat("1");
+            } else {
+                if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
+                    controlNumber = Utils.getCtrlNumberFormat("1");
+                } else {
+                    controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                }
+
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return controlNumber;
     }
 
     private void diDiscountExempt(List<Orders> ordersList, boolean willDiscountExempt) {

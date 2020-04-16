@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.dao.DataSyncDao;
+import com.nerdvana.positiveoffline.dao.EndOfDayDao;
 import com.nerdvana.positiveoffline.dao.OrDetailsDao;
 import com.nerdvana.positiveoffline.dao.OrdersDao;
 import com.nerdvana.positiveoffline.dao.PaymentsDao;
@@ -19,6 +20,7 @@ import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
 import com.nerdvana.positiveoffline.entities.BranchGroup;
 import com.nerdvana.positiveoffline.entities.DataSync;
+import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
@@ -240,6 +242,18 @@ public class TransactionsRepository {
     }
 
 
+    public List<Orders> orderListWithoutBundle(final String transactionId) throws ExecutionException, InterruptedException {
+        Callable<List<Orders>> callable = new Callable<List<Orders>>() {
+            @Override
+            public List<Orders> call() throws Exception {
+                return ordersDao.orderListWithoutBundle(transactionId);
+            }
+        };
+
+        Future<List<Orders>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
     public List<Orders> getOrderList(final String transactionId) throws ExecutionException, InterruptedException {
         Callable<List<Orders>> callable = new Callable<List<Orders>>() {
             @Override
@@ -295,6 +309,10 @@ public class TransactionsRepository {
 
     public void insert(List<Transactions> transactions) {
         new TransactionsRepository.insertAsyncTask(transactionsDao).execute(transactions);
+    }
+
+    public long insertTransactionWaitData(Transactions transactions) throws ExecutionException, InterruptedException {
+        return new TransactionsRepository.insertAsyncTaskWaitData(transactionsDao).execute(transactions).get();
     }
 
     public void insertPayment(List<Payments> payment) {
@@ -536,6 +554,19 @@ public class TransactionsRepository {
         }
     }
 
+
+    private static class insertAsyncTaskWaitData extends AsyncTask<Transactions, Void, Long> {
+        private TransactionsDao mAsyncTaskDao;
+
+        insertAsyncTaskWaitData(TransactionsDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Long doInBackground(Transactions... transactions) {
+            return mAsyncTaskDao.insert(transactions[0]);
+        }
+    }
 
     private static class insertAsyncTask extends AsyncTask<List<Transactions>, Void, Void> {
 

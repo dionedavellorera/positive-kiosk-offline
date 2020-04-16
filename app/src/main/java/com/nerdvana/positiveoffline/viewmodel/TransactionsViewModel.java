@@ -64,6 +64,10 @@ public class TransactionsViewModel extends AndroidViewModel {
         transactionsRepository.insert(transactionList);
     }
 
+    public long insertTransactionWaitData(Transactions transactions) throws ExecutionException, InterruptedException {
+        return transactionsRepository.insertTransactionWaitData(transactions);
+    }
+
     public void update(Transactions transaction) {
         transactionsRepository.update(transaction);
     }
@@ -424,6 +428,10 @@ public class TransactionsViewModel extends AndroidViewModel {
 
     public List<Orders> orderList(String transactionId) throws ExecutionException, InterruptedException {
         return transactionsRepository.getOrderList(transactionId);
+    }
+
+    public List<Orders> orderListWithoutBundle(String transactionId) throws ExecutionException, InterruptedException {
+        return transactionsRepository.orderListWithoutBundle(transactionId);
     }
 
     public List<Orders> editingOrderList(String transactionId) throws ExecutionException, InterruptedException {

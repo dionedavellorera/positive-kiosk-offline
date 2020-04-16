@@ -37,6 +37,8 @@ public abstract class CashFormDialog extends BaseDialog implements View.OnClickL
         addCash = findViewById(R.id.addCash);
         addCash.setOnClickListener(this);
         cashAmount = findViewById(R.id.amount);
+
+        cashAmount.requestFocus();
     }
 
     @Override
@@ -58,26 +60,4 @@ public abstract class CashFormDialog extends BaseDialog implements View.OnClickL
     }
 
     public abstract void confirmPayment(String cashAmount);
-
-
-//    if (!TextUtils.isEmpty(cashAmount.getText().toString())) {
-//        if (Double.valueOf(cashAmount.getText().toString()) > 0) {
-//            List<Payments> cashPayment = new ArrayList<>();
-//            Payments p = new Payments(
-//                    Integer.valueOf(transactionId), paymentTypes.getCore_id(),
-//                    Double.valueOf(cashAmount.getText().toString()), paymentTypes.getPayment_type(),
-//                    0,
-//                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-//                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
-//                    Utils.getDateTimeToday());
-//            p.setOther_data("");
-//            cashPayment.add(p);
-//
-//            transactionsViewModel.insertPayment(cashPayment);
-//        } else {
-//            Helper.showDialogMessage(getContext(), "Amount cannot be zero(0)", context.getString(R.string.header_message));
-//        }
-//    } else {
-//        Helper.showDialogMessage(getContext(), context.getString(R.string.error_message_fill_up_all_fields), context.getString(R.string.header_message));
-//    }
 }

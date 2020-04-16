@@ -53,6 +53,7 @@ public class SharedTransactionPaymentsAdapter extends RecyclerView.Adapter<Recyc
         private LinearLayout paymentTypeContainer;
         private Button btnCash;
         private Button btnCard;
+        private Button btnClose;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             listItemName = itemView.findViewById(R.id.listItemName);
@@ -65,6 +66,7 @@ public class SharedTransactionPaymentsAdapter extends RecyclerView.Adapter<Recyc
             paymentTypeContainer = itemView.findViewById(R.id.paymentTypeContainer);
             btnCash = itemView.findViewById(R.id.btnCash);
             btnCard = itemView.findViewById(R.id.btnCard);
+            btnClose = itemView.findViewById(R.id.btnClose);
         }
     }
 
@@ -93,6 +95,13 @@ public class SharedTransactionPaymentsAdapter extends RecyclerView.Adapter<Recyc
             @Override
             public void onClick(View view) {
                 sharedTransactionsContract.customerClicked(holder.getAdapterPosition());
+            }
+        });
+
+        ((ViewHolder)holder).btnClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sharedTransactionsContract.customerRemoved(holder.getAdapterPosition());
             }
         });
 

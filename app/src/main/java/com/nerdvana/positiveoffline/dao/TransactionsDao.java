@@ -21,22 +21,25 @@ public interface TransactionsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(List<Transactions> dataSyncList);
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    long insert(Transactions transactionData);
+
     @Query("SELECT * FROM Transactions WHERE is_sent_to_server = 0")
     List<Transactions> unsyncedTransactions();
 
-    @Query("SELECT * FROM Transactions WHERE is_backed_out = 0 AND is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0")
+    @Query("SELECT * FROM Transactions WHERE is_backed_out = 0 AND is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_shared = 0")
     LiveData<List<Transactions>> ldTransactionsList();
 
-    @Query("SELECT * FROM Transactions WHERE is_saved = 1 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0 ORDER BY DATE(saved_at) ASC")
+    @Query("SELECT * FROM Transactions WHERE is_saved = 1 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0 AND is_shared = 0 ORDER BY DATE(saved_at) ASC")
     LiveData<List<Transactions>> ldSavedTransactionsList();
 
-    @Query("SELECT * FROM Transactions WHERE DATE(completed_at) BETWEEN :startDate AND :endDate AND is_completed = 1 AND is_void = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0")
+    @Query("SELECT * FROM Transactions WHERE DATE(completed_at) BETWEEN :startDate AND :endDate AND is_completed = 1 AND is_void = 0 AND is_cut_off = 0 AND is_shared = 0 AND is_cancelled = 0 AND is_backed_out = 0")
     List<TransactionWithOrders> completedTransactionList(String startDate, String endDate);
 
-    @Query("SELECT * FROM Transactions WHERE is_saved = 1 AND is_completed = 0 AND is_void = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0")
+    @Query("SELECT * FROM Transactions WHERE is_saved = 1 AND is_completed = 0 AND is_void = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0 AND is_shared = 0")
     List<TransactionWithOrders> savedTransactionsList();
 
-    @Query("SELECT * FROM Transactions WHERE is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0")
+    @Query("SELECT * FROM Transactions WHERE is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0 AND is_shared = 0")
     List<Transactions> transactionsList();
 
     @Query("SELECT * FROM Transactions WHERE is_cut_off = 0 AND (is_completed = 1 OR is_void = 1)")

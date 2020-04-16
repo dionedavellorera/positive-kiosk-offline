@@ -33,6 +33,9 @@ public interface OrdersDao {
     @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id AND is_void = 0")
     List<Orders> orderList(String transaction_id);
 
+    @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id AND is_void = 0 AND product_group_id = 0 AND product_alacart_id = 0")
+    List<Orders> orderListWithoutBundle(String transaction_id);
+
     @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id AND is_void = 0 AND is_editing = 1")
     List<Orders> editingOrderList(String transaction_id);
 

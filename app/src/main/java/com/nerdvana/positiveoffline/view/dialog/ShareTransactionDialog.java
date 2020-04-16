@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
@@ -26,13 +27,14 @@ import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.intf.SharedTransactionsContract;
 import com.nerdvana.positiveoffline.intf.StOrderContract;
 import com.nerdvana.positiveoffline.model.StPaymentsModel;
+import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShareTransactionDialog extends BaseDialog implements View.OnClickListener,
+public abstract class ShareTransactionDialog extends BaseDialog implements View.OnClickListener,
         SharedTransactionsContract, StOrderContract {
-
+    private int customerCounter = 0;
     private FloatingActionButton fabCheckout;
 
     private List<Orders> ordersList;
@@ -45,11 +47,14 @@ public class ShareTransactionDialog extends BaseDialog implements View.OnClickLi
     private int orderCount = 0;
 
     private int selectedCustomerPosition = 999;
+
+    private DataSyncViewModel dataSyncViewModel;
     public ShareTransactionDialog(Context context, List<Orders> ordersList,
-                                  int orderCount) {
+                                  int orderCount, DataSyncViewModel dataSyncViewModel) {
         super(context);
         this.ordersList = ordersList;
         this.orderCount = orderCount;
+        this.dataSyncViewModel = dataSyncViewModel;
     }
 
     @Override
@@ -141,7 +146,10 @@ public class ShareTransactionDialog extends BaseDialog implements View.OnClickLi
                     } else if (mPayment < mTotal) {
                         Helper.showDialogMessage(getContext(), "MAY KULANG NA PAYMENT", "Information");
                     }else {
-                        Helper.showDialogMessage(getContext(), "GO OKAY NA YAN", "Information");
+
+                        confirmPayments(stPaymentsList);
+                        dismiss();
+//                        Helper.showDialogMessage(getContext(), "GO OKAY NA YAN", "Information");
                     }
                 }
 
@@ -150,9 +158,10 @@ public class ShareTransactionDialog extends BaseDialog implements View.OnClickLi
                 break;
             case R.id.btnAddCustomer:
                 if (orderCount > stPaymentsList.size()) {
+                    customerCounter += 1;
                     stPaymentsList.add(new StPaymentsModel(
-                            stPaymentsList.size() + 1,
-                            "Customer " + (stPaymentsList.size() + 1),
+                            customerCounter,
+                            "Customer " + (customerCounter),
                             new ArrayList<Payments>(),
                             new ArrayList<Orders>(),
                             false));
@@ -166,6 +175,8 @@ public class ShareTransactionDialog extends BaseDialog implements View.OnClickLi
                 break;
         }
     }
+
+    public abstract void confirmPayments(List<StPaymentsModel> list);
 
     @Override
     public void customerClicked(int position) {
@@ -214,8 +225,29 @@ public class ShareTransactionDialog extends BaseDialog implements View.OnClickLi
     }
 
     @Override
-    public void cardClicked(int position) {
-        CardFormDialog cardFormDialog = new CardFormDialog(getContext());
+    public void cardClicked(final int position) {
+        CardFormDialog cardFormDialog = new CardFormDialog(getContext(), dataSyncViewModel) {
+            @Override
+            public void cardPaymentAdded(String creditCardAmount, String cardJsonData) {
+
+                Payments p = new Payments(
+                        1, 2,
+                        Double.valueOf(creditCardAmount), "CARD",
+                        0,
+                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                        Utils.getDateTimeToday());
+                p.setOther_data(cardJsonData);
+
+
+                stPaymentsList.get(position).getPaymentsList().add(p);
+
+                if (stPaymentsAdapter != null) {
+                    stPaymentsAdapter.notifyDataSetChanged();
+                }
+
+            }
+        };
         cardFormDialog.show();
     }
 
@@ -244,28 +276,12 @@ public class ShareTransactionDialog extends BaseDialog implements View.OnClickLi
     @Override
     public void clicked(final int position) {
         if (selectedCustomerPosition != 999) {
-
-//            if (ordersList.get(position).getVatExempt() > 0) { //SENIOR / PWD DISCOUNTED
-//                //amount = ordersList.get(position).getVatExempt() - ordersList.get(position).getDiscountAmount()
-//            } else { //REGULAR
-//                //amount = ordersList.get(position).getOriginal_amount() - ordersList.get(position).getDiscountAmount()
-//            }
-//            Log.d("WEKWEK", String.valueOf(ordersList.get(position).getOriginal_amount()));
-//            Log.d("WEKWEK", String.valueOf(ordersList.get(position).getDiscountAmount()));
-//            Log.d("WEKWEK", String.valueOf(ordersList.get(position).getVatExempt()));
-
-//            stPaymentsList.get(selectedCustomerPosition).getOrdersList().add(ordersList.get(position));
-//
-//            if (stPaymentsAdapter != null) {
-//                stPaymentsAdapter.notifyDataSetChanged();
-//            }
-
             if (ordersList.get(position).getQty() > 1) {
                 ChooseQtyDialog chooseQtyDialog = new ChooseQtyDialog(getContext(), String.valueOf(ordersList.get(position).getQty())) {
                     @Override
                     public void confirmQty(int qty) {
                         Orders tmpOrder = ordersList.get(position);
-
+                        Log.d("QEWQEQWEQ", String.valueOf(tmpOrder.getVatAmount()));
                         Double discountAmount =  (tmpOrder.getDiscountAmount());
                         Double finalAmount = 0.00;
                         if (tmpOrder.getVatExempt() > 0) {
@@ -281,9 +297,9 @@ public class ShareTransactionDialog extends BaseDialog implements View.OnClickLi
                                 tmpOrder.getOriginal_amount(),
                                 tmpOrder.getName(),
                                 tmpOrder.getDepartmentId(),
-                                tmpOrder.getVatExempt() > 0 ? Utils.roundedOffTwoDecimal(tmpOrder.getOriginal_amount() - (tmpOrder.getOriginal_amount() / 1.12)) : Utils.roundedOffTwoDecimal(tmpOrder.getOriginal_amount() * .12),
-                                tmpOrder.getVatExempt() > 0 ? 0.00 : tmpOrder.getOriginal_amount() / 1.12,
-                                tmpOrder.getVatExempt() > 0 ? Utils.roundedOffTwoDecimal(tmpOrder.getOriginal_amount() / 1.12) : 0.00,
+                                tmpOrder.getVatAmount(),
+                                tmpOrder.getVatable(),
+                                tmpOrder.getVatExempt(),
                                 Utils.roundedOffTwoDecimal(discountAmount),
                                 tmpOrder.getDepartmentName(),
                                 tmpOrder.getCategoryName(),
@@ -335,9 +351,9 @@ public class ShareTransactionDialog extends BaseDialog implements View.OnClickLi
                         tmpOrder.getOriginal_amount(),
                         tmpOrder.getName(),
                         tmpOrder.getDepartmentId(),
-                        tmpOrder.getVatExempt() > 0 ? Utils.roundedOffTwoDecimal(tmpOrder.getOriginal_amount() - (tmpOrder.getOriginal_amount() / 1.12)) : Utils.roundedOffTwoDecimal(tmpOrder.getOriginal_amount() * .12),
-                        tmpOrder.getVatExempt() > 0 ? 0.00 : tmpOrder.getOriginal_amount() / 1.12,
-                        tmpOrder.getVatExempt() > 0 ? Utils.roundedOffTwoDecimal(tmpOrder.getOriginal_amount() / 1.12) : 0.00,
+                        tmpOrder.getVatAmount(),
+                        tmpOrder.getVatable(),
+                        tmpOrder.getVatExempt(),
                         Utils.roundedOffTwoDecimal(discountAmount),
                         tmpOrder.getDepartmentName(),
                         tmpOrder.getCategoryName(),
@@ -368,5 +384,23 @@ public class ShareTransactionDialog extends BaseDialog implements View.OnClickLi
         } else {
             Helper.showDialogMessage(getContext(), "Please select customer to share order", "Information");
         }
+    }
+
+    @Override
+    public void customerRemoved(int position) {
+
+        for (Orders ord : stPaymentsList.get(position).getOrdersList()) {
+            ordersList.add(ord);
+        }
+        stPaymentsList.remove(position);
+
+        if (stPaymentsAdapter != null) {
+            stPaymentsAdapter.notifyDataSetChanged();
+        }
+
+        if (stProdAdapter != null) {
+            stProdAdapter.notifyDataSetChanged();
+        }
+
     }
 }
