@@ -66,6 +66,7 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
         buttonsModelList.add(new ButtonsModel(125,"SPOT AUDIT", "",2, 0));
         buttonsModelList.add(new ButtonsModel(200,"PAYOUT", "",10, 0));
         buttonsModelList.add(new ButtonsModel(108,"BACKOUT", "",1, 0));
+        buttonsModelList.add(new ButtonsModel(120,"SET SERIAL NUMBER", "",4, 0));
         if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
 
         } else {

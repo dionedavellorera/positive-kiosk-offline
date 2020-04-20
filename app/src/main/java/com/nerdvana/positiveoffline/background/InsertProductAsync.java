@@ -11,6 +11,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
@@ -68,7 +69,9 @@ public class InsertProductAsync extends AsyncTask<Void, Void, Void> {
                     getBranchCategory(r),
                     getBranchDepartment(r),
                     r.getBranchDepartments().size() > 0 ? r.getBranchDepartments().get(0).getDepartmentId() : 0,
-                    r.getBranchCategories().size() > 0 ? r.getBranchCategories().get(0).getCategoryId() : 0);
+                    r.getBranchCategories().size() > 0 ? r.getBranchCategories().get(0).getCategoryId() : 0,
+                    r.getCoreId() == 2715 ? 1 : r.getIsFixedAsset(),
+                    GsonHelper.getGson().toJson(r.getProductPromoList()));
 
 
             if (r.getImageFile() != null) {

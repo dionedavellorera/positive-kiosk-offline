@@ -15,6 +15,7 @@ import com.nerdvana.positiveoffline.dao.OrdersDao;
 import com.nerdvana.positiveoffline.dao.PaymentsDao;
 import com.nerdvana.positiveoffline.dao.PayoutDao;
 import com.nerdvana.positiveoffline.dao.ProductsDao;
+import com.nerdvana.positiveoffline.dao.SerialNumbersDao;
 import com.nerdvana.positiveoffline.dao.TransactionsDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
@@ -26,6 +27,7 @@ import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.Payout;
 import com.nerdvana.positiveoffline.entities.ProductAlacart;
+import com.nerdvana.positiveoffline.entities.SerialNumbers;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
@@ -44,6 +46,7 @@ public class TransactionsRepository {
     private OrDetailsDao orDetailsDao;
     private ProductsDao productsDao;
     private PayoutDao payoutDao;
+    private SerialNumbersDao serialNumbersDao;
     private MutableLiveData<FetchProductsResponse> fetchProductLiveData;
 
     public TransactionsRepository(Application application) {
@@ -54,6 +57,7 @@ public class TransactionsRepository {
         paymentsDao = posDatabase.paymentsDao();
         orDetailsDao = posDatabase.orDetailsDao();
         payoutDao = posDatabase.payoutDao();
+        serialNumbersDao = posDatabase.serialNumbersDao();
 
 
     }
@@ -266,6 +270,20 @@ public class TransactionsRepository {
         return future.get();
     }
 
+    public List<Orders> getOrderListWithAsset(final String transactionId) throws ExecutionException, InterruptedException {
+        Callable<List<Orders>> callable = new Callable<List<Orders>>() {
+            @Override
+            public List<Orders> call() throws Exception {
+                return ordersDao.orderListWithFixedAsset(transactionId);
+            }
+        };
+
+        Future<List<Orders>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
+
     public List<Orders> getEdigintOrderList(final String transactionId) throws ExecutionException, InterruptedException {
         Callable<List<Orders>> callable = new Callable<List<Orders>>() {
             @Override
@@ -275,6 +293,30 @@ public class TransactionsRepository {
         };
 
         Future<List<Orders>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public List<SerialNumbers> getSerialNumberFromTransaction(final String transactionId) throws ExecutionException, InterruptedException {
+        Callable<List<SerialNumbers>> callable = new Callable<List<SerialNumbers>>() {
+            @Override
+            public List<SerialNumbers> call() throws Exception {
+                return serialNumbersDao.serialNumbersList(transactionId);
+            }
+        };
+
+        Future<List<SerialNumbers>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public List<SerialNumbers> getSerialNumberFromOrderId(final int orderId) throws ExecutionException, InterruptedException {
+        Callable<List<SerialNumbers>> callable = new Callable<List<SerialNumbers>>() {
+            @Override
+            public List<SerialNumbers> call() throws Exception {
+                return serialNumbersDao.serialNumbersListOrderId(orderId);
+            }
+        };
+
+        Future<List<SerialNumbers>> future = Executors.newSingleThreadExecutor().submit(callable);
         return future.get();
     }
 
@@ -296,6 +338,10 @@ public class TransactionsRepository {
         new TransactionsRepository.updateEditingOrderAsync(ordersDao, transaction_id).execute();
     }
 
+    public void updateSerialNumbers(SerialNumbers serialNumbers) {
+        new TransactionsRepository.updateSerialNumbersAsyncTask(serialNumbersDao, serialNumbers).execute();
+    }
+
     public void update(Transactions transactions) {
         new TransactionsRepository.updateAsyncTask(transactionsDao, transactions).execute();
     }
@@ -313,6 +359,10 @@ public class TransactionsRepository {
 
     public long insertTransactionWaitData(Transactions transactions) throws ExecutionException, InterruptedException {
         return new TransactionsRepository.insertAsyncTaskWaitData(transactionsDao).execute(transactions).get();
+    }
+
+    public void insertSerialNumbers(SerialNumbers serialNumbersList) {
+        new TransactionsRepository.insertSerialNumbersAsyncTask(serialNumbersDao).execute(serialNumbersList);
     }
 
     public void insertPayment(List<Payments> payment) {
@@ -468,6 +518,28 @@ public class TransactionsRepository {
     }
 
 
+    private static class updateSerialNumbersAsyncTask extends AsyncTask<SerialNumbers, Void, Void> {
+
+            private SerialNumbersDao mAsyncTaskDao;
+
+            private SerialNumbers serialNumbers;
+            updateSerialNumbersAsyncTask(SerialNumbersDao dao, SerialNumbers serialNumbers) {
+                mAsyncTaskDao = dao;
+                this.serialNumbers = serialNumbers;
+            }
+
+            @Override
+            protected Void doInBackground(final SerialNumbers... params) {
+                mAsyncTaskDao.update(serialNumbers);
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+            }
+        }
+
     private static class updateAsyncTask extends AsyncTask<Transactions, Void, Void> {
 
         private TransactionsDao mAsyncTaskDao;
@@ -502,6 +574,23 @@ public class TransactionsRepository {
 
         @Override
         protected Void doInBackground(final Payout... params) {
+            mAsyncTaskDao.insert(params[0]);
+            return null;
+        }
+    }
+
+
+
+    private static class insertSerialNumbersAsyncTask extends AsyncTask<SerialNumbers, Void, Void> {
+
+        private SerialNumbersDao mAsyncTaskDao;
+
+        insertSerialNumbersAsyncTask(SerialNumbersDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final SerialNumbers... params) {
             mAsyncTaskDao.insert(params[0]);
             return null;
         }

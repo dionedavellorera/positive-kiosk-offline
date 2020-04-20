@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:gravity="center"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0.5"
+        android:id="@+id/tvProduct"
+        android:text="test"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_weight="0.5"
+        android:layout_margin="10dp"
+        android:id="@+id/tilHostName"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content">
+        <com.nerdvana.positiveoffline.view.HidingEditText
+            android:maxLines="1"
+            android:singleLine="true"
+            android:imeOptions="actionDone"
+            android:id="@+id/etInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter serial number"/>
+    </com.google.android.material.textfield.TextInputLayout>
+</LinearLayout>

@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,9 +18,12 @@ import android.widget.Button;
 
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.Helper;
+import com.nerdvana.positiveoffline.IUsers;
 import com.nerdvana.positiveoffline.MainActivity;
+import com.nerdvana.positiveoffline.PosClient;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.adapter.SyncDataAdapter;
+import com.nerdvana.positiveoffline.apirequests.TestRequest;
 import com.nerdvana.positiveoffline.apiresponses.FetchCashDenominationResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
@@ -52,6 +56,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class SyncActivity extends AppCompatActivity implements View.OnClickListener, SyncCallback, SyncDataAdapterListener {
 
     private RecyclerView rvSyncData;
@@ -63,16 +72,42 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
     private List<DataSync> syncModelList;
     private SyncDataAdapter syncDataAdapter;
 
+
+    ProgressDialog progressDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sync);
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setCancelable(false);
+        progressDialog.setMessage("Migrating data...");
         initViews();
 
+        IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+        TestRequest collectionRequest = new TestRequest("test");
+        progressDialog.show();
+        iUsers.repatchData(collectionRequest.getMapValue()).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                progressDialog.dismiss();
+                initEverything();
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                progressDialog.dismiss();
+                initEverything();
+            }
+        });
+
+
+
+    }
+
+    private void initEverything() {
         initUserViewModel();
         initDataSyncViewModel();
         initProductViewModel();
-
         initUserListener();
         initDataSyncListener();
         initProductListener();
@@ -82,7 +117,6 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         initDiscountListener();
         initFetchRoomListener();
         initRoomStatusListener();
-
     }
 
     private void initDiscountListener() {

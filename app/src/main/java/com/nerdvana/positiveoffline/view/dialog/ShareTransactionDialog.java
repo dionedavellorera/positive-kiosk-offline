@@ -310,7 +310,8 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
                                 Utils.getDateTimeToday(),
                                 tmpOrder.getIs_room_rate(),
                                 tmpOrder.getNotes(),
-                                tmpOrder.getIs_take_out()
+                                tmpOrder.getIs_take_out(),
+                                tmpOrder.getIs_fixed_asset()
                         );
 
 
@@ -364,7 +365,8 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
                         Utils.getDateTimeToday(),
                         tmpOrder.getIs_room_rate(),
                         tmpOrder.getNotes(),
-                        tmpOrder.getIs_take_out()
+                        tmpOrder.getIs_take_out(),
+                        tmpOrder.getIs_fixed_asset()
 
                 );
 

@@ -51,7 +51,7 @@ public interface TransactionsDao {
     @Query("SELECT * FROM Transactions WHERE receipt_number != '' ORDER BY id DESC LIMIT 1 ")
     Transactions lastOrNumber();
 
-    @Query("SELECT * FROM Transactions WHERE is_cut_off = 0 AND (is_completed = 1 OR is_void = 1) AND (is_void_by = :user_id OR is_completed_by = :user_id)")
+    @Query("SELECT * FROM Transactions WHERE is_cut_off = 0 AND is_shared = 0 AND (is_completed = 1 OR is_void = 1) AND (is_void_by = :user_id OR is_completed_by = :user_id)")
     List<Transactions> unCutOffTransactionsByUser(String user_id);
 
     @Query("SELECT * FROM Transactions WHERE id = :transaction_id")

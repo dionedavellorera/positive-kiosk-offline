@@ -57,6 +57,10 @@ public class Orders {
 
     private int is_take_out;
 
+    private String serial_number;
+
+    private int is_fixed_asset = 0;
+
     public Orders(int transaction_id, int core_id,
                   int qty, @NonNull Double amount,
                   @NonNull Double original_amount,
@@ -67,7 +71,9 @@ public class Orders {
                   int categoryId, int is_sent_to_server,
                   int machine_id, int branch_id,
                   String treg, int is_room_rate,
-                  String notes, int is_take_out) {
+                  String notes, int is_take_out,
+                  int is_fixed_asset) {
+        this.is_fixed_asset = is_fixed_asset;
         this.is_take_out = is_take_out;
         this.notes = notes;
         this.is_room_rate = is_room_rate;
@@ -89,6 +95,22 @@ public class Orders {
         this.vatable = vatable;
         this.vatExempt = vatExempt;
         this.discountAmount = discountAmount;
+    }
+
+    public String getSerial_number() {
+        return serial_number;
+    }
+
+    public void setSerial_number(String serial_number) {
+        this.serial_number = serial_number;
+    }
+
+    public int getIs_fixed_asset() {
+        return is_fixed_asset;
+    }
+
+    public void setIs_fixed_asset(int is_fixed_asset) {
+        this.is_fixed_asset = is_fixed_asset;
     }
 
     public int getIs_take_out() {

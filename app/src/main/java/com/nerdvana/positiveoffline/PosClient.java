@@ -28,9 +28,9 @@ public class PosClient {
         httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient okHttpClient = new OkHttpClient.Builder().
                 addInterceptor(httpLoggingInterceptor)
-                .connectTimeout(2, TimeUnit.MINUTES)
-                .readTimeout(2, TimeUnit.MINUTES)
-                .writeTimeout(2, TimeUnit.MINUTES)
+                .connectTimeout(40, TimeUnit.SECONDS)
+                .readTimeout(40, TimeUnit.SECONDS)
+                .writeTimeout(40, TimeUnit.SECONDS)
                 .build();
 
         mRestAdapter = new Retrofit.Builder()
@@ -45,9 +45,9 @@ public class PosClient {
         HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor();
         httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         OkHttpClient okHttpClient = new OkHttpClient.Builder().addInterceptor(httpLoggingInterceptor)
-                .connectTimeout(2, TimeUnit.MINUTES)
-                .readTimeout(2, TimeUnit.MINUTES)
-                .writeTimeout(2, TimeUnit.MINUTES)
+                .connectTimeout(40, TimeUnit.SECONDS)
+                .readTimeout(40, TimeUnit.SECONDS)
+                .writeTimeout(40, TimeUnit.SECONDS)
                 .build();
         Gson gson = new GsonBuilder().disableHtmlEscaping().create();
         mRestAdapter = new Retrofit.Builder()

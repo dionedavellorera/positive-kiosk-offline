@@ -204,25 +204,55 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                 transactions.setCheck_in_time(reference.getCheck_in_time());
                 transactions.setCheck_out_time(reference.getCheck_out_time());
 
-                transactionsViewModel.update(transactions);
-                final Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        setTransactionsAdapter(Utils.getCurrentDate(), Utils.getCurrentDate());
-                        progressDialog.dismiss();
-                        Helper.showDialogMessage(getContext(), "VOID SUCCESS", getContext().getString(R.string.header_message));
+                if (Utils.isPasswordProtected(userViewModel, "67")) {
+                    PasswordDialog passwordDialog = new PasswordDialog(getContext(), "POST VOID OR " + transactions.getReceipt_number(), userViewModel, transactionsViewModel) {
+                        @Override
+                        public void success(String username) {
+                            transactionsViewModel.update(transactions);
+                            final Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    setTransactionsAdapter(Utils.getCurrentDate(), Utils.getCurrentDate());
+                                    progressDialog.dismiss();
+                                    Helper.showDialogMessage(getContext(), "VOID SUCCESS", getContext().getString(R.string.header_message));
 
-                        try {
-                            BusProvider.getInstance().post(new PrintModel("POST_VOID", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(transactions.getReceipt_number()))));
-                        } catch (ExecutionException e) {
-                            e.printStackTrace();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                                    try {
+                                        BusProvider.getInstance().post(new PrintModel("POST_VOID", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(transactions.getReceipt_number()))));
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }, 500);
+                            search.setText("");
                         }
-                    }
-                }, 500);
-                search.setText("");
+                    };
+
+
+                } else {
+                    transactionsViewModel.update(transactions);
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            setTransactionsAdapter(Utils.getCurrentDate(), Utils.getCurrentDate());
+                            progressDialog.dismiss();
+                            Helper.showDialogMessage(getContext(), "VOID SUCCESS", getContext().getString(R.string.header_message));
+
+                            try {
+                                BusProvider.getInstance().post(new PrintModel("POST_VOID", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(transactions.getReceipt_number()))));
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }, 500);
+                    search.setText("");
+                }
+
 
             } else {
                 if (Utils.isPasswordProtected(userViewModel, "74")) {

@@ -676,7 +676,102 @@ public class FetchProductsResponse {
         }
     }
 
+    public class ProductPromo {
+        @SerializedName("product_id")
+        @Expose
+        private int productId;
+        @SerializedName("name")
+        @Expose
+        private String promoName;
+        @SerializedName("value")
+        @Expose
+        private Double value;
+        @SerializedName("is_percentage")
+        @Expose
+        private int isPercentage;
+
+        @SerializedName("start_date")
+        @Expose
+        private String startDate;
+        @SerializedName("start_time")
+        @Expose
+        private String startTime;
+        @SerializedName("end_date")
+        @Expose
+        private String endDate;
+        @SerializedName("end_time")
+        @Expose
+        private String endTime;
+
+        public int getProductId() {
+            return productId;
+        }
+
+        public void setProductId(int productId) {
+            this.productId = productId;
+        }
+
+        public String getPromoName() {
+            return promoName;
+        }
+
+        public void setPromoName(String promoName) {
+            this.promoName = promoName;
+        }
+
+        public Double getValue() {
+            return value;
+        }
+
+        public void setValue(Double value) {
+            this.value = value;
+        }
+
+        public int getIsPercentage() {
+            return isPercentage;
+        }
+
+        public void setIsPercentage(int isPercentage) {
+            this.isPercentage = isPercentage;
+        }
+
+        public String getStartDate() {
+            return startDate;
+        }
+
+        public void setStartDate(String startDate) {
+            this.startDate = startDate;
+        }
+
+        public String getStartTime() {
+            return startTime;
+        }
+
+        public void setStartTime(String startTime) {
+            this.startTime = startTime;
+        }
+
+        public String getEndDate() {
+            return endDate;
+        }
+
+        public void setEndDate(String endDate) {
+            this.endDate = endDate;
+        }
+
+        public String getEndTime() {
+            return endTime;
+        }
+
+        public void setEndTime(String endTime) {
+            this.endTime = endTime;
+        }
+    }
+
     public class Result {
+        @SerializedName("promo")
+        @Expose
+        private List<ProductPromo> productPromoList;
         @SerializedName("tax_rate")
         @Expose
         private Double taxRate;
@@ -755,6 +850,14 @@ public class FetchProductsResponse {
         @SerializedName("branch_departments")
         @Expose
         private List<BranchDepartment> branchDepartments;
+
+        public List<ProductPromo> getProductPromoList() {
+            return productPromoList;
+        }
+
+        public void setProductPromoList(List<ProductPromo> productPromoList) {
+            this.productPromoList = productPromoList;
+        }
 
         public Double getTaxRate() {
             return taxRate;

@@ -33,6 +33,13 @@ public interface IUsers {
     @GET("getinfo")
     Call<ResponseBody> sirGelo();
 
+    //repatch data
+    @POST("rePatch")
+    @FormUrlEncoded
+    Call<ResponseBody> repatchData(@FieldMap Map<String, String> params);
+    //endregion
+
+
     //region fetch data for offline trans
     @POST("fetchEndOfDayOffline")
     @FormUrlEncoded

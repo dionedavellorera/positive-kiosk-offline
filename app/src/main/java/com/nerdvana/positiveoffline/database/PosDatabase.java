@@ -23,6 +23,7 @@ import com.nerdvana.positiveoffline.dao.ProductsDao;
 import com.nerdvana.positiveoffline.dao.RoomRatesDao;
 import com.nerdvana.positiveoffline.dao.RoomStatusDao;
 import com.nerdvana.positiveoffline.dao.RoomsDao;
+import com.nerdvana.positiveoffline.dao.SerialNumbersDao;
 import com.nerdvana.positiveoffline.dao.ServiceChargeDao;
 import com.nerdvana.positiveoffline.dao.ThemeSelectionDao;
 import com.nerdvana.positiveoffline.dao.TransactionsDao;
@@ -49,6 +50,7 @@ import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.RoomRates;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
+import com.nerdvana.positiveoffline.entities.SerialNumbers;
 import com.nerdvana.positiveoffline.entities.ServiceCharge;
 import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.Transactions;
@@ -66,8 +68,9 @@ import com.nerdvana.positiveoffline.entities.User;
                         Rooms.class, RoomRates.class,
                         RoomStatus.class, ProductAlacart.class,
                         ThemeSelection.class, BranchGroup.class,
-                        Payout.class, ServiceCharge.class},
-          version = 143)
+                        Payout.class, ServiceCharge.class,
+                        SerialNumbers.class},
+          version = 152)
 
 public abstract class PosDatabase extends RoomDatabase {
     public abstract UserDao userDao();
@@ -94,4 +97,5 @@ public abstract class PosDatabase extends RoomDatabase {
     public abstract RoomRatesDao roomRatesDao();
     public abstract ThemeSelectionDao themeSelectionDao();
     public abstract ServiceChargeDao serviceChargeDao();
+    public abstract SerialNumbersDao serialNumbersDao();
 }

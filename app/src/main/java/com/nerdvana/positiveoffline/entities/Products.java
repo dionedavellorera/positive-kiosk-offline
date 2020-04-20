@@ -27,13 +27,19 @@ public class Products {
     private int departmentId;
     @NonNull
     private int categoryId;
+
+    private int is_fixed_asset = 0;
+    private String json_promo = "";
     public Products(int core_id,
                     @NonNull String product, @NonNull String product_initial,
                     String product_barcode, @NonNull Double tax_rate,
                     String image_file, Double amount,
                     Double mark_up, String category,
                     String department, int departmentId,
-                    int categoryId) {
+                    int categoryId, int is_fixed_asset,
+                    String json_promo) {
+        this.json_promo = json_promo;
+        this.is_fixed_asset = is_fixed_asset;
         this.core_id = core_id;
         this.product = product;
         this.product_initial = product_initial;
@@ -46,6 +52,22 @@ public class Products {
         this.department = department;
         this.departmentId = departmentId;
         this.categoryId = categoryId;
+    }
+
+    public String getJson_promo() {
+        return json_promo;
+    }
+
+    public void setJson_promo(String json_promo) {
+        this.json_promo = json_promo;
+    }
+
+    public int getIs_fixed_asset() {
+        return is_fixed_asset;
+    }
+
+    public void setIs_fixed_asset(int is_fixed_asset) {
+        this.is_fixed_asset = is_fixed_asset;
     }
 
     public int getCategoryId() {

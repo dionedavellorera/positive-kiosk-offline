@@ -288,7 +288,8 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
                                 Utils.getDateTimeToday(),
                                 0,
                                 "",
-                                0
+                                0,
+                                products.getIs_fixed_asset()
                         ));
                         transactionsViewModel.insertOrder(orderList);
                     }

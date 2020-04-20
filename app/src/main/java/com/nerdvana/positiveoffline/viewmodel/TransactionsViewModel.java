@@ -23,6 +23,7 @@ import com.nerdvana.positiveoffline.entities.Payout;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.Products;
+import com.nerdvana.positiveoffline.entities.SerialNumbers;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.model.DiscountComputeModel;
@@ -54,6 +55,26 @@ public class TransactionsViewModel extends AndroidViewModel {
     public void insertPayment(List<Payments> paymentList) {
         transactionsRepository.insertPayment(paymentList);
     }
+
+    public void insertSerialNumbers(SerialNumbers serialNumbersList) {
+        transactionsRepository.insertSerialNumbers(serialNumbersList);
+    }
+
+    public void updateSerialNumbers(SerialNumbers serialNumbers) {
+        transactionsRepository.updateSerialNumbers(serialNumbers);
+    }
+
+    public List<SerialNumbers> serialNumberFromTransaction(int transactionId) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getSerialNumberFromTransaction(String.valueOf(transactionId));
+    }
+
+    public List<SerialNumbers> serialNumberFromOrderId(int orderId) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getSerialNumberFromOrderId(orderId);
+    }
+
+
+
+
 
     public void insertPayoutData(Payout payout) {
         transactionsRepository.insertPayout(payout);
@@ -231,7 +252,8 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 Utils.getDateTimeToday(),
                                 owd.orders.getIs_room_rate(),
                                 owd.orders.getNotes(),
-                                owd.orders.getIs_take_out()
+                                owd.orders.getIs_take_out(),
+                                owd.orders.getIs_fixed_asset()
 
                         );
 
@@ -298,7 +320,8 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 Utils.getDateTimeToday(),
                                 selectedProduct.getIs_room_rate(),
                                 selectedProduct.getNotes(),
-                                selectedProduct.getIs_take_out()
+                                selectedProduct.getIs_take_out(),
+                                selectedProduct.getIs_fixed_asset()
                         );
                         ord.setId(selectedProduct.getId());
                         updateOrder(ord);
@@ -428,6 +451,10 @@ public class TransactionsViewModel extends AndroidViewModel {
 
     public List<Orders> orderList(String transactionId) throws ExecutionException, InterruptedException {
         return transactionsRepository.getOrderList(transactionId);
+    }
+
+    public List<Orders> orderListWithFixedAsset(String transactionId) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getOrderListWithAsset(transactionId);
     }
 
     public List<Orders> orderListWithoutBundle(String transactionId) throws ExecutionException, InterruptedException {

@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
 import com.facebook.stetho.common.Util;
+import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
@@ -51,6 +52,7 @@ import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.RoomRates;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
+import com.nerdvana.positiveoffline.entities.SerialNumbers;
 import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
@@ -60,6 +62,7 @@ import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
 import com.nerdvana.positiveoffline.model.StPaymentsModel;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
+import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.view.dialog.AlacartCompositionDialog;
 import com.nerdvana.positiveoffline.view.dialog.BundleCompositionDialog;
 import com.nerdvana.positiveoffline.view.dialog.ChangeQtyDialog;
@@ -72,6 +75,7 @@ import com.nerdvana.positiveoffline.view.dialog.OpenPriceDialog;
 import com.nerdvana.positiveoffline.view.dialog.PasswordDialog;
 import com.nerdvana.positiveoffline.view.dialog.PaymentDialog;
 import com.nerdvana.positiveoffline.view.dialog.PayoutDialog;
+import com.nerdvana.positiveoffline.view.dialog.SerialNumbersDialog;
 import com.nerdvana.positiveoffline.view.dialog.ShareTransactionDialog;
 import com.nerdvana.positiveoffline.view.dialog.TransactionDialog;
 import com.nerdvana.positiveoffline.view.resumetransaction.ResumeTransactionActivity;
@@ -518,6 +522,18 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 120://SET SERIAL NUMBER
+                if (!TextUtils.isEmpty(transactionId)) {
+                    if (transactionsViewModel.orderListWithFixedAsset(transactionId).size() > 0) {
+                        SerialNumbersDialog serialNumbersDialog = new SerialNumbersDialog(getContext(), transactionsViewModel, transactionId);
+                        serialNumbersDialog.show();
+                    } else {
+                        Helper.showDialogMessage(getActivity(), "No fixed asset on ordered list", "Information");
+                    }
+                } else {
+                    Helper.showDialogMessage(getActivity(), "No transaction yet", "Information");
+                }
+                break;
             case 112://PER SHARE TRANSACTION
                 if (shareTransactionDialog == null) {
                     if (!TextUtils.isEmpty(transactionId)) {
@@ -1301,6 +1317,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 //                startActivity(new Intent(getContext(), TransactionActivity.class));
                 break;
             case 105://PAYMENT
+
+
+
                 if (Utils.isPasswordProtected(userViewModel, "129")) {
                     if (passwordDialog == null) {
                         passwordDialog = new PasswordDialog(getActivity(), "PAYMENT", userViewModel, transactionsViewModel) {
@@ -1382,14 +1401,22 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                 order.setVatable(((newQty - order.getQty()) * order.getVatable()) + order.getVatable());
                                                 order.setVatExempt(((newQty - order.getQty()) * order.getVatExempt()) + order.getVatExempt());
                                                 order.setDiscountAmount(((newQty - order.getQty()) * order.getDiscountAmount()) + order.getDiscountAmount());
+                                                order.setIs_sent_to_server(0);
+                                                order.setQty(newQty);
                                             } else if (newQty < order.getQty()) {
-                                                order.setVatAmount((order.getVatAmount() / order.getQty()) * newQty);
-                                                order.setVatable((order.getVatable() / order.getQty()) * newQty);
-                                                order.setVatExempt((order.getVatExempt() / order.getQty()) * newQty);
-                                                order.setDiscountAmount((order.getDiscountAmount() / order.getQty()) * newQty);
+                                                if (order.getIs_fixed_asset() == 0) {
+                                                    order.setVatAmount((order.getVatAmount() / order.getQty()) * newQty);
+                                                    order.setVatable((order.getVatable() / order.getQty()) * newQty);
+                                                    order.setVatExempt((order.getVatExempt() / order.getQty()) * newQty);
+                                                    order.setDiscountAmount((order.getDiscountAmount() / order.getQty()) * newQty);
+                                                    order.setIs_sent_to_server(0);
+                                                    order.setQty(newQty);
+                                                } else {
+                                                    Toast.makeText(getContext(), "Cannot subtract quantity from a fixed asset as it has serial number, void the item instead", Toast.LENGTH_LONG).show();
+                                                }
+
                                             }
-                                            order.setIs_sent_to_server(0);
-                                            order.setQty(newQty);
+
 
                                         }
                                         order.setIs_editing(false);
@@ -1616,6 +1643,12 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                     bundle.setIs_void(true);
                     transactionsViewModel.updateOrder(bundle);
                 }
+
+                for (SerialNumbers sn : transactionsViewModel.serialNumberFromOrderId(order.getId())) {
+                    sn.setIs_void(true);
+                    sn.setIs_void_at(Utils.getDateTimeToday());
+                    transactionsViewModel.updateSerialNumbers(sn);
+                }
             }
 
 
@@ -1643,64 +1676,80 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     private void doPaymentFunction() {
         if (!TextUtils.isEmpty(transactionId)) {
             try {
-                if (transactionsViewModel.orderList(transactionId).size() > 0) {
-                    if (paymentDialog == null) {
-                        paymentDialog = new PaymentDialog(getActivity(), dataSyncViewModel,
-                                transactionsViewModel, transactionId,
-                                userViewModel, roomsViewModel,
-                                serviceChargeViewModel) {
-                            @Override
-                            public void completed(String receiptNumber) {
+                int serialNeededCount = 0;
+                for (Orders ord : transactionsViewModel.orderListWithFixedAsset(transactionId)) {
+                    serialNeededCount += ord.getQty();
+                }
+                if (serialNeededCount ==
+                transactionsViewModel.serialNumberFromTransaction(Integer.valueOf(transactionId)).size()) {
+
+                    if (transactionsViewModel.orderList(transactionId).size() > 0) {
+                        if (paymentDialog == null) {
+                            paymentDialog = new PaymentDialog(getActivity(), dataSyncViewModel,
+                                    transactionsViewModel, transactionId,
+                                    userViewModel, roomsViewModel,
+                                    serviceChargeViewModel) {
+                                @Override
+                                public void completed(String receiptNumber) {
 
 
-                                try {
-                                    BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
-    //                                        BusProvider.getInstance().post(new PrintModel("CHEAT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-
-                                try {
-                                    if (transactionsList().size() > 0) {
-                                        selectedTable = null;
-                                        transactionId = String.valueOf(transactionsList().get(0).getId());
-                                        setOrderAdapter(transactionsViewModel.orderList(transactionId));
-
-
-                                    } else {
-                                        defaults();
+                                    try {
+                                        BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
+                                        //                                        BusProvider.getInstance().post(new PrintModel("CHEAT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
                                     }
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
+
+                                    try {
+                                        if (transactionsList().size() > 0) {
+                                            selectedTable = null;
+                                            transactionId = String.valueOf(transactionsList().get(0).getId());
+                                            setOrderAdapter(transactionsViewModel.orderList(transactionId));
+
+
+                                        } else {
+                                            defaults();
+                                        }
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
-                            }
-                        };
-                        paymentDialog.show();
+                            };
+                            paymentDialog.show();
 
-                        paymentDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                            @Override
-                            public void onCancel(DialogInterface dialogInterface) {
-                                paymentDialog = null;
-                            }
-                        });
+                            paymentDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialogInterface) {
+                                    paymentDialog = null;
+                                }
+                            });
 
-                        paymentDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                            @Override
-                            public void onDismiss(DialogInterface dialogInterface) {
-                                paymentDialog = null;
-                            }
-                        });
+                            paymentDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+                                    paymentDialog = null;
+                                }
+                            });
+                        }
+
+                    } else {
+                        Helper.showDialogMessage(getActivity(),
+                                getContext().getString(R.string.error_no_items),
+                                getContext().getString(R.string.header_message));
                     }
 
+
                 } else {
-                    Helper.showDialogMessage(getActivity(),
-                            getContext().getString(R.string.error_no_items),
-                            getContext().getString(R.string.header_message));
+                    SerialNumbersDialog serialNumbersDialog = new SerialNumbersDialog(getContext(), transactionsViewModel, transactionId);
+                    serialNumbersDialog.show();
+                    Toast.makeText(getContext(), "Please enter serial number for fixed asset items", Toast.LENGTH_LONG).show();
                 }
+
+
             } catch (ExecutionException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
@@ -2308,6 +2357,14 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
+
+        if (productsModel.getProducts().getIs_fixed_asset() == 1) {
+            if (!TextUtils.isEmpty(transactionId)) {
+                SerialNumbersDialog serialNumbersDialog = new SerialNumbersDialog(getContext(), transactionsViewModel, transactionId);
+                serialNumbersDialog.show();
+            }
+
+        }
     }
 
     private void insertSelectedRoomRate() {
@@ -2335,6 +2392,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         Utils.getDateTimeToday(),
                         1,
                         "",
+                        0,
                         0
                 ));
                 transactionsViewModel.insertOrder(orderList);
@@ -2362,6 +2420,11 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
                 }
 
+                TypeToken<List<FetchProductsResponse.ProductPromo>> token = new TypeToken<List<FetchProductsResponse.ProductPromo>>() {};
+                List<FetchProductsResponse.ProductPromo> promo = GsonHelper.getGson().fromJson(selectedProduct.getJson_promo(), token.getType());
+
+                Log.d("JSONPROMODATA", String.valueOf(promo.size()));
+
 
                 Orders orders = new Orders(
                         Integer.valueOf(transactionId),
@@ -2384,11 +2447,14 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         Utils.getDateTimeToday(),
                         0,
                         "",
-                        is_to
+                        is_to,
+                        selectedProduct.getIs_fixed_asset()
                 );
 //                orders.setIs_editing(true);
                 orderList.add(orders);
                 transactionsViewModel.insertOrder(orderList);
+
+
 //                transactionsViewModel.updateEditingOrderList(transactionId);
 
 
@@ -2437,7 +2503,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                     Utils.getDateTimeToday(),
                                     0,
                                     "",
-                                    finalIs_to
+                                    finalIs_to,
+                                    0
                             );
                             orders.setProduct_alacart_id(palac.getProduct_alacart_id());
                             orders.setIs_editing(false);
@@ -2502,7 +2569,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                     Utils.getDateTimeToday(),
                                     0,
                                     "",
-                                    finalIs_to1
+                                    finalIs_to1,
+                                    0
                             );
                             orders.setProduct_alacart_id(palac.getProduct_group_id());
                             orders.setIs_editing(false);
