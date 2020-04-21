@@ -22,7 +22,7 @@ public class Transactions {
     private String completed_at = "";
     private Boolean is_saved = false;
     private String is_saved_by = "";
-    private String saved_at;
+    private String saved_at = "";
     private Boolean is_cut_off = false;
     private String is_cut_off_by = "";
     private String is_cut_off_at = "";
@@ -31,8 +31,8 @@ public class Transactions {
     private String is_backed_out_by = "";
     private String is_backed_out_at = "";
 
-    private String trans_name;
-    private String treg;
+    private String trans_name = "";
+    private String treg = "";
     private String receipt_number = "";
 
 

@@ -16,7 +16,9 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Products;
@@ -102,15 +104,24 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
 
 
-
-        if (productsModel.getIs_take_out() == 1) {
-            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
-                    0,
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    0.3f
-            );
-            ((ViewHolder)holder).listItemName.setLayoutParams(param);
-            ((CheckoutAdapter.ViewHolder)holder).listItemToIndicator.setVisibility(View.VISIBLE);
+        if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+            if (productsModel.getIs_take_out() == 1) {
+                LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        0.3f
+                );
+                ((ViewHolder)holder).listItemName.setLayoutParams(param);
+                ((CheckoutAdapter.ViewHolder)holder).listItemToIndicator.setVisibility(View.VISIBLE);
+            } else {
+                LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        0.5f
+                );
+                ((CheckoutAdapter.ViewHolder)holder).listItemName.setLayoutParams(param);
+                ((CheckoutAdapter.ViewHolder)holder).listItemToIndicator.setVisibility(View.GONE);
+            }
         } else {
             LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
                     0,
@@ -120,6 +131,9 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             ((CheckoutAdapter.ViewHolder)holder).listItemName.setLayoutParams(param);
             ((CheckoutAdapter.ViewHolder)holder).listItemToIndicator.setVisibility(View.GONE);
         }
+
+
+
 
         if (!TextUtils.isEmpty(productsModel.getNotes())) {
             ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(

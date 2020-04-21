@@ -16,10 +16,12 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.ServiceChargeAdapter;
 import com.nerdvana.positiveoffline.entities.ServiceCharge;
@@ -98,12 +100,16 @@ public class ServiceChargeFragment extends Fragment implements View.OnClickListe
 
                         if (rgType.getCheckedRadioButtonId() != -1) {
                             if (rgType.getCheckedRadioButtonId() == R.id.rdPercentage) {
-                                ServiceCharge serviceCharge = new ServiceCharge(Double.valueOf(etValue.getText().toString()), true);
+                                ServiceCharge serviceCharge = new ServiceCharge(Double.valueOf(etValue.getText().toString()), true,
+                                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)));
                                 serviceChargeViewModel.insertServiceChargeSetting(serviceCharge);
                                 Helper.showDialogMessage(getContext(), "Service Charge Added", getContext().getString(R.string.text_header_error));
                                 etValue.setText("");
                             } else {
-                                ServiceCharge serviceCharge = new ServiceCharge(Double.valueOf(etValue.getText().toString()), false);
+                                ServiceCharge serviceCharge = new ServiceCharge(Double.valueOf(etValue.getText().toString()), false,
+                                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)));
                                 serviceChargeViewModel.insertServiceChargeSetting(serviceCharge);
                                 Helper.showDialogMessage(getContext(), "Service Charge Added", getContext().getString(R.string.text_header_error));
                                 etValue.setText("");

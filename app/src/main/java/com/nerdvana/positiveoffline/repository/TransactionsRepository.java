@@ -82,6 +82,20 @@ public class TransactionsRepository {
         return future.get();
     }
 
+    public List<BranchGroup> getBranchGroupViaProductIdAndProductGroupId(final String productId, final String productGroupId) throws ExecutionException, InterruptedException {
+        Callable<List<BranchGroup>> callable = new Callable<List<BranchGroup>>() {
+            @Override
+            public List<BranchGroup> call() throws Exception {
+                return productsDao.getBranchGroupViaProductIdAndProductGroupId(productId, productGroupId);
+            }
+        };
+
+        Future<List<BranchGroup>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
+
     public List<BranchGroup> getFilteredProductsPerCategory(final String branch_group_id) throws ExecutionException, InterruptedException {
         Callable<List<BranchGroup>> callable = new Callable<List<BranchGroup>>() {
             @Override

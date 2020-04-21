@@ -43,6 +43,9 @@ public interface ProductsDao {
     List<BranchGroup> getBranchGroup(String product_id);
 
 
+    @Query("SELECT * FROM BranchGroup WHERE product_id = :product_id AND product_group_id = :product_group_id")
+    List<BranchGroup> getBranchGroupViaProductIdAndProductGroupId(String product_id, String product_group_id);
+
 
     @Query("SELECT * FROM BranchGroup WHERE branch_group_id = :branch_group_id")
     List<BranchGroup> getFilteredProductsPerCategory(String branch_group_id);

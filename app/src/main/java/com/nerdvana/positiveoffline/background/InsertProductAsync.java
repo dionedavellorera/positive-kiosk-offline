@@ -138,19 +138,29 @@ public class InsertProductAsync extends AsyncTask<Void, Void, Void> {
                     if (branchGroup.getBranchLists().size() > 0) {
                         for (FetchProductsResponse.BranchList branchList : branchGroup.getBranchLists()) {
                             if (branchList.getBranchProduct() != null) {
-                                branchGroupList.add(
-                                        new BranchGroup(
-                                                branchList.getProductId(),
-                                                branchGroup.getProductId(),
-                                                branchGroup.getQty(),
-                                                branchList.getPrice(),
-                                                branchList.getBranchProduct().getProduct(),
-                                                branchList.getBranchProduct().getProductInitial(),
-                                                branchList.getBranchProduct().getImageFile(),
-                                                branchGroup.getGroupName(),
-                                                String.valueOf(branchGroup.getCoreId())
-                                        )
-                                );
+                                try {
+                                    int isExist = productsViewModel.getBranchGroupExisting(String.valueOf(branchList.getProductId()), String.valueOf(branchGroup.getProductId())).size();
+                                    if (isExist == 0) {
+                                        branchGroupList.add(
+                                                new BranchGroup(
+                                                        branchList.getProductId(),
+                                                        branchGroup.getProductId(),
+                                                        branchGroup.getQty(),
+                                                        branchList.getPrice(),
+                                                        branchList.getBranchProduct().getProduct(),
+                                                        branchList.getBranchProduct().getProductInitial(),
+                                                        branchList.getBranchProduct().getImageFile(),
+                                                        branchGroup.getGroupName(),
+                                                        String.valueOf(branchGroup.getCoreId())
+                                                )
+                                        );
+                                    }
+
+                                } catch (Exception e) {
+
+                                }
+
+
                             }
                         }
                     }

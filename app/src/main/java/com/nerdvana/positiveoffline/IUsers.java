@@ -67,6 +67,16 @@ public interface IUsers {
     Call<CutOff> fetchCutOffOffline(@FieldMap Map<String, Object> params);
     //endregion
     //region submit data to server of offline transactions
+    @POST("addPayoutsOffline")
+    @FormUrlEncoded
+    Call<ResponseBody> addPayoutsOffline(@FieldMap Map<String, Object> params);
+    @POST("addSerialNumbersOffline")
+    @FormUrlEncoded
+    Call<ResponseBody> addSerialNumbersOffline(@FieldMap Map<String, Object> params);
+    @POST("addServiceChargeOffline")
+    @FormUrlEncoded
+    Call<ResponseBody> addServiceChargeOffline(@FieldMap Map<String, Object> params);
+
     @POST("addPostedDiscountsOffline")
     @FormUrlEncoded
     Call<ResponseBody> addPostedDiscountsOffline(@FieldMap Map<String, Object> params);

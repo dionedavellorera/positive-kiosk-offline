@@ -13,9 +13,40 @@ public class ServiceCharge {
     private boolean is_percentage;
 
     private boolean is_selected = false;
-    public ServiceCharge(Double value, boolean is_percentage) {
+
+    private int is_sent_to_server = 0;
+    private int machine_id;
+    private int branch_id;
+    public ServiceCharge(Double value, boolean is_percentage,
+                         int machine_id, int branch_id) {
+        this.branch_id = branch_id;
+        this.machine_id = machine_id;
         this.value = value;
         this.is_percentage = is_percentage;
+    }
+
+    public int getIs_sent_to_server() {
+        return is_sent_to_server;
+    }
+
+    public void setIs_sent_to_server(int is_sent_to_server) {
+        this.is_sent_to_server = is_sent_to_server;
+    }
+
+    public int getMachine_id() {
+        return machine_id;
+    }
+
+    public void setMachine_id(int machine_id) {
+        this.machine_id = machine_id;
+    }
+
+    public int getBranch_id() {
+        return branch_id;
+    }
+
+    public void setBranch_id(int branch_id) {
+        this.branch_id = branch_id;
     }
 
     public int getId() {

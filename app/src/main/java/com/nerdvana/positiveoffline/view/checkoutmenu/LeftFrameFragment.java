@@ -525,7 +525,12 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
             case 120://SET SERIAL NUMBER
                 if (!TextUtils.isEmpty(transactionId)) {
                     if (transactionsViewModel.orderListWithFixedAsset(transactionId).size() > 0) {
-                        SerialNumbersDialog serialNumbersDialog = new SerialNumbersDialog(getContext(), transactionsViewModel, transactionId);
+                        SerialNumbersDialog serialNumbersDialog = new SerialNumbersDialog(getContext(), transactionsViewModel, transactionId) {
+                            @Override
+                            public void submitted() {
+
+                            }
+                        };
                         serialNumbersDialog.show();
                     } else {
                         Helper.showDialogMessage(getActivity(), "No fixed asset on ordered list", "Information");
@@ -1677,11 +1682,18 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
         if (!TextUtils.isEmpty(transactionId)) {
             try {
                 int serialNeededCount = 0;
+                int serialNumberEncodedCount = 0;
                 for (Orders ord : transactionsViewModel.orderListWithFixedAsset(transactionId)) {
                     serialNeededCount += ord.getQty();
                 }
+
+                for (SerialNumbers sn : transactionsViewModel.serialNumberFromTransaction(Integer.valueOf(transactionId))) {
+                    if (!TextUtils.isEmpty(sn.getSerial_number())) {
+                        serialNumberEncodedCount += 1;
+                    }
+                }
                 if (serialNeededCount ==
-                transactionsViewModel.serialNumberFromTransaction(Integer.valueOf(transactionId)).size()) {
+                serialNumberEncodedCount) {
 
                     if (transactionsViewModel.orderList(transactionId).size() > 0) {
                         if (paymentDialog == null) {
@@ -1744,7 +1756,93 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
 
                 } else {
-                    SerialNumbersDialog serialNumbersDialog = new SerialNumbersDialog(getContext(), transactionsViewModel, transactionId);
+
+
+                    SerialNumbersDialog serialNumbersDialog = new SerialNumbersDialog(getContext(), transactionsViewModel, transactionId) {
+                        @Override
+                        public void submitted() {
+
+                            try {
+                                int snc = 0;
+                                int sec = 0;
+                                for (Orders ord : transactionsViewModel.orderListWithFixedAsset(transactionId)) {
+                                    snc += ord.getQty();
+                                }
+
+                                for (SerialNumbers sn : transactionsViewModel.serialNumberFromTransaction(Integer.valueOf(transactionId))) {
+                                    if (!TextUtils.isEmpty(sn.getSerial_number())) {
+                                        sec += 1;
+                                    }
+                                }
+                                if (snc ==
+                                        sec) {
+
+                                    if (transactionsViewModel.orderList(transactionId).size() > 0) {
+                                        if (paymentDialog == null) {
+                                            paymentDialog = new PaymentDialog(getActivity(), dataSyncViewModel,
+                                                    transactionsViewModel, transactionId,
+                                                    userViewModel, roomsViewModel,
+                                                    serviceChargeViewModel) {
+                                                @Override
+                                                public void completed(String receiptNumber) {
+
+
+                                                    try {
+                                                        BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
+                                                        //                                        BusProvider.getInstance().post(new PrintModel("CHEAT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(receiptNumber))));
+                                                    } catch (ExecutionException e) {
+                                                        e.printStackTrace();
+                                                    } catch (InterruptedException e) {
+                                                        e.printStackTrace();
+                                                    }
+
+                                                    try {
+                                                        if (transactionsList().size() > 0) {
+                                                            selectedTable = null;
+                                                            transactionId = String.valueOf(transactionsList().get(0).getId());
+                                                            setOrderAdapter(transactionsViewModel.orderList(transactionId));
+
+
+                                                        } else {
+                                                            defaults();
+                                                        }
+                                                    } catch (ExecutionException e) {
+                                                        e.printStackTrace();
+                                                    } catch (InterruptedException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+                                            };
+                                            paymentDialog.show();
+
+                                            paymentDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                                @Override
+                                                public void onCancel(DialogInterface dialogInterface) {
+                                                    paymentDialog = null;
+                                                }
+                                            });
+
+                                            paymentDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                                @Override
+                                                public void onDismiss(DialogInterface dialogInterface) {
+                                                    paymentDialog = null;
+                                                }
+                                            });
+                                        }
+
+                                    } else {
+                                        Helper.showDialogMessage(getActivity(),
+                                                getContext().getString(R.string.error_no_items),
+                                                getContext().getString(R.string.header_message));
+                                    }
+
+                                }
+                            } catch (Exception e) {
+
+                            }
+
+                        }
+                    };
                     serialNumbersDialog.show();
                     Toast.makeText(getContext(), "Please enter serial number for fixed asset items", Toast.LENGTH_LONG).show();
                 }
@@ -2360,7 +2458,12 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
         if (productsModel.getProducts().getIs_fixed_asset() == 1) {
             if (!TextUtils.isEmpty(transactionId)) {
-                SerialNumbersDialog serialNumbersDialog = new SerialNumbersDialog(getContext(), transactionsViewModel, transactionId);
+                SerialNumbersDialog serialNumbersDialog = new SerialNumbersDialog(getContext(), transactionsViewModel, transactionId) {
+                    @Override
+                    public void submitted() {
+
+                    }
+                };
                 serialNumbersDialog.show();
             }
 
@@ -2423,15 +2526,46 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                 TypeToken<List<FetchProductsResponse.ProductPromo>> token = new TypeToken<List<FetchProductsResponse.ProductPromo>>() {};
                 List<FetchProductsResponse.ProductPromo> promo = GsonHelper.getGson().fromJson(selectedProduct.getJson_promo(), token.getType());
 
-                Log.d("JSONPROMODATA", String.valueOf(promo.size()));
+                Double productFinalAmount = selectedProduct.getAmount();
+                DateTime dateToday = new DateTime(Utils.getCurrentDate());
+                if (promo.size() > 0) {
+                    for (FetchProductsResponse.ProductPromo pp : promo) {
+                        if (TextUtils.isEmpty(pp.getEndDate()) && TextUtils.isEmpty(pp.getEndTime())) {
+                            //PRICE CHANGE
+                           DateTime promoDateStart =  new DateTime(pp.getStartDate());
+                           if (dateToday.isAfter(promoDateStart)) {
+                               if (pp.getIsPercentage() == 1) {
+                                    productFinalAmount = selectedProduct.getAmount() - (selectedProduct.getAmount() * (pp.getValue() / 100));
+                               } else {
+                                   productFinalAmount = pp.getValue();
+                               }
+                           }
 
+                        }
+                    }
+
+                    for (FetchProductsResponse.ProductPromo pp : promo) {
+                        if (!TextUtils.isEmpty(pp.getStartDate()) && !TextUtils.isEmpty(pp.getEndDate())) {
+                            DateTime promoDateStart =  new DateTime(pp.getStartDate());
+                            DateTime promoDateEnd =  new DateTime(pp.getEndDate());
+                            //PROMO
+                            if (dateToday.isAfter(promoDateStart) && dateToday.isBefore(promoDateEnd)) {
+                                if (pp.getIsPercentage() == 1) {
+                                    productFinalAmount = productFinalAmount - (productFinalAmount * (pp.getValue() / 100));
+                                } else {
+                                    productFinalAmount = pp.getValue();
+                                }
+                            }
+                        }
+                    }
+                }
 
                 Orders orders = new Orders(
                         Integer.valueOf(transactionId),
                         selectedProduct.getCore_id(),
                         1 * mQty,
-                        selectedProduct.getAmount(),
-                        selectedProduct.getAmount(),
+                        productFinalAmount,
+                        productFinalAmount,
                         selectedProduct.getProduct(),
                         selectedProduct.getDepartmentId(),
                         Utils.roundedOffTwoDecimal((selectedProduct.getAmount() / 1.12) * .12),
@@ -2868,5 +3002,31 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
                 break;
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+
+        if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+            lin00.setVisibility(View.GONE);
+        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+            lin00.setVisibility(View.VISIBLE);
+        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+            lin00.setVisibility(View.VISIBLE);
+        }
+
+        try {
+            if (transactionsList().size() > 0) {
+                setOrderAdapter(transactionsViewModel.orderList(transactionId));
+            }
+        } catch (ExecutionException e) {
+
+        } catch (InterruptedException e) {
+
+        }
+
+
     }
 }

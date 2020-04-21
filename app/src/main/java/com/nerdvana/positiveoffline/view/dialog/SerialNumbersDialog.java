@@ -10,7 +10,9 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.SharedTransactionPaymentsAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
@@ -22,7 +24,7 @@ import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SerialNumbersDialog extends BaseDialog implements View.OnClickListener{
+public abstract class SerialNumbersDialog extends BaseDialog implements View.OnClickListener{
     private Button btnSave;
     private TransactionsViewModel transactionsViewModel;
     private String transactionId;
@@ -76,7 +78,9 @@ public class SerialNumbersDialog extends BaseDialog implements View.OnClickListe
                         SerialNumbers sn = new SerialNumbers(
                                 Integer.valueOf(transactionId), "",
                                 Utils.getDateTimeToday(), ord.getCore_id(),
-                                ord.getName(),ord.getId());
+                                ord.getName(),ord.getId(),
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)));
                         ordersWithSerialNeeded.add(sn);
                     }
                 } else {
@@ -84,7 +88,9 @@ public class SerialNumbersDialog extends BaseDialog implements View.OnClickListe
                         SerialNumbers sn = new SerialNumbers(
                                 Integer.valueOf(transactionId), "",
                                 Utils.getDateTimeToday(), ord.getCore_id(),
-                                ord.getName(),ord.getId());
+                                ord.getName(),ord.getId(),
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)));
                         ordersWithSerialNeeded.add(sn);
                     }
                 }
@@ -131,9 +137,12 @@ public class SerialNumbersDialog extends BaseDialog implements View.OnClickListe
                         sntmsn.getSerialNumbers().setSerial_number(sntmsn.getEditText().getText().toString());
                         transactionsViewModel.updateSerialNumbers(sntmsn.getSerialNumbers());
                     }
+                    submitted();
                     dismiss();
                 }
                 break;
         }
     }
+
+    public abstract void submitted();
 }

@@ -23,6 +23,9 @@ public interface SerialNumbersDao {
     @Query("SELECT * FROM SerialNumbers WHERE order_id = :order_id AND is_void = 0")
     List<SerialNumbers> serialNumbersListOrderId(int order_id);
 
+    @Query("SELECT * FROM SerialNumbers WHERE is_sent_to_server = 0")
+    List<SerialNumbers> uncutOffSerialNumbers();
+
     @Update()
     void update(SerialNumbers serialNumbers);
 

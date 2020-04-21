@@ -57,7 +57,7 @@ public class Orders {
 
     private int is_take_out;
 
-    private String serial_number;
+    private String serial_number = "";
 
     private int is_fixed_asset = 0;
 

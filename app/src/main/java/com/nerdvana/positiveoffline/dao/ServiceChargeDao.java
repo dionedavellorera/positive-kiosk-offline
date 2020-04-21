@@ -19,6 +19,9 @@ public interface ServiceChargeDao {
     @Query("SELECT * FROM ServiceCharge")
     List<ServiceCharge> serviceChargeList();
 
+    @Query("SELECT * FROM ServiceCharge WHERE is_sent_to_server = 0")
+    List<ServiceCharge> getUnsyncedServiceCharge();
+
     @Update
     public void update(ServiceCharge serviceCharge);
 

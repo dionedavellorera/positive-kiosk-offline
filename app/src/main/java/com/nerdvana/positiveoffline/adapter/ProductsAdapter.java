@@ -2,7 +2,9 @@ package com.nerdvana.positiveoffline.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,11 +19,16 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.reflect.TypeToken;
+import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.Utils;
+import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.intf.ProductsContract;
 import com.squareup.picasso.Picasso;
+
+import org.joda.time.DateTime;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -99,6 +106,7 @@ public class ProductsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     static class ProductsViewHolder extends RecyclerView.ViewHolder {
         private TextView name;
         private TextView price;
+        private TextView promoPrice;
         private ImageView imageUrl;
         private CardView rootView;
         private RelativeLayout productBg;
@@ -106,6 +114,7 @@ public class ProductsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             super(itemView);
             name = itemView.findViewById(R.id.name);
             price = itemView.findViewById(R.id.price);
+            promoPrice = itemView.findViewById(R.id.promoPrice);
             imageUrl = itemView.findViewById(R.id.image);
             rootView = itemView.findViewById(R.id.rootView);
             productBg = itemView.findViewById(R.id.productBg);
@@ -116,9 +125,9 @@ public class ProductsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int i) {
 
+        if(holder instanceof ChangeRoomStatusAdapter.ListViewHolder){
 
-
-
+        }
         final Products productsModel = productsFilteredList.get(i);
         ((ProductsViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -141,15 +150,63 @@ public class ProductsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             ((ProductsViewHolder)holder).productBg.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
             ((ProductsViewHolder)holder).name.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
             ((ProductsViewHolder)holder).price.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
+            ((ProductsViewHolder)holder).promoPrice.setBackgroundColor(context.getResources().getColor(R.color.colorWhite));
             ((ProductsViewHolder)holder).name.setTextColor(Color.BLACK);
             ((ProductsViewHolder)holder).price.setTextColor(Color.BLACK);
         } else {
             ((ProductsViewHolder)holder).productBg.setBackgroundColor(context.getResources().getColor(R.color.colorDarkLighter));
             ((ProductsViewHolder)holder).name.setBackgroundColor(context.getResources().getColor(R.color.colorDarkLighter));
             ((ProductsViewHolder)holder).price.setBackgroundColor(context.getResources().getColor(R.color.colorDarkLighter));
+            ((ProductsViewHolder)holder).promoPrice.setBackgroundColor(context.getResources().getColor(R.color.colorDarkLighter));
             ((ProductsViewHolder)holder).name.setTextColor(Color.WHITE);
             ((ProductsViewHolder)holder).price.setTextColor(Color.WHITE);
         }
+
+        TypeToken<List<FetchProductsResponse.ProductPromo>> token = new TypeToken<List<FetchProductsResponse.ProductPromo>>() {};
+        List<FetchProductsResponse.ProductPromo> promo = GsonHelper.getGson().fromJson(productsModel.getJson_promo(), token.getType());
+
+        Double productFinalAmount = productsModel.getAmount();
+        DateTime dateToday = new DateTime(Utils.getCurrentDate());
+        if (promo.size() > 0) {
+            for (FetchProductsResponse.ProductPromo pp : promo) {
+                if (TextUtils.isEmpty(pp.getEndDate()) && TextUtils.isEmpty(pp.getEndTime())) {
+                    //PRICE CHANGE
+                    DateTime promoDateStart =  new DateTime(pp.getStartDate());
+                    if (dateToday.isAfter(promoDateStart)) {
+                        if (pp.getIsPercentage() == 1) {
+                            productFinalAmount = productsModel.getAmount() - (productsModel.getAmount() * (pp.getValue() / 100));
+                        } else {
+                            productFinalAmount = pp.getValue();
+                        }
+                    }
+
+                }
+            }
+
+            for (FetchProductsResponse.ProductPromo pp : promo) {
+                if (!TextUtils.isEmpty(pp.getStartDate()) && !TextUtils.isEmpty(pp.getEndDate())) {
+                    DateTime promoDateStart =  new DateTime(pp.getStartDate());
+                    DateTime promoDateEnd =  new DateTime(pp.getEndDate());
+                    //PROMO
+                    if (dateToday.isAfter(promoDateStart) && dateToday.isBefore(promoDateEnd)) {
+                        if (pp.getIsPercentage() == 1) {
+                            productFinalAmount = productFinalAmount - (productFinalAmount * (pp.getValue() / 100));
+                        } else {
+                            productFinalAmount = pp.getValue();
+                        }
+                    }
+                }
+            }
+            ((ProductsViewHolder)holder).price.setPaintFlags(((ProductsViewHolder)holder).price.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            ((ProductsViewHolder)holder).price.setText(((ProductsViewHolder)holder).price.getText().toString() + " BEFORE");
+            ((ProductsViewHolder)holder).promoPrice.setVisibility(View.VISIBLE);
+            ((ProductsViewHolder)holder).promoPrice.setText(Utils.digitsWithComma(productFinalAmount) + " NOW");
+        } else {
+            ((ProductsViewHolder)holder).promoPrice.setVisibility(View.GONE);
+            ((ProductsViewHolder)holder).price.setPaintFlags( ((ProductsViewHolder)holder).price.getPaintFlags() & (~ Paint.STRIKE_THRU_TEXT_FLAG));
+        }
+
+
 
     }
 

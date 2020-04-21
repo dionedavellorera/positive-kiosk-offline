@@ -12,6 +12,7 @@ import com.nerdvana.positiveoffline.entities.BranchGroup;
 import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.repository.ProductsRepository;
+import com.nerdvana.positiveoffline.repository.TransactionsRepository;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -19,10 +20,11 @@ import java.util.concurrent.ExecutionException;
 public class ProductsViewModel extends AndroidViewModel {
 
     private ProductsRepository productsRepository;
-
+    private TransactionsRepository transactionsRepository;
     public ProductsViewModel(@NonNull Application application) {
         super(application);
         productsRepository = new ProductsRepository(application);
+        transactionsRepository = new TransactionsRepository(application);
     }
 
     public MutableLiveData<FetchProductsResponse> getProductsLiveData() {
@@ -31,6 +33,10 @@ public class ProductsViewModel extends AndroidViewModel {
 
     public List<Products> getProductsList() throws ExecutionException, InterruptedException {
         return productsRepository.getProductsList();
+    }
+
+    public List<BranchGroup> getBranchGroupExisting(String product_id, String product_group_id) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getBranchGroupViaProductIdAndProductGroupId(product_id, product_group_id);
     }
 
 

@@ -42,9 +42,21 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:paddingLeft="10dp"
-            android:paddingTop="10dp"
+            android:paddingTop="5dp"
             android:paddingRight="10dp"
-            android:paddingBottom="5dp"
+            android:text="100.00"/>
+
+        <TextView
+            android:visibility="gone"
+            android:textColor="@color/colorBlack"
+            android:id="@+id/promoPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/price"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:text="100.00"/>
     </RelativeLayout>
 

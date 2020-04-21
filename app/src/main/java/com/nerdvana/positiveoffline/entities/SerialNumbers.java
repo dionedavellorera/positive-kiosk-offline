@@ -23,15 +23,37 @@ public class SerialNumbers {
     private int for_update = 0;
     private int is_sent_to_server = 0;
     private int order_id;
+
+    private int machine_id;
+    private int branch_id;
     public SerialNumbers(int transaction_id, String serial_number,
                          String treg, int product_core_id,
-                         String product_name, int order_id) {
+                         String product_name, int order_id,
+                         int machine_id, int branch_id) {
+        this.machine_id = machine_id;
+        this.branch_id = branch_id;
         this.product_core_id = product_core_id;
         this.product_name = product_name;
         this.transaction_id = transaction_id;
         this.serial_number = serial_number;
         this.treg = treg;
         this.order_id = order_id;
+    }
+
+    public int getMachine_id() {
+        return machine_id;
+    }
+
+    public void setMachine_id(int machine_id) {
+        this.machine_id = machine_id;
+    }
+
+    public int getBranch_id() {
+        return branch_id;
+    }
+
+    public void setBranch_id(int branch_id) {
+        this.branch_id = branch_id;
     }
 
     public int getOrder_id() {
