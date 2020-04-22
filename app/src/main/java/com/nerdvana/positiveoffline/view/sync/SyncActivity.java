@@ -85,22 +85,28 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         progressDialog.setMessage("Migrating data...");
         initViews();
 
-        IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
-        TestRequest collectionRequest = new TestRequest("test");
-        progressDialog.show();
-        iUsers.repatchData(collectionRequest.getMapValue()).enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                progressDialog.dismiss();
-                initEverything();
-            }
+        if (!bundleString(AppConstants.ORIGIN).equalsIgnoreCase(AppConstants.ACTIVITY_LOGIN)) {
+            IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+            TestRequest collectionRequest = new TestRequest("test");
+            progressDialog.show();
+            iUsers.repatchData(collectionRequest.getMapValue()).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    progressDialog.dismiss();
+                    initEverything();
+                }
 
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                progressDialog.dismiss();
-                initEverything();
-            }
-        });
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    progressDialog.dismiss();
+                    initEverything();
+                }
+            });
+        } else {
+            initEverything();
+        }
+
+
 
 
 

@@ -10,6 +10,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.room.PrimaryKey;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -122,6 +123,8 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements AsyncFinishCallBack {
 
+    private ProgressDialog datafromServerProgressBar;
+
     private int totalSyncCount = 0;
     private final int totalSyncRequired = 11;
 
@@ -163,6 +166,13 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        datafromServerProgressBar = new ProgressDialog(MainActivity.this);
+        datafromServerProgressBar.setMax(11);
+        datafromServerProgressBar.setProgress(0);
+        datafromServerProgressBar.setMessage("Retrieving data from server");
+        datafromServerProgressBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        datafromServerProgressBar.setIndeterminate(false);
+
 
         String apiBaseUrlCompany = String.format("%s/%s/",
                 SharedPreferenceManager.getString(MainActivity.this, AppConstants.HOST),
@@ -187,6 +197,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
             initToggleThemeListener();
             initThemeSelectionListener();
         } else {
+            datafromServerProgressBar.show();
             IUsers iUsers = PosClientCompany.mRestAdapter.create(IUsers.class);
             Map<String, String> dataMap = new HashMap<>();
             dataMap.put("company_code", SharedPreferenceManager.getString(MainActivity.this, AppConstants.BRANCH));
@@ -468,7 +479,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
                                 tr.setTrans_name(list.getTransName() == null ? "" : list.getTransName().toString());
                                 tr.setTreg(list.getTreg());
-                                tr.setReceipt_number(list.getReceiptNumber());
+                                tr.setReceipt_number(list.getReceiptNumber() == null ? "" : list.getReceiptNumber());
                                 tr.setGross_sales(list.getGrossSales());
                                 tr.setNet_sales(list.getNetSales());
                                 tr.setVatable_sales(list.getVatableSales());
@@ -486,7 +497,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 tr.setIs_cancelled_by(list.getIsCancelledBy() == null ? "" : list.getIsCancelledBy().toString());
                                 tr.setIs_cancelled_at(list.getIsCancelledAt() == null ? "" : list.getIsCancelledAt().toString());
 
-                                tr.setTin_number(list.getTinNumber());
+                                tr.setTin_number(list.getTinNumber() == null ? "" : list.getTinNumber());
                                 tr.setIs_sent_to_server(list.getIsSentToServer());
 
                                 tr.setMachine_id(list.getMachineId());
@@ -1613,7 +1624,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void shiftUpdate(ShiftUpdateModel shiftUpdateModel) {
         try {
-            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 1.5.1");
+            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 1.6.0");
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -1679,8 +1690,13 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     public void serverDataCompletion(ServerDataCompletionModel serverDataCompletionModel) {
 
         totalSyncCount += 1;
-        Log.d("RECEIVEDDATA", String.valueOf(totalSyncCount) + "-" + serverDataCompletionModel.getTable());
+
+        Log.d("TOTALSYNCCOUNT", String.valueOf(totalSyncCount));
+
+        datafromServerProgressBar.setProgress(totalSyncCount);
+
         if (totalSyncCount == totalSyncRequired) {
+
             SharedPreferenceManager.saveString(MainActivity.this, "1", AppConstants.HAS_CHECKED_DATA_FROM_SERVER);
 
             initDataSyncViewModel();
@@ -1697,6 +1713,18 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
             initCutOffViewModel();
             initToggleThemeListener();
             initThemeSelectionListener();
+
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (datafromServerProgressBar != null) {
+                        datafromServerProgressBar.dismiss();
+                    }
+
+                }
+            }, 500);
+
 
 
         }
