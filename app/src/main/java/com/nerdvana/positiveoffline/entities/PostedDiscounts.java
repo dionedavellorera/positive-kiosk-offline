@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.entities;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "PostedDiscounts")
@@ -34,6 +35,10 @@ public class PostedDiscounts {
     private int branch_id;
 
     private String treg;
+
+    @Ignore
+    public PostedDiscounts() {}
+
     public PostedDiscounts(int transaction_id, int discount_id,
                            String discount_name, Boolean is_void,
                            String card_number, String name,

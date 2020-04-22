@@ -35,6 +35,8 @@ public class OrderDiscounts {
 
     private String treg;
 
+    @Ignore
+    public OrderDiscounts() {}
 
     public OrderDiscounts(int product_id, @NonNull Boolean is_percentage,
                           @NonNull Double value, @NonNull int transaction_id,

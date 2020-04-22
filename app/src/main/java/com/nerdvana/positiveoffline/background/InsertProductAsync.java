@@ -106,30 +106,48 @@ public class InsertProductAsync extends AsyncTask<Void, Void, Void> {
 
 
 
-            productsList.add(product);
-            List<ProductAlacart> branchAlaCartList = new ArrayList<>();
+
+
 
             if (r.getBranchAlaCartList().size() > 0) {
+
+                List<ProductAlacart> branchAlaCartList = new ArrayList<>();
+
                 for (FetchProductsResponse.BranchAlaCart branchAlaCart : r.getBranchAlaCartList()) {
                     if (branchAlaCart.getBranchProduct() != null) {
-                        branchAlaCartList.add(
-                                new ProductAlacart(
-                                        branchAlaCart.getProductId(),
-                                        branchAlaCart.getProductAlacarId(),
-                                        branchAlaCart.getQty(),
-                                        branchAlaCart.getPrice(),
-                                        branchAlaCart.getBranchProduct().getProduct(),
-                                        branchAlaCart.getBranchProduct().getProductInitial(),
-                                        branchAlaCart.getBranchProduct().getImageFile()
-                                )
-                        );
+                        try {
+                            Log.d("MYPRODID", String.valueOf(branchAlaCart.getProductId() + "-" + branchAlaCart.getProductAlacarId()));
+                            int isExist = productsViewModel.getAlaCartExisting(
+                                    String.valueOf(branchAlaCart.getProductId()),
+                                    String.valueOf(branchAlaCart.getProductAlacarId()))
+                                    .size();
+                            if (isExist == 0) {
+                                branchAlaCartList.add(
+                                        new ProductAlacart(
+                                                branchAlaCart.getProductId(),
+                                                branchAlaCart.getProductAlacarId(),
+                                                branchAlaCart.getQty(),
+                                                branchAlaCart.getPrice(),
+                                                branchAlaCart.getBranchProduct().getProduct(),
+                                                branchAlaCart.getBranchProduct().getProductInitial(),
+                                                branchAlaCart.getBranchProduct().getImageFile()
+                                        )
+                                );
+                            }
+                        } catch (Exception e) {
+
+                        }
+
+
                     }
+                }
+
+                if (branchAlaCartList.size() > 0) {
+                    productsViewModel.insertAlaCart(branchAlaCartList);
                 }
             }
 
-            if (branchAlaCartList.size() > 0) {
-                productsViewModel.insertAlaCart(branchAlaCartList);
-            }
+
 
 
             if (r.getBranchGroupList().size() > 0) {
@@ -171,6 +189,8 @@ public class InsertProductAsync extends AsyncTask<Void, Void, Void> {
                 }
             }
 //
+
+            productsList.add(product);
 
         }
 

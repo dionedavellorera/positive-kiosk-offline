@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.entities;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "Payout")
@@ -26,6 +27,9 @@ public class Payout {
     private String is_cut_off_at = "";
     private int cut_off_id = 0;
 
+
+    @Ignore
+    public Payout(){}
     public Payout(@NonNull String series_number, String username,
                   Double amount, String reason, String manager_username,
                   String treg,int is_sent_to_server,

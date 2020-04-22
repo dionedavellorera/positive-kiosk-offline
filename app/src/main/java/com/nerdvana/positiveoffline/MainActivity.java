@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.room.PrimaryKey;
 
 import android.content.Context;
 import android.content.Intent;
@@ -22,18 +23,42 @@ import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nerdvana.positiveoffline.apirequests.ServerDataRequest;
 import com.nerdvana.positiveoffline.apirequests.TestRequest;
+import com.nerdvana.positiveoffline.apiresponses.CutoffServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.EndOfDayServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.OrDetailsServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.OrderDiscountsServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.OrdersServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.PaymentsServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.PayoutServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.PostingDiscountServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.SerialNumbersServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.ServiceChargeServerDataResponse;
 import com.nerdvana.positiveoffline.apiresponses.TestResponse;
+import com.nerdvana.positiveoffline.apiresponses.TransactionsServerDataResponse;
 import com.nerdvana.positiveoffline.background.IntransitAsync;
+import com.nerdvana.positiveoffline.entities.OrDetails;
+import com.nerdvana.positiveoffline.entities.OrderDiscounts;
+import com.nerdvana.positiveoffline.entities.Orders;
+import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.Payout;
+import com.nerdvana.positiveoffline.entities.PostedDiscounts;
+import com.nerdvana.positiveoffline.entities.SerialNumbers;
+import com.nerdvana.positiveoffline.entities.ServiceCharge;
 import com.nerdvana.positiveoffline.entities.ThemeSelection;
+import com.nerdvana.positiveoffline.entities.Transactions;
+import com.nerdvana.positiveoffline.model.HasPendingDataOnLocalModel;
+import com.nerdvana.positiveoffline.model.ServerDataCompletionModel;
 import com.nerdvana.positiveoffline.model.ShiftUpdateModel;
 import com.nerdvana.positiveoffline.model.TimerUpdateModel;
 import com.nerdvana.positiveoffline.printjobasync.BackoutAsync;
@@ -69,6 +94,9 @@ import com.nerdvana.positiveoffline.view.productsmenu.RightFrameFragment;
 import com.nerdvana.positiveoffline.view.sync.SyncActivity;
 import com.nerdvana.positiveoffline.viewmodel.CutOffViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
+import com.nerdvana.positiveoffline.viewmodel.DiscountViewModel;
+import com.nerdvana.positiveoffline.viewmodel.ServiceChargeViewModel;
+import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 import com.squareup.otto.Subscribe;
 import com.starmicronics.stario.StarIOPort;
@@ -83,7 +111,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import retrofit2.Call;
@@ -91,6 +121,9 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements AsyncFinishCallBack {
+
+    private int totalSyncCount = 0;
+    private final int totalSyncRequired = 11;
 
     private StarIoExtManager mStarIoExtManager;
 
@@ -109,6 +142,10 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
     private DataSyncViewModel dataSyncViewModel;
 
+    private TransactionsViewModel transactionsViewModel;
+    private ServiceChargeViewModel serviceChargeViewModel;
+    private DiscountViewModel discountViewModel;
+
     private List<PrintJobModel> myPrintJobs;
 
     private ILocalizeReceipts iLocalizeReceipts;
@@ -120,31 +157,702 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     private FrameLayout rightFrame;
     private FrameLayout bottomFrame;
 
-
+    private ProgressBar progressNotOkay;
+    private ImageView progressOkay;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        openFragment(R.id.bottomFrame, new BottomFrameFragment());
-        openFragment(R.id.leftFrame, new LeftFrameFragment());
-        openFragment(R.id.rightFrame, new RightFrameFragment());
-        myPrintJobs = new ArrayList<>();
-        initViews();
-        tvTime.setText(Utils.getDateTimeToday());
+        String apiBaseUrlCompany = String.format("%s/%s/",
+                SharedPreferenceManager.getString(MainActivity.this, AppConstants.HOST),
+                "api");
+        PosClientCompany.changeApiBaseUrl(apiBaseUrlCompany);
 
-
-        initUserViewModel();
-        setUserData();
-        initDataSyncViewModel();
-        initILocalizeReceipts();
-        startTimerService();
+        initViewModels();
         initCutOffViewModel();
-        initToggleThemeListener();
+        if (SharedPreferenceManager.getString(MainActivity.this, AppConstants.HAS_CHECKED_DATA_FROM_SERVER).equalsIgnoreCase("1")) {
+            initDataSyncViewModel();
+            openFragment(R.id.bottomFrame, new BottomFrameFragment());
+            openFragment(R.id.leftFrame, new LeftFrameFragment());
+            openFragment(R.id.rightFrame, new RightFrameFragment());
+            myPrintJobs = new ArrayList<>();
+            initViews();
+            tvTime.setText(Utils.getDateTimeToday());
+            initUserViewModel();
+            setUserData();
+            initILocalizeReceipts();
+            startTimerService();
+
+            initToggleThemeListener();
+            initThemeSelectionListener();
+        } else {
+            IUsers iUsers = PosClientCompany.mRestAdapter.create(IUsers.class);
+            Map<String, String> dataMap = new HashMap<>();
+            dataMap.put("company_code", SharedPreferenceManager.getString(MainActivity.this, AppConstants.BRANCH));
+            dataMap.put("branch_code", SharedPreferenceManager.getString(MainActivity.this, AppConstants.CODE));
+            dataMap.put("machine_id", SharedPreferenceManager.getString(MainActivity.this, AppConstants.MACHINE_ID));
+            ServerDataRequest data = new ServerDataRequest(dataMap);
+
+            payoutDataRequest(data, iUsers);
+            serialNumberDataRequest(data, iUsers);
+            serviceChargeDataRequest(data, iUsers);
+            postingDiscountDataRequest(data, iUsers);
+            endOfDayDataRequest(data, iUsers);
+            cutOffDataRequest(data, iUsers);
+            transactionsDataRequest(data, iUsers);
+            orDetailsDataRequest(data, iUsers);
+            paymentsDataRequest(data, iUsers);
+            ordersDataRequest(data, iUsers);
+            orderDiscountsDataRequest(data, iUsers);
+        }
 
 
 
-        initThemeSelectionListener();
+
+
+    }
+
+    private void orderDiscountsDataRequest(ServerDataRequest data, IUsers iUsers) {
+        Call<OrderDiscountsServerDataResponse> request = iUsers.orderDiscountsServerDataRequest(data.getMapValue());
+        request.enqueue(new Callback<OrderDiscountsServerDataResponse>() {
+            @Override
+            public void onResponse(Call<OrderDiscountsServerDataResponse> call, Response<OrderDiscountsServerDataResponse> response) {
+                try {
+                    if (response.body().getOrderDiscount().size() > 0) {
+                        if (discountViewModel.getAllOrderDiscount().size() > 0) {
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "ORDER DISCOUNTS"));
+                        } else {
+                            //add loop
+                            List<OrderDiscounts> orderDiscountsList = new ArrayList<>();
+                            for (OrderDiscountsServerDataResponse.OrderDiscount list : response.body().getOrderDiscount()) {
+                                OrderDiscounts orderDiscounts = new OrderDiscounts();
+
+                                orderDiscounts.setId(list.getId());
+                                orderDiscounts.setTransaction_id(list.getTransactionId());
+                                orderDiscounts.setProduct_id(list.getProductId());
+                                orderDiscounts.setIs_percentage(list.getIsPercentage() == 1 ? true : false);
+                                orderDiscounts.setValue(list.getValue());
+                                orderDiscounts.setOrder_id(list.getOrderId());
+                                orderDiscounts.setDiscount_name(list.getDiscountName());
+                                orderDiscounts.setPosted_discount_id(list.getPostedDiscountId());
+                                orderDiscounts.setIs_void(list.getIsVoid() == 1 ? true : false);
+                                orderDiscounts.setIs_sent_to_server(list.getIsSentToServer());
+                                orderDiscounts.setMachine_id(list.getMachineId());
+                                orderDiscounts.setBranch_id(list.getBranchId());
+                                orderDiscounts.setTreg(list.getTreg());
+
+                                orderDiscountsList.add(orderDiscounts);
+                            }
+
+                            discountViewModel.insertOrderDiscount(orderDiscountsList);
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "ORDER DISCOUNTS"));
+                        }
+                    } else {
+                        BusProvider.getInstance().post(new ServerDataCompletionModel(true, "ORDER DISCOUNTS"));
+                    }
+
+                } catch (Exception e) {
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<OrderDiscountsServerDataResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void ordersDataRequest(ServerDataRequest data, IUsers iUsers) {
+        Call<OrdersServerDataResponse> request = iUsers.ordersServerDataRequest(data.getMapValue());
+        request.enqueue(new Callback<OrdersServerDataResponse>() {
+            @Override
+            public void onResponse(Call<OrdersServerDataResponse> call, Response<OrdersServerDataResponse> response) {
+                try {
+                    if (response.body().getOrders().size() > 0) {
+                        if (transactionsViewModel.getAllOrders().size() > 0) {
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "ORDERS"));
+                        } else {
+                            //add loop
+                            List<Orders> orderList = new ArrayList<>();
+                            for (OrdersServerDataResponse.Order list : response.body().getOrders()) {
+                                Orders orders = new Orders();
+                                orders.setTransaction_id(list.getTransactionId());
+                                orders.setId(list.getId());
+                                orders.setCore_id(list.getCoreId());
+                                orders.setQty(list.getQty());
+                                orders.setAmount(list.getAmount());
+                                orders.setOriginal_amount(list.getOriginalAmount());
+                                orders.setName(list.getName());
+                                orders.setIs_void(list.getIsVoid() == 1 ? true : false);
+                                orders.setIs_editing(list.getIsEditing() == 1 ? true : false);
+                                orders.setDepartmentId(list.getDepartmentId());
+                                orders.setVatAmount(list.getVatAmount());
+                                orders.setVatable(list.getVatable());
+                                orders.setVatExempt(list.getVatExempt());
+                                orders.setDiscountAmount(list.getDiscountAmount());
+                                orders.setDepartmentName(list.getDepartmentName());
+                                orders.setCategoryName(list.getCategoryName());
+                                orders.setCategoryId(list.getCategoryId());
+                                orders.setIs_sent_to_server(list.getIsSentToServer());
+                                orders.setMachine_id(list.getMachineId());
+                                orders.setBranch_id(list.getBranchId());
+                                orders.setTreg(list.getTreg());
+                                orders.setIs_room_rate(list.getIsRoomRate());
+                                orders.setIs_discount_exempt(list.getIsDiscountExempt());
+                                orders.setProduct_alacart_id(list.getProductAlacartId());
+                                orders.setProduct_group_id(list.getProductGroupId());
+                                orders.setOrders_incremental_id(list.getOrdersIncrementalId());
+                                orders.setNotes(list.getNotes() == null ? "" : list.getNotes().toString());
+                                orders.setIs_take_out(list.getIsTakeOut());
+                                orders.setSerial_number(list.getSerialNumber());
+                                orders.setIs_fixed_asset(list.getIsFixedAsset());
+
+                                orderList.add(orders);
+                            }
+
+                            transactionsViewModel.insertOrder(orderList);
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "ORDERS"));
+                        }
+                    } else {
+                        BusProvider.getInstance().post(new ServerDataCompletionModel(true, "ORDERS"));
+                    }
+
+                } catch (Exception e) {
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<OrdersServerDataResponse> call, Throwable t) {
+
+            }
+        });
+
+    }
+
+    private void paymentsDataRequest(ServerDataRequest data, IUsers iUsers) {
+        Call<PaymentsServerDataResponse> request = iUsers.paymentsServerDataRequest(data.getMapValue());
+        request.enqueue(new Callback<PaymentsServerDataResponse>() {
+            @Override
+            public void onResponse(Call<PaymentsServerDataResponse> call, Response<PaymentsServerDataResponse> response) {
+                try {
+                    if (response.body().getPayments().size() > 0) {
+                        if (transactionsViewModel.getAllPayments().size() > 0) {
+
+
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "PAYMENTS"));
+                        } else {
+                            //add loop
+                            List<Payments> paymentsList = new ArrayList<>();
+                            for (PaymentsServerDataResponse.Payment list : response.body().getPayments()) {
+                                Payments payments = new Payments();
+                                payments.setTransaction_id(list.getTransactionId());
+                                payments.setId(list.getId());
+                                payments.setCore_id(list.getCoreId());
+                                payments.setAmount(list.getAmount());
+                                payments.setName(list.getName());
+                                payments.setIs_void(list.getIsVoid() == 1 ? true : false);
+                                payments.setOther_data(list.getOtherData());
+                                payments.setCut_off_id(list.getCutOffId());
+                                payments.setIs_sent_to_server(list.getIsSentToServer());
+                                payments.setMachine_id(list.getMachineId());
+                                payments.setBranch_id(list.getBranchId());
+                                payments.setTreg(list.getTreg());
+                                paymentsList.add(payments);
+
+
+                            }
+
+                            transactionsViewModel.insertPayment(paymentsList);
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "PAYMENTS"));
+                        }
+                    } else {
+                        BusProvider.getInstance().post(new ServerDataCompletionModel(true, "PAYMENTS"));
+                    }
+
+                } catch (Exception e) {
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PaymentsServerDataResponse> call, Throwable t) {
+
+            }
+        });
+
+    }
+
+    private void orDetailsDataRequest(ServerDataRequest data, IUsers iUsers) {
+        Call<OrDetailsServerDataResponse> request = iUsers.orDetailsServerDataRequest(data.getMapValue());
+        request.enqueue(new Callback<OrDetailsServerDataResponse>() {
+            @Override
+            public void onResponse(Call<OrDetailsServerDataResponse> call, Response<OrDetailsServerDataResponse> response) {
+                try {
+                    if (response.body().getOrDetails().size() > 0) {
+                        if (transactionsViewModel.getAllOrDetails().size() > 0) {
+
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "OR DETAILS"));
+                        } else {
+                            //add loop
+                            for (OrDetailsServerDataResponse.OrDetail list : response.body().getOrDetails()) {
+                                OrDetails orDetails = new OrDetails();
+                                orDetails.setTransaction_id(list.getTransactionId());
+                                orDetails.setName(list.getName());
+                                orDetails.setAddress(list.getAddress());
+                                orDetails.setTin_number(list.getTinNumber());
+                                orDetails.setBusiness_style(list.getBusinessStyle());
+                                orDetails.setIs_sent_to_server(list.getIsSentToServer());
+                                orDetails.setMachine_id(list.getMachineId());
+                                orDetails.setBranch_id(list.getBranchId());
+                                orDetails.setTreg(list.getTreg());
+                                transactionsViewModel.insertOrDetails(orDetails);
+                            }
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "OR DETAILS"));
+                        }
+                    } else {
+                        BusProvider.getInstance().post(new ServerDataCompletionModel(true, "OR DETAILS"));
+                    }
+
+                } catch (Exception e) {
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<OrDetailsServerDataResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void transactionsDataRequest(ServerDataRequest data, IUsers iUsers) {
+        Call<TransactionsServerDataResponse> request = iUsers.transactionsServerDataRequest(data.getMapValue());
+        request.enqueue(new Callback<TransactionsServerDataResponse>() {
+            @Override
+            public void onResponse(Call<TransactionsServerDataResponse> call, Response<TransactionsServerDataResponse> response) {
+                if (response.body().getTransactions().size() > 0) {
+                    try {
+                        if (transactionsViewModel.getAllTransactions().size() > 0) {
+
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "TRANSACTIONS"));
+                        } else {
+                            //add loop
+                            for (TransactionsServerDataResponse.Transaction list : response.body().getTransactions()) {
+                                Transactions tr = new Transactions();
+                                tr.setId(list.getId());
+                                tr.setControl_number(list.getControlNumber());
+                                tr.setUser_id(list.getUserId());
+                                tr.setIs_void(list.getIsVoid() == 1 ? true : false);
+                                tr.setIs_void_by(list.getIsVoidBy() == null ? "" : list.getIsVoidBy().toString());
+                                tr.setVoid_at(list.getVoidAt() == null ? "" : list.getVoidAt().toString());
+
+                                tr.setIs_completed(list.getIsCompleted() == 1 ? true : false);
+                                tr.setIs_completed_by(list.getIsCompletedBy() == null ? "" : list.getIsCompletedBy().toString());
+                                tr.setCompleted_at(list.getCompletedAt() == null ? "" : list.getCompletedAt().toString());
+
+                                tr.setIs_saved(list.getIsSaved() == 1 ? true : false);
+                                tr.setIs_saved_by(list.getIsSavedBy() == null ? "" : list.getIsSavedBy().toString());
+                                tr.setSaved_at(list.getSavedAt() == null ? "" : list.getSavedAt().toString());
+
+                                tr.setIs_cut_off(list.getIsCutOff() == 1 ? true : false);
+                                tr.setIs_cut_off_by(list.getIsCutOffBy() == null ? "" : list.getIsCutOffBy().toString());
+                                tr.setIs_cut_off_at(list.getIsCutOffAt() == null ? "" : list.getIsCutOffAt().toString());
+
+
+                                tr.setIs_backed_out(list.getIsBackedOut() == 1 ? true : false);
+                                tr.setIs_backed_out_by(list.getIsBackedOutBy() == null ? "" : list.getIsBackedOutBy().toString());
+                                tr.setIs_backed_out_at(list.getIsBackedOutAt() == null ? "" : list.getIsBackedOutAt().toString());
+
+                                tr.setTrans_name(list.getTransName() == null ? "" : list.getTransName().toString());
+                                tr.setTreg(list.getTreg());
+                                tr.setReceipt_number(list.getReceiptNumber());
+                                tr.setGross_sales(list.getGrossSales());
+                                tr.setNet_sales(list.getNetSales());
+                                tr.setVatable_sales(list.getVatableSales());
+                                tr.setVat_exempt_sales(list.getVatExemptSales());
+                                tr.setVat_amount(list.getVatAmount());
+                                tr.setDiscount_amount(list.getDiscountAmount());
+
+                                tr.setChange(list.getChange());
+
+                                tr.setCut_off_id(list.getCutOffId());
+                                tr.setHas_special(list.getHasSpecial());
+
+
+                                tr.setIs_cancelled(list.getIsBackedOut() == 1 ? true : false);
+                                tr.setIs_cancelled_by(list.getIsCancelledBy() == null ? "" : list.getIsCancelledBy().toString());
+                                tr.setIs_cancelled_at(list.getIsCancelledAt() == null ? "" : list.getIsCancelledAt().toString());
+
+                                tr.setTin_number(list.getTinNumber());
+                                tr.setIs_sent_to_server(list.getIsSentToServer());
+
+                                tr.setMachine_id(list.getMachineId());
+                                tr.setBranch_id(list.getBranchId());
+
+                                tr.setRoom_id(list.getRoomId());
+
+                                tr.setRoom_number(list.getRoomNumber() == null ? "" : list.getRoomNumber().toString());
+
+                                tr.setCheck_in_time(list.getCheckInTime() == null ? "" : list.getCheckInTime().toString());
+                                tr.setCheck_out_time(list.getCheckOutTime() == null ? "" : list.getCheckOutTime().toString());
+
+
+                                tr.setService_charge_value(Double.valueOf(list.getServiceChargeValue()));
+                                tr.setService_charge_is_percentage(list.getServiceChargeIsPercentage() == 1 ? true : false);
+
+                                tr.setIs_shared(list.getIsShared());
+
+
+
+                                transactionsViewModel.insertTransactionWaitData(tr);
+
+                            }
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "TRANSACTIONS"));
+                        }
+                    } catch (Exception e) {
+                        Log.d("ERRORDATA-TRASN", e.getMessage());
+                    }
+
+                } else {
+                    BusProvider.getInstance().post(new ServerDataCompletionModel(true, "TRANSACTIONS"));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<TransactionsServerDataResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void cutOffDataRequest(ServerDataRequest data, IUsers iUsers) {
+        Call<CutoffServerDataResponse> request = iUsers.cutOffServerDataRequest(data.getMapValue());
+        request.enqueue(new Callback<CutoffServerDataResponse>() {
+            @Override
+            public void onResponse(Call<CutoffServerDataResponse> call, Response<CutoffServerDataResponse> response) {
+                if (response.body().getCutOff().size() > 0) {
+                    try {
+                        if (cutOffViewModel.getAllCutOffData().size() > 0) {
+
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "CUTOFF"));
+                        } else {
+                            //add loop
+                            for (CutoffServerDataResponse.CutOff list : response.body().getCutOff()) {
+                                CutOff cutOff = new CutOff();
+                                cutOff.setId(list.getId());
+                                cutOff.setNumber_of_transactions(list.getNumberOfTransactions());
+                                cutOff.setGross_sales(list.getGrossSales());
+                                cutOff.setNet_sales(list.getNetSales());
+                                cutOff.setVatable_sales(list.getVatableSales());
+                                cutOff.setVat_exempt_sales(list.getVatExemptSales());
+                                cutOff.setVat_amount(list.getVatAmount());
+                                cutOff.setVoid_amount(list.getVoidAmount());
+                                cutOff.setTotal_cash_amount(list.getTotalCashAmount());
+                                cutOff.setTotal_cash_payments(list.getTotalCashPayments());
+                                cutOff.setTotal_card_payments(list.getTotalCardPayments());
+                                cutOff.setTotal_change(Double.valueOf(list.getTotalChange()));
+
+                                cutOff.setZ_read_id(list.getzReadId());
+                                cutOff.setTreg(list.getTreg());
+
+                                cutOff.setSeniorCount(list.getSeniorCount());
+                                cutOff.setSeniorAmount(list.getSeniorAmount());
+
+                                cutOff.setPwdCount(list.getPwdCount());
+                                cutOff.setPwdAmount(list.getPwdAmount());
+
+                                cutOff.setOthersCount(list.getOthersCount());
+                                cutOff.setOthersAmount(list.getOthersAmount());
+
+                                cutOff.setTotal_payout(Double.valueOf(list.getTotalPayout()));
+                                cutOff.setBegOrNo(list.getBegOrNo());
+                                cutOff.setEndOrNo(list.getEndOrNo());
+                                cutOff.setIs_sent_to_server(list.getIsSentToServer());
+                                cutOff.setMachine_id(list.getMachineId());
+                                cutOff.setBranch_id(list.getBranchId());
+                                cutOff.setTotal_service_charge(Double.valueOf(list.getTotalServiceCharge()));
+
+                                cutOffViewModel.insertData(cutOff);
+                            }
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "CUTOFF"));
+                        }
+                    } catch (Exception e) {
+                        Log.d("ERRORDATA-CUTOFF", e.getMessage());
+                    }
+
+                } else {
+                    BusProvider.getInstance().post(new ServerDataCompletionModel(true, "CUTOFF"));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<CutoffServerDataResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void endOfDayDataRequest(ServerDataRequest data, IUsers iUsers) {
+        Call<EndOfDayServerDataResponse> request = iUsers.endOfDayServerDataRequest(data.getMapValue());
+        request.enqueue(new Callback<EndOfDayServerDataResponse>() {
+            @Override
+            public void onResponse(Call<EndOfDayServerDataResponse> call, Response<EndOfDayServerDataResponse> response) {
+                if (response.body().getEndOfDay().size() > 0) {
+                    try {
+                        if (cutOffViewModel.getAllEndOfDayData().size() > 0) {
+
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "END OF DAY"));
+                        } else {
+                            //add loop
+                            for (EndOfDayServerDataResponse.EndOfDay list : response.body().getEndOfDay()) {
+                                EndOfDay endOfDay = new EndOfDay();
+                                endOfDay.setId(list.getId());
+                                endOfDay.setNumber_of_transactions(list.getNumberOfTransactions());
+                                endOfDay.setGross_sales(list.getGrossSales());
+                                endOfDay.setNet_sales(list.getNetSales());
+                                endOfDay.setVatable_sales(list.getVatableSales());
+                                endOfDay.setVat_exempt_sales(list.getVatExemptSales());
+                                endOfDay.setVat_amount(list.getVatAmount());
+                                endOfDay.setVoid_amount(list.getVoidAmount());
+                                endOfDay.setTotal_cash_amount(list.getTotalCashAmount());
+                                endOfDay.setTotal_cash_payments(list.getTotalCashPayments());
+                                endOfDay.setTotal_card_payments(list.getTotalCardPayments());
+                                endOfDay.setTotal_change(Double.valueOf(list.getTotalChange()));
+                                endOfDay.setTreg(list.getTreg());
+                                endOfDay.setTotal_service_charge(Double.valueOf(list.getTotalServiceCharge()));
+                                endOfDay.setSeniorCount(list.getSeniorCount());
+                                endOfDay.setSeniorAmount(list.getSeniorAmount());
+                                endOfDay.setPwdCount(list.getPwdCount());
+                                endOfDay.setPwdAmount(list.getPwdAmount());
+                                endOfDay.setOthersCount(list.getOthersCount());
+                                endOfDay.setOthersAmount(list.getOthersAmount());
+                                endOfDay.setBegOrNo(list.getBegOrNo());
+                                endOfDay.setEndOrNo(list.getEndOrNo());
+                                endOfDay.setBegSales(list.getBegSales());
+                                endOfDay.setEndSales(list.getEndSales());
+                                endOfDay.setIs_sent_to_server(list.getIsSentToServer());
+                                endOfDay.setMachine_id(list.getMachineId());
+                                endOfDay.setBranch_id(list.getBranchId());
+                                endOfDay.setTotal_payout(Double.valueOf(list.getTotalPayout()));
+                                cutOffViewModel.insertData(endOfDay);
+                            }
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "END OF DAY"));
+                        }
+                    } catch (Exception e) {
+                        Log.d("ERRORDATA-EOD", e.getMessage());
+                    }
+
+                } else {
+                    BusProvider.getInstance().post(new ServerDataCompletionModel(true, "END OF DAY"));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<EndOfDayServerDataResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void postingDiscountDataRequest(ServerDataRequest data, IUsers iUsers) {
+        Call<PostingDiscountServerDataResponse> request = iUsers.postedDiscountServerDataRequest(data.getMapValue());
+        request.enqueue(new Callback<PostingDiscountServerDataResponse>() {
+            @Override
+            public void onResponse(Call<PostingDiscountServerDataResponse> call, Response<PostingDiscountServerDataResponse> response) {
+                if (response.body().getPostingDiscount().size() > 0) {
+                    try {
+                        if (discountViewModel.getAllPostedDiscount().size() > 0) {
+
+
+
+
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "POSTING DISCOUNT"));
+                        } else {
+                            //add loop
+                            for (PostingDiscountServerDataResponse.PostingDiscount list : response.body().getPostingDiscount()) {
+                                PostedDiscounts postedDiscounts = new PostedDiscounts();
+                                postedDiscounts.setId(list.getId());
+                                postedDiscounts.setTransaction_id(list.getTransactionId());
+                                postedDiscounts.setDiscount_id(list.getDiscountId());
+                                postedDiscounts.setDiscount_name(list.getDiscountName());
+                                postedDiscounts.setIs_void(list.getIsVoid() == 1 ? true : false);
+                                postedDiscounts.setCard_number(list.getCardNumber());
+                                postedDiscounts.setName(list.getName());
+                                postedDiscounts.setAddress(list.getAddress());
+
+                                postedDiscounts.setCut_off_id(list.getCutOffId());
+                                postedDiscounts.setEnd_of_day_id(list.getEndOfDayId());
+                                postedDiscounts.setAmount(list.getAmount());
+
+                                postedDiscounts.setIs_percentage(list.getIsPercentage() == 1 ? true : false);
+                                postedDiscounts.setDiscount_value(list.getDiscountValue());
+                                postedDiscounts.setIs_sent_to_server(list.getIsSentToServer());
+                                postedDiscounts.setMachine_id(list.getMachineId());
+                                postedDiscounts.setBranch_id(list.getBranchId());
+                                postedDiscounts.setTreg(list.getTreg());
+
+                                discountViewModel.insertPostedDiscount(postedDiscounts);
+                            }
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "POSTING DISCOUNT"));
+                        }
+                    } catch (Exception e) {
+
+                    }
+
+                } else {
+                    BusProvider.getInstance().post(new ServerDataCompletionModel(true, "POSTING DISCOUNT"));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PostingDiscountServerDataResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void serviceChargeDataRequest(ServerDataRequest data, IUsers iUsers) {
+        Call<ServiceChargeServerDataResponse> request = iUsers.serviceChargeServerDataRequest(data.getMapValue());
+        request.enqueue(new Callback<ServiceChargeServerDataResponse>() {
+            @Override
+            public void onResponse(Call<ServiceChargeServerDataResponse> call, Response<ServiceChargeServerDataResponse> response) {
+                if (response.body().getServiceCharge().size() > 0) {
+                    try {
+                        if (serviceChargeViewModel.getServiceChargeList().size() > 0) {
+
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "SERVICE CHARGE"));
+                        } else {
+                            //add loop
+                            for (ServiceChargeServerDataResponse.ServiceCharge list : response.body().getServiceCharge()) {
+                                ServiceCharge serviceCharge = new ServiceCharge();
+                                serviceCharge.setId(list.getId());
+                                serviceCharge.setValue(Double.valueOf(list.getValue()));
+                                serviceCharge.setIs_percentage(list.getIsPercentage() == 1 ? true : false);
+                                serviceCharge.setIs_selected(list.getIsSelected() == 1 ? true : false);
+                                serviceCharge.setIs_sent_to_server(list.getIsSentToServer());
+                                serviceCharge.setMachine_id(list.getMachineId());
+                                serviceCharge.setBranch_id(list.getBranchId());
+                                serviceChargeViewModel.insertServiceChargeSetting(serviceCharge);
+                            }
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "SERVICE CHARGE"));
+                        }
+                    } catch (Exception e) {
+
+                    }
+
+                } else {
+                    BusProvider.getInstance().post(new ServerDataCompletionModel(true, "SERVICE CHARGE"));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ServiceChargeServerDataResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void serialNumberDataRequest(ServerDataRequest data, IUsers iUsers) {
+        Call<SerialNumbersServerDataResponse> request = iUsers.serialNumberServerDataRequest(data.getMapValue());
+        request.enqueue(new Callback<SerialNumbersServerDataResponse>() {
+            @Override
+            public void onResponse(Call<SerialNumbersServerDataResponse> call, Response<SerialNumbersServerDataResponse> response) {
+                if (response.body().getSerialNumbers().size() > 0) {
+                    try {
+                        if (transactionsViewModel.getSerialNumbers().size() > 0) {
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "SERIAL NUMBER"));
+                        } else {
+                            //add loop
+                            for (SerialNumbersServerDataResponse.SerialNumber list : response.body().getSerialNumbers()) {
+                                SerialNumbers serialNumbers = new SerialNumbers();
+                                serialNumbers.setId(list.getId());
+                                serialNumbers.setTransaction_id(list.getTransactionId());
+                                serialNumbers.setSerial_number(list.getSerialNumber());
+                                serialNumbers.setTreg(list.getTreg());
+                                serialNumbers.setIs_void(list.getIsVoid()== 1 ? true : false);
+                                serialNumbers.setIs_void_at(list.getIsVoidAt());
+                                serialNumbers.setProduct_core_id(list.getProductCoreId());
+                                serialNumbers.setProduct_name(list.getProductName());
+                                serialNumbers.setFor_update(list.getForUpdate());
+                                serialNumbers.setIs_sent_to_server(list.getIsSentToServer());
+                                serialNumbers.setOrder_id(list.getOrderId());
+                                serialNumbers.setMachine_id(list.getMachineId());
+                                serialNumbers.setBranch_id(list.getBranchId());
+                                transactionsViewModel.insertSerialNumbers(serialNumbers);
+                            }
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "SERIAL NUMBER"));
+                        }
+                    } catch (Exception e) {
+
+                    }
+
+                } else {
+                    BusProvider.getInstance().post(new ServerDataCompletionModel(true, "SERIAL NUMBER"));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<SerialNumbersServerDataResponse> call, Throwable t) {
+
+            }
+        });
+
+    }
+
+    private void payoutDataRequest(ServerDataRequest data, IUsers iUsers) {
+        Call<PayoutServerDataResponse> request = iUsers.payoutServerDataRequest(data.getMapValue());
+        request.enqueue(new Callback<PayoutServerDataResponse>() {
+            @Override
+            public void onResponse(Call<PayoutServerDataResponse> call, Response<PayoutServerDataResponse> response) {
+                if (response.body().getPayouts().size() > 0) {
+                    try {
+                        if (transactionsViewModel.payoutList().size() > 0) {
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "PAYOUT"));
+                        } else {
+                            for (PayoutServerDataResponse.Payout list : response.body().getPayouts()) {
+                                Payout payout = new Payout();
+                                payout.setId(list.getId());
+                                payout.setSeries_number(list.getSeriesNumber());
+                                payout.setUsername(list.getUsername());
+                                payout.setAmount(Double.valueOf(list.getAmount()));
+                                payout.setReason(list.getReason());
+                                payout.setManager_username(list.getManagerUsername());
+                                payout.setTreg(list.getTreg());
+                                payout.setIs_sent_to_server(list.getIsSentToServer());
+                                payout.setMachine_id(list.getMachineId());
+                                payout.setBranch_id(list.getBranchId());
+                                payout.setIs_cut_off(list.getIsCutOff() == 0 ? false : true);
+                                payout.setIs_cut_off_by(list.getIsCutOffBy());
+                                payout.setIs_cut_off_at(list.getIsCutOffAt());
+                                payout.setCut_off_id(list.getCutOffId());
+                                transactionsViewModel.insertPayoutData(payout);
+                            }
+
+                            BusProvider.getInstance().post(new ServerDataCompletionModel(true, "PAYOUT"));
+                        }
+                    } catch (Exception e) {
+
+                    }
+
+                } else {
+                    BusProvider.getInstance().post(new ServerDataCompletionModel(true, "PAYOUT"));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PayoutServerDataResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void initViewModels() {
+        serviceChargeViewModel = new ViewModelProvider(this).get(ServiceChargeViewModel.class);
+        discountViewModel = new ViewModelProvider(this).get(DiscountViewModel.class);
+        transactionsViewModel = new ViewModelProvider(this).get(TransactionsViewModel.class);
     }
 
     private void updateThemeSelection(boolean isChecked) throws ExecutionException, InterruptedException {
@@ -215,6 +923,8 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     }
 
     private void initViews() {
+        progressNotOkay = findViewById(R.id.progress);
+        progressOkay = findViewById(R.id.progressOkay);
         leftFrame = findViewById(R.id.leftFrame);
         rightFrame = findViewById(R.id.rightFrame);
         bottomFrame = findViewById(R.id.bottomFrame);
@@ -420,6 +1130,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     }
 
     private void logoutUser() throws ExecutionException, InterruptedException{
+//        SharedPreferenceManager.saveString(MainActivity.this, "0", AppConstants.HAS_CHECKED_DATA_FROM_SERVER);
         User user = userViewModel.searchLoggedInUser().get(0);
         user.setIs_logged_in(false);
         userViewModel.update(user);
@@ -940,5 +1651,55 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
     }
 
+    @Subscribe
+    public void hasPendingDataOnLocal(HasPendingDataOnLocalModel hasPendingDataOnLocalModel) {
+        if (hasPendingDataOnLocalModel.isHasPending()) {
+            //show loading on progress
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    progressOkay.setVisibility(View.GONE);
+                    progressNotOkay.setVisibility(View.VISIBLE);
+                }
+            });
+
+        } else {
+            //show check on progress
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    progressOkay.setVisibility(View.VISIBLE);
+                    progressNotOkay.setVisibility(View.GONE);
+                }
+            });
+        }
+    }
+
+    @Subscribe
+    public void serverDataCompletion(ServerDataCompletionModel serverDataCompletionModel) {
+
+        totalSyncCount += 1;
+        Log.d("RECEIVEDDATA", String.valueOf(totalSyncCount) + "-" + serverDataCompletionModel.getTable());
+        if (totalSyncCount == totalSyncRequired) {
+            SharedPreferenceManager.saveString(MainActivity.this, "1", AppConstants.HAS_CHECKED_DATA_FROM_SERVER);
+
+            initDataSyncViewModel();
+            openFragment(R.id.bottomFrame, new BottomFrameFragment());
+            openFragment(R.id.leftFrame, new LeftFrameFragment());
+            openFragment(R.id.rightFrame, new RightFrameFragment());
+            myPrintJobs = new ArrayList<>();
+            initViews();
+            tvTime.setText(Utils.getDateTimeToday());
+            initUserViewModel();
+            setUserData();
+            initILocalizeReceipts();
+            startTimerService();
+            initCutOffViewModel();
+            initToggleThemeListener();
+            initThemeSelectionListener();
+
+
+        }
+    }
 
 }

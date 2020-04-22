@@ -39,6 +39,10 @@ public class ProductsViewModel extends AndroidViewModel {
         return transactionsRepository.getBranchGroupViaProductIdAndProductGroupId(product_id, product_group_id);
     }
 
+    public List<ProductAlacart> getAlaCartExisting(String product_id, String product_alacart_id) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getAlaCartExisting(product_id, product_alacart_id);
+    }
+
 
     public Products findProductViaBarcode(String barcode) throws ExecutionException, InterruptedException {
         return productsRepository.findProductViaBarcode(barcode);

@@ -22,6 +22,10 @@ public interface OrDetailsDao {
     @Update
     void update(OrDetails orDetails);
 
+
+    @Query("SELECT * FROM OrDetails")
+    List<OrDetails> getAllOrDetails();
+
     @Query("SELECT * FROM OrDetails WHERE transaction_id = :transaction_id")
     OrDetails orDetails(String transaction_id);
 

@@ -61,6 +61,14 @@ public class DiscountViewModel extends AndroidViewModel {
         return discountsRepository.getLastPostedDiscount(transaction_id);
     }
 
+    public List<PostedDiscounts> getAllPostedDiscount() throws ExecutionException, InterruptedException {
+        return discountsRepository.getAllPostedDiscount();
+    }
+
+    public List<OrderDiscounts> getAllOrderDiscount() throws ExecutionException, InterruptedException {
+        return discountsRepository.getAllOrderDiscount();
+    }
+
     public List<TransactionWithDiscounts> getTransactionWithDiscounts(String transaction_id) throws ExecutionException, InterruptedException {
         return discountsRepository.getTransactionWithDiscounts(transaction_id);
     }

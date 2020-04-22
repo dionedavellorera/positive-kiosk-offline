@@ -73,6 +73,8 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
     private SyncDataAdapter syncDataAdapter;
 
 
+    private boolean productExecuting = false;
+
     ProgressDialog progressDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -212,9 +214,13 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                         userViewModel.fetchUserRequest();
                     }
 
-                    if (!syncModelList.get(1).getSynced()) {
-                        productsViewModel.fetchProductsRequest();
+                    if (productExecuting == false) {
+                        if (!syncModelList.get(1).getSynced()) {
+                            productExecuting = true;
+                            productsViewModel.fetchProductsRequest();
+                        }
                     }
+
 
                     if (!syncModelList.get(2).getSynced()) {
                         dataSyncViewModel.requestPaymentType();
@@ -337,6 +343,7 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 dataSyncViewModel.updateIsSynced(syncModelList.get(0));
                 break;
             case "products":
+                productExecuting = false;
                 syncModelList.get(1).setSynced(true);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(1));
                 break;

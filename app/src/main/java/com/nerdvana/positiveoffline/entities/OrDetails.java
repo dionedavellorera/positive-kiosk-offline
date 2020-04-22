@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.entities;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "OrDetails")
@@ -101,4 +102,6 @@ public class OrDetails {
     public void setBusiness_style(@NonNull String business_style) {
         this.business_style = business_style;
     }
+
+    public OrDetails() {}
 }

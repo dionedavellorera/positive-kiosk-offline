@@ -212,6 +212,33 @@ public class CutOffRepository {
         return future.get();
     }
 
+    public List<CutOff> getAllCutOffData() throws ExecutionException, InterruptedException {
+        Callable<List<CutOff>> callable = new Callable<List<CutOff>>() {
+            @Override
+            public List<CutOff> call() throws Exception {
+                return cutOffDao.getAllCutOffData();
+            }
+        };
+
+        Future<List<CutOff>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public List<EndOfDay> getAllEndOfDayData() throws ExecutionException, InterruptedException {
+        Callable<List<EndOfDay>> callable = new Callable<List<EndOfDay>>() {
+            @Override
+            public List<EndOfDay> call() throws Exception {
+                return endOfDayDao.getAllEndOfDayData();
+            }
+        };
+
+        Future<List<EndOfDay>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
+
+
     public List<Payments> getAllPayments() throws ExecutionException, InterruptedException {
         Callable<List<Payments>> callable = new Callable<List<Payments>>() {
             @Override

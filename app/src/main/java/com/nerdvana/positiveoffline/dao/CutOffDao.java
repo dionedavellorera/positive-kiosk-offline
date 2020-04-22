@@ -18,6 +18,10 @@ public interface CutOffDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(CutOff cutOffList);
 
+
+    @Query("SELECT * FROM CutOff")
+    List<CutOff> getAllCutOffData();
+
     @Query("SELECT * FROM CutOff WHERE id = :cut_off_id")
     CutOff cutOffData(long cut_off_id);
 

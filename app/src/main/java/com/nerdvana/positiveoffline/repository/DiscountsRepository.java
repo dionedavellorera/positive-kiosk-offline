@@ -70,6 +70,33 @@ public class DiscountsRepository {
         return future.get();
     }
 
+    public List<PostedDiscounts> getAllPostedDiscount() throws ExecutionException, InterruptedException {
+        Callable<List<PostedDiscounts>> callable = new Callable<List<PostedDiscounts>>() {
+            @Override
+            public List<PostedDiscounts> call() throws Exception {
+                return postedDiscountsDao.getAllPostedDiscount();
+            }
+        };
+
+        Future<List<PostedDiscounts>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
+
+    public List<OrderDiscounts> getAllOrderDiscount() throws ExecutionException, InterruptedException {
+        Callable<List<OrderDiscounts>> callable = new Callable<List<OrderDiscounts>>() {
+            @Override
+            public List<OrderDiscounts> call() throws Exception {
+                return orderDiscountsDao.getAllOrderDiscounts();
+            }
+        };
+
+        Future<List<OrderDiscounts>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
 
 
     public List<OdWithPd> odWithPd(final int transactionId) throws ExecutionException, InterruptedException {

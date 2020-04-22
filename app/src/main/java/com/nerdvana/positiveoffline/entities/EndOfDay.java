@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.entities;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "EndOfDay")
@@ -45,6 +46,8 @@ public class EndOfDay {
 
     private Double total_payout = 0.00;
 
+    @Ignore
+    public EndOfDay() {}
 
     public EndOfDay(int number_of_transactions, Double gross_sales,
                     Double net_sales, Double vatable_sales,

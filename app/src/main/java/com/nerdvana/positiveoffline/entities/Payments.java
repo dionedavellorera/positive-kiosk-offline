@@ -3,6 +3,7 @@ package com.nerdvana.positiveoffline.entities;
 import androidx.annotation.NonNull;
 import androidx.room.Dao;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "Payments")
@@ -30,6 +31,9 @@ public class Payments {
     private int branch_id;
 
     private String treg;
+
+    @Ignore
+    public Payments() {}
 
 
 

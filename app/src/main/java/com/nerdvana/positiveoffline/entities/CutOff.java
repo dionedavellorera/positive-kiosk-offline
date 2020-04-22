@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.entities;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "CutOff")
@@ -39,6 +40,9 @@ public class CutOff {
     private int branch_id;
 
     private Double total_service_charge = 0.00;
+
+    @Ignore
+    public CutOff() {}
 
     public CutOff(int number_of_transactions, Double gross_sales,
                   Double net_sales, Double vatable_sales,

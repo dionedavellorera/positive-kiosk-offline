@@ -16,6 +16,10 @@ public interface EndOfDayDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insert(EndOfDay endOfDay);
 
+
+    @Query("SELECT * FROM EndOfDay")
+    List<EndOfDay> getAllEndOfDayData();
+
     @Query("SELECT * FROM EndOfDay WHERE id = :end_of_day_id")
     EndOfDay endOfDayData(long end_of_day_id);
 

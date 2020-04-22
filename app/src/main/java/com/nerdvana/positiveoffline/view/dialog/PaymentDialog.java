@@ -583,7 +583,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                 tmp.getIs_cancelled(),
                                 tmp.getIs_cancelled_by(),
                                 tmp.getIs_cancelled_at(),
-                                tmp.getTin_number(),
+                                TextUtils.isEmpty(tmp.getTin_number()) ? "" : tmp.getTin_number(),
                                 tmp.getIs_backed_out(),
                                 tmp.getIs_backed_out_by(),
                                 tmp.getIs_backed_out_at()

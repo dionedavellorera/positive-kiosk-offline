@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.entities;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "SerialNumbers")
@@ -26,6 +27,10 @@ public class SerialNumbers {
 
     private int machine_id;
     private int branch_id;
+
+    @Ignore
+    public SerialNumbers() {}
+
     public SerialNumbers(int transaction_id, String serial_number,
                          String treg, int product_core_id,
                          String product_name, int order_id,

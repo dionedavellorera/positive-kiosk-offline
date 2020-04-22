@@ -83,6 +83,9 @@ public class Transactions {
     }
 
     @Ignore
+    public Transactions() {}
+
+    @Ignore
     public Transactions(int id, @NonNull String control_number,
                         @NonNull String user_id, Boolean is_void,
                         String is_void_by, Boolean is_completed,
@@ -484,4 +487,6 @@ public class Transactions {
     public void setIs_shared(int is_shared) {
         this.is_shared = is_shared;
     }
+
+
 }

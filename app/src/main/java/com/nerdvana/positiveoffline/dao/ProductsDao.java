@@ -47,6 +47,7 @@ public interface ProductsDao {
     List<BranchGroup> getBranchGroupViaProductIdAndProductGroupId(String product_id, String product_group_id);
 
 
+
     @Query("SELECT * FROM BranchGroup WHERE branch_group_id = :branch_group_id")
     List<BranchGroup> getFilteredProductsPerCategory(String branch_group_id);
 
@@ -56,6 +57,9 @@ public interface ProductsDao {
 
     @Query("SELECT * FROM ProductAlacart WHERE product_id = :product_id")
     List<ProductAlacart> getBranchAlacart(String product_id);
+
+    @Query("SELECT * FROM ProductAlacart WHERE product_id = :product_id AND product_alacart_id = :product_alacart_id")
+    List<ProductAlacart> getAlaCartExisting(String product_id, String product_alacart_id);
 
 
 }

@@ -47,6 +47,7 @@ import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.SerialNumbers;
 import com.nerdvana.positiveoffline.entities.ServiceCharge;
 import com.nerdvana.positiveoffline.entities.Transactions;
+import com.nerdvana.positiveoffline.model.HasPendingDataOnLocalModel;
 import com.nerdvana.positiveoffline.model.ReprintReceiptData;
 import com.nerdvana.positiveoffline.model.ServerConnectionTest;
 import com.nerdvana.positiveoffline.model.ShiftUpdateModel;
@@ -89,7 +90,7 @@ public class TimerService extends Service {
                 }
 
                 if (secsOfDate % 5 == 0) {
-                    BusProvider.getInstance().post(new ServerConnectionTest(""));
+//                    BusProvider.getInstance().post(new ServerConnectionTest(""));
                 }
 
                 if (secsOfDate % 99999999 == 0) {
@@ -112,7 +113,6 @@ public class TimerService extends Service {
                                 final PaymentsDao paymentsDao = posDatabase.paymentsDao();
                                 final OrdersDao ordersDao = posDatabase.ordersDao();
                                 final OrderDiscountsDao orderDiscountsDao = posDatabase.orderDiscountsDao();
-
                                 final PayoutDao payoutDao = posDatabase.payoutDao();
                                 final SerialNumbersDao serialNumbersDao = posDatabase.serialNumbersDao();
                                 final ServiceChargeDao serviceChargeDao = posDatabase.serviceChargeDao();
@@ -125,13 +125,13 @@ public class TimerService extends Service {
                                 final List<Payments> unsynedPayments = paymentsDao.unsyncedPayments();
                                 final List<Orders> unsyncedOrders = ordersDao.unsyncedOrders();
                                 final List<OrderDiscounts> unsyncedOrderDiscounts = orderDiscountsDao.unsyncedOrderDiscounts();
-
-                                final List<Payout> unsyncedPayouts = payoutDao.getUnCutOffPayouts();
-                                final List<SerialNumbers> unsyncedSerialNumbers = serialNumbersDao.uncutOffSerialNumbers();
+                                final List<Payout> unsyncedPayouts = payoutDao.getUnsyncedPayouts();
+                                final List<SerialNumbers> unsyncedSerialNumbers = serialNumbersDao.getUnsyncedSerialNumbers();
                                 final List<ServiceCharge> unsyncedServiceCharge = serviceChargeDao.getUnsyncedServiceCharge();
 
 
                                 IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+
 
 
 
@@ -313,22 +313,22 @@ public class TimerService extends Service {
                                     call.enqueue(new Callback<ResponseBody>() {
                                         @Override
                                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-//                                            String message = "";
-//
-//                                            for (final EndOfDay endOfDay : unsyncedEndOfDay) {
-//
-//                                                message += "END OF DAY ID - " + endOfDay.getId() + "PROCESSED\n";
-//                                                AsyncTask.execute(new Runnable() {
-//                                                    @Override
-//                                                    public void run() {
-//                                                        endOfDay.setIs_sent_to_server(1);
-//                                                        endOfDayDao.update(endOfDay);
-//                                                    }
-//                                                });
-//
-//                                            }
-//                                            saveToTextFile(message);
-//                                            message = "";
+                                            String message = "";
+
+                                            for (final EndOfDay endOfDay : unsyncedEndOfDay) {
+
+                                                message += "END OF DAY ID - " + endOfDay.getId() + "PROCESSED\n";
+                                                AsyncTask.execute(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        endOfDay.setIs_sent_to_server(1);
+                                                        endOfDayDao.update(endOfDay);
+                                                    }
+                                                });
+
+                                            }
+                                            saveToTextFile(message);
+                                            message = "";
                                         }
 
                                         @Override
@@ -357,19 +357,19 @@ public class TimerService extends Service {
                                     call.enqueue(new Callback<ResponseBody>() {
                                         @Override
                                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-//                                            String message = "";
-//                                            for (final CutOff cutOff : unsyncedCutOff) {
-//                                                message += "CUTOFF ID - " + cutOff.getId() + "PROCESSED\n";
-//                                                AsyncTask.execute(new Runnable() {
-//                                                    @Override
-//                                                    public void run() {
-//                                                        cutOff.setIs_sent_to_server(1);
-//                                                        cutOffDao.update(cutOff);
-//                                                    }
-//                                                });
-//                                            }
-//                                            saveToTextFile(message);
-//                                            message = "";
+                                            String message = "";
+                                            for (final CutOff cutOff : unsyncedCutOff) {
+                                                message += "CUTOFF ID - " + cutOff.getId() + "PROCESSED\n";
+                                                AsyncTask.execute(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        cutOff.setIs_sent_to_server(1);
+                                                        cutOffDao.update(cutOff);
+                                                    }
+                                                });
+                                            }
+                                            saveToTextFile(message);
+                                            message = "";
                                         }
 
                                         @Override
@@ -396,19 +396,19 @@ public class TimerService extends Service {
                                     call.enqueue(new Callback<ResponseBody>() {
                                         @Override
                                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-//                                            String message = "";
-//                                            for (final Transactions transactions : unsyncedTransactions) {
-//                                                message += "TRANSACTIONS ID - " + transactions.getId() + "PROCESSED\n";
-//                                                AsyncTask.execute(new Runnable() {
-//                                                    @Override
-//                                                    public void run() {
-//                                                        transactions.setIs_sent_to_server(1);
-//                                                        transactionsDao.update(transactions);
-//                                                    }
-//                                                });
-//                                            }
-//                                            saveToTextFile(message);
-//                                            message = "";
+                                            String message = "";
+                                            for (final Transactions transactions : unsyncedTransactions) {
+                                                message += "TRANSACTIONS ID - " + transactions.getId() + "PROCESSED\n";
+                                                AsyncTask.execute(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        transactions.setIs_sent_to_server(1);
+                                                        transactionsDao.update(transactions);
+                                                    }
+                                                });
+                                            }
+                                            saveToTextFile(message);
+                                            message = "";
                                         }
 
                                         @Override
@@ -577,6 +577,26 @@ public class TimerService extends Service {
                                 //endregion
 
                                 //endregion
+
+
+                                if (unsyncedEndOfDay.size() > 0
+                                        || unsyncedCutOff.size() > 0
+                                        || unsyncedTransactions.size() > 0
+                                        || unsyncedOrDetails.size() > 0
+                                        || unsyncedPostedDiscounts.size() > 0
+                                        || unsynedPayments.size() > 0
+                                        || unsyncedOrders.size() > 0
+                                        || unsyncedOrderDiscounts.size() > 0
+                                        || unsyncedPayouts.size() > 0
+                                        || unsyncedSerialNumbers.size() > 0
+                                        || unsyncedServiceCharge.size() > 0) {
+                                    //post to main activity with pending
+                                    BusProvider.getInstance().post(new HasPendingDataOnLocalModel(true));
+                                } else {
+                                    //post to activity without pending
+                                    BusProvider.getInstance().post(new HasPendingDataOnLocalModel(false));
+                                }
+
 
                                 return null;
                             }

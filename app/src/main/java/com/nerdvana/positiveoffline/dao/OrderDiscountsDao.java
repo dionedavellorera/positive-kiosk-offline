@@ -20,6 +20,8 @@ public interface OrderDiscountsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(List<OrderDiscounts> orderDiscountsList);
 
+    @Query("SELECT * FROM OrderDiscounts")
+    List<OrderDiscounts> getAllOrderDiscounts();
 
     @Query("SELECT * FROM OrderDiscounts where is_sent_to_server = 0")
     List<OrderDiscounts> unsyncedOrderDiscounts();

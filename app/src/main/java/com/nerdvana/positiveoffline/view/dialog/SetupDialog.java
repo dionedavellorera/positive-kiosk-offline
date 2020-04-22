@@ -16,6 +16,7 @@ import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.IUsers;
 import com.nerdvana.positiveoffline.PosClient;
+import com.nerdvana.positiveoffline.PosClientCompany;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.apirequests.TestRequest;
@@ -122,6 +123,11 @@ public abstract class SetupDialog extends BaseDialog implements View.OnClickList
                 PosClient.changeApiBaseUrl(
                         apiBaseUrl
                 );
+
+                String apiBaseUrlCompany = String.format("%s/%s/",
+                        etHostName.getText().toString(),
+                        "api");
+                PosClientCompany.changeApiBaseUrl(apiBaseUrlCompany);
                 progressDialog.show();
                 IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
                 TestRequest collectionRequest = new TestRequest("test");

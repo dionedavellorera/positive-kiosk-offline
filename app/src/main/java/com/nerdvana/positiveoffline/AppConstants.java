@@ -6,6 +6,7 @@ public class AppConstants {
     public static final String CODE = "code";
     public static final String SERIAL_NUMBER = "serial_number";
     public static final String API_BASE_URL = "base_url";
+    public static final String API_BASE_URL_COMPANY = "base_url_company";
     public static final String MACHINE_ID = "machine_id";
     public static final String BUSINESS_NAME = "business_name";
     public static final String TAXPAYERS_NAME = "taxpayers_name";
@@ -34,4 +35,5 @@ public class AppConstants {
     public static final String SELECTED_SYSTEM_TYPE = "selected_system_type";
 
     public static final String HAS_CHANGED = "has_changed";
+    public static final String HAS_CHECKED_DATA_FROM_SERVER = "has_checked_data_from_server";
 }

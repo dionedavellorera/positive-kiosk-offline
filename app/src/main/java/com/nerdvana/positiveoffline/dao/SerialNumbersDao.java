@@ -17,6 +17,10 @@ public interface SerialNumbersDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(SerialNumbers serialNumbersList);
 
+    @Query("SELECT * FROM SerialNumbers ")
+    List<SerialNumbers> getSerialNumbers();
+
+
     @Query("SELECT * FROM SerialNumbers WHERE transaction_id = :transaction_id AND is_void = 0")
     List<SerialNumbers> serialNumbersList(String transaction_id);
 
@@ -24,7 +28,7 @@ public interface SerialNumbersDao {
     List<SerialNumbers> serialNumbersListOrderId(int order_id);
 
     @Query("SELECT * FROM SerialNumbers WHERE is_sent_to_server = 0")
-    List<SerialNumbers> uncutOffSerialNumbers();
+    List<SerialNumbers> getUnsyncedSerialNumbers();
 
     @Update()
     void update(SerialNumbers serialNumbers);

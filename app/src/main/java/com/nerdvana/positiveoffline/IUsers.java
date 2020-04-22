@@ -1,5 +1,7 @@
 package com.nerdvana.positiveoffline;
 
+import com.nerdvana.positiveoffline.apiresponses.CutoffServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.EndOfDayServerDataResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCashDenominationResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
@@ -8,7 +10,16 @@ import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchRoomResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchRoomStatusResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
+import com.nerdvana.positiveoffline.apiresponses.OrDetailsServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.OrderDiscountsServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.OrdersServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.PaymentsServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.PayoutServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.PostingDiscountServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.SerialNumbersServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.ServiceChargeServerDataResponse;
 import com.nerdvana.positiveoffline.apiresponses.TestResponse;
+import com.nerdvana.positiveoffline.apiresponses.TransactionsServerDataResponse;
 import com.nerdvana.positiveoffline.apiresponses.VerifyMachineResponse;
 import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
@@ -149,4 +160,38 @@ public interface IUsers {
     @FormUrlEncoded
     Call<FetchRoomStatusResponse> fetchRoomStatusRequest(@FieldMap Map<String, String> params);
 
+
+    @POST("fetchPOSMachineInformations/payouts")
+    @FormUrlEncoded
+    Call<PayoutServerDataResponse> payoutServerDataRequest(@FieldMap Map<String, String> params);
+    @POST("fetchPOSMachineInformations/serialnumbers")
+    @FormUrlEncoded
+    Call<SerialNumbersServerDataResponse> serialNumberServerDataRequest(@FieldMap Map<String, String> params);
+    @POST("fetchPOSMachineInformations/servicecharge")
+    @FormUrlEncoded
+    Call<ServiceChargeServerDataResponse> serviceChargeServerDataRequest(@FieldMap Map<String, String> params);
+    @POST("fetchPOSMachineInformations/postingdiscount")
+    @FormUrlEncoded
+    Call<PostingDiscountServerDataResponse> postedDiscountServerDataRequest(@FieldMap Map<String, String> params);
+    @POST("fetchPOSMachineInformations/endofday")
+    @FormUrlEncoded
+    Call<EndOfDayServerDataResponse> endOfDayServerDataRequest(@FieldMap Map<String, String> params);
+    @POST("fetchPOSMachineInformations/cutoff")
+    @FormUrlEncoded
+    Call<CutoffServerDataResponse> cutOffServerDataRequest(@FieldMap Map<String, String> params);
+    @POST("fetchPOSMachineInformations/transactions")
+    @FormUrlEncoded
+    Call<TransactionsServerDataResponse> transactionsServerDataRequest(@FieldMap Map<String, String> params);
+    @POST("fetchPOSMachineInformations/ordetails")
+    @FormUrlEncoded
+    Call<OrDetailsServerDataResponse> orDetailsServerDataRequest(@FieldMap Map<String, String> params);
+    @POST("fetchPOSMachineInformations/payments")
+    @FormUrlEncoded
+    Call<PaymentsServerDataResponse> paymentsServerDataRequest(@FieldMap Map<String, String> params);
+    @POST("fetchPOSMachineInformations/orders")
+    @FormUrlEncoded
+    Call<OrdersServerDataResponse> ordersServerDataRequest(@FieldMap Map<String, String> params);
+    @POST("fetchPOSMachineInformations/orderdiscounts")
+    @FormUrlEncoded
+    Call<OrderDiscountsServerDataResponse> orderDiscountsServerDataRequest(@FieldMap Map<String, String> params);
 }

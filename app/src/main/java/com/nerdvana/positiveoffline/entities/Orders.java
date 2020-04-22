@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.room.Embedded;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "Orders")
@@ -60,6 +61,9 @@ public class Orders {
     private String serial_number = "";
 
     private int is_fixed_asset = 0;
+
+    @Ignore
+    public Orders() {}
 
     public Orders(int transaction_id, int core_id,
                   int qty, @NonNull Double amount,

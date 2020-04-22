@@ -42,6 +42,9 @@ public interface TransactionsDao {
     @Query("SELECT * FROM Transactions WHERE is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0 AND is_shared = 0")
     List<Transactions> transactionsList();
 
+    @Query("SELECT * FROM Transactions")
+    List<Transactions> getAllTransactions();
+
     @Query("SELECT * FROM Transactions WHERE is_cut_off = 0 AND (is_completed = 1 OR is_void = 1)")
     List<Transactions> unCutOffTransactions();
 

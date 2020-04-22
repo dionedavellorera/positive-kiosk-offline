@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.entities;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "ServiceCharge")
@@ -17,6 +18,10 @@ public class ServiceCharge {
     private int is_sent_to_server = 0;
     private int machine_id;
     private int branch_id;
+
+    @Ignore
+    public ServiceCharge() {}
+
     public ServiceCharge(Double value, boolean is_percentage,
                          int machine_id, int branch_id) {
         this.branch_id = branch_id;

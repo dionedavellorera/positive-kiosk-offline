@@ -18,6 +18,9 @@ public interface PaymentsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(List<Payments> paymentList);
 
+    @Query("SELECT * FROM Payments")
+    List<Payments> getAllPayments();
+
     @Query("SELECT * FROM Payments WHERE is_sent_to_server = 0")
     List<Payments> unsyncedPayments();
 

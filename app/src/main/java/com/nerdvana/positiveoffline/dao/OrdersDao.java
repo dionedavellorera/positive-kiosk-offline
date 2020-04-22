@@ -34,6 +34,9 @@ public interface OrdersDao {
     List<Orders> orderList(String transaction_id);
 
 
+    @Query("SELECT * FROM Orders")
+    List<Orders> getAllOrders();
+
     @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id AND is_void = 0 AND is_fixed_asset = 1")
     List<Orders> orderListWithFixedAsset(String transaction_id);
 

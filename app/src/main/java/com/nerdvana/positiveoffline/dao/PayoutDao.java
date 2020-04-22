@@ -20,9 +20,14 @@ public interface PayoutDao {
     @Query("SELECT * FROM Payout WHERE series_number != '' ORDER BY id DESC LIMIT 1 ")
     Payout lastPayoutSeries();
 
+    @Query("SELECT * FROM Payout WHERE is_sent_to_server = 0")
+    List<Payout> getUnsyncedPayouts();
+
     @Query("SELECT * FROM Payout WHERE cut_off_id = 0")
     List<Payout> getUnCutOffPayouts();
 
+    @Query("SELECT * FROM Payout")
+    List<Payout> getPayoutList();
 
     @Update
     public void update(Payout payout);

@@ -68,6 +68,10 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.getSerialNumberFromTransaction(String.valueOf(transactionId));
     }
 
+    public List<SerialNumbers> getSerialNumbers() throws ExecutionException, InterruptedException {
+        return transactionsRepository.getSerialNumbers();
+    }
+
     public List<SerialNumbers> serialNumberFromOrderId(int orderId) throws ExecutionException, InterruptedException {
         return transactionsRepository.getSerialNumberFromOrderId(orderId);
     }
@@ -370,6 +374,10 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.getOrDetails(transactionId);
     }
 
+    public List<OrDetails> getAllOrDetails() throws ExecutionException, InterruptedException {
+        return transactionsRepository.getAllOrDetails();
+    }
+
 
 
     public void updateEditingOrderList(String transactionId) {
@@ -440,6 +448,14 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.getPaymentList(transactionId);
     }
 
+    public List<Payments> getAllPayments() throws ExecutionException, InterruptedException {
+        return transactionsRepository.getAllPayments();
+    }
+
+    public List<Payout> payoutList() throws ExecutionException, InterruptedException {
+        return transactionsRepository.getPayoutList();
+    }
+
     public List<Orders> roomRateList(String transactionId) throws ExecutionException, InterruptedException {
         return transactionsRepository.getRoomRateList(transactionId);
     }
@@ -451,6 +467,10 @@ public class TransactionsViewModel extends AndroidViewModel {
 
     public List<Orders> orderList(String transactionId) throws ExecutionException, InterruptedException {
         return transactionsRepository.getOrderList(transactionId);
+    }
+
+    public List<Orders> getAllOrders() throws ExecutionException, InterruptedException {
+        return transactionsRepository.getAllOrders();
     }
 
     public List<Orders> orderListWithFixedAsset(String transactionId) throws ExecutionException, InterruptedException {
@@ -468,6 +488,10 @@ public class TransactionsViewModel extends AndroidViewModel {
 
     public List<Transactions> transactionList() throws ExecutionException, InterruptedException {
         return transactionsRepository.getLatestTransaction();
+    }
+
+    public List<Transactions> getAllTransactions() throws ExecutionException, InterruptedException {
+        return transactionsRepository.getAllTransactions();
     }
 
     public List<Transactions> loadedTransactionList(String transactionId) throws ExecutionException, InterruptedException {

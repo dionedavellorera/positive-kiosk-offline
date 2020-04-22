@@ -96,6 +96,18 @@ public class TransactionsRepository {
 
 
 
+    public List<ProductAlacart> getAlaCartExisting(final String productId, final String productGroupId) throws ExecutionException, InterruptedException {
+        Callable<List<ProductAlacart>> callable = new Callable<List<ProductAlacart>>() {
+            @Override
+            public List<ProductAlacart> call() throws Exception {
+                return productsDao.getAlaCartExisting(productId, productGroupId);
+            }
+        };
+
+        Future<List<ProductAlacart>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
     public List<BranchGroup> getFilteredProductsPerCategory(final String branch_group_id) throws ExecutionException, InterruptedException {
         Callable<List<BranchGroup>> callable = new Callable<List<BranchGroup>>() {
             @Override
@@ -284,6 +296,19 @@ public class TransactionsRepository {
         return future.get();
     }
 
+
+    public List<Orders> getAllOrders() throws ExecutionException, InterruptedException {
+        Callable<List<Orders>> callable = new Callable<List<Orders>>() {
+            @Override
+            public List<Orders> call() throws Exception {
+                return ordersDao.getAllOrders();
+            }
+        };
+
+        Future<List<Orders>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
     public List<Orders> getOrderListWithAsset(final String transactionId) throws ExecutionException, InterruptedException {
         Callable<List<Orders>> callable = new Callable<List<Orders>>() {
             @Override
@@ -322,6 +347,20 @@ public class TransactionsRepository {
         return future.get();
     }
 
+    public List<SerialNumbers> getSerialNumbers() throws ExecutionException, InterruptedException {
+        Callable<List<SerialNumbers>> callable = new Callable<List<SerialNumbers>>() {
+            @Override
+            public List<SerialNumbers> call() throws Exception {
+                return serialNumbersDao.getSerialNumbers();
+            }
+        };
+
+        Future<List<SerialNumbers>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
+
     public List<SerialNumbers> getSerialNumberFromOrderId(final int orderId) throws ExecutionException, InterruptedException {
         Callable<List<SerialNumbers>> callable = new Callable<List<SerialNumbers>>() {
             @Override
@@ -346,6 +385,31 @@ public class TransactionsRepository {
         Future<List<Payments>> future = Executors.newSingleThreadExecutor().submit(callable);
         return future.get();
     }
+
+    public List<Payments> getAllPayments() throws ExecutionException, InterruptedException {
+        Callable<List<Payments>> callable = new Callable<List<Payments>>() {
+            @Override
+            public List<Payments> call() throws Exception {
+                return paymentsDao.getAllPayments();
+            }
+        };
+
+        Future<List<Payments>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public List<Payout> getPayoutList() throws ExecutionException, InterruptedException {
+        Callable<List<Payout>> callable = new Callable<List<Payout>>() {
+            @Override
+            public List<Payout> call() throws Exception {
+                return payoutDao.getPayoutList();
+            }
+        };
+
+        Future<List<Payout>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
 
 
     public void updateEditingOrderList(String transaction_id) {
@@ -408,12 +472,39 @@ public class TransactionsRepository {
         return future.get();
     }
 
+    public List<OrDetails> getAllOrDetails() throws ExecutionException, InterruptedException {
+        Callable<List<OrDetails>> callable = new Callable<List<OrDetails>>() {
+            @Override
+            public List<OrDetails> call() throws Exception {
+                return orDetailsDao.getAllOrDetails();
+            }
+        };
+
+        Future<List<OrDetails>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
 
     public List<Transactions> getLatestTransaction() throws ExecutionException, InterruptedException {
         Callable<List<Transactions>> callable = new Callable<List<Transactions>>() {
             @Override
             public List<Transactions> call() throws Exception {
                 return transactionsDao.transactionsList();
+            }
+        };
+
+        Future<List<Transactions>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
+
+    public List<Transactions> getAllTransactions() throws ExecutionException, InterruptedException {
+        Callable<List<Transactions>> callable = new Callable<List<Transactions>>() {
+            @Override
+            public List<Transactions> call() throws Exception {
+                return transactionsDao.getAllTransactions();
             }
         };
 
