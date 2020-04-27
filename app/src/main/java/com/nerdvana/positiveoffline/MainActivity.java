@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d("TINGNDATA", GsonHelper.getGson().toJson(new ArrayList<>()));
+
         if (TextUtils.isEmpty(SharedPreferenceManager.getString(MainActivity.this, AppConstants.TYPE_VALUE))) {
             SharedPreferenceManager.saveString(MainActivity.this, "retail", AppConstants.TYPE_VALUE);
         }
@@ -1629,7 +1629,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void shiftUpdate(ShiftUpdateModel shiftUpdateModel) {
         try {
-            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 1.6.1");
+            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 1.6.2");
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
