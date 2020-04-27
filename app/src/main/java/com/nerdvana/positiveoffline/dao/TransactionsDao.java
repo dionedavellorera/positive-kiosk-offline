@@ -39,6 +39,10 @@ public interface TransactionsDao {
     @Query("SELECT * FROM Transactions WHERE is_saved = 1 AND is_completed = 0 AND is_void = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0 AND is_shared = 0")
     List<TransactionWithOrders> savedTransactionsList();
 
+
+    @Query("SELECT * FROM Transactions WHERE room_number != ''")
+    List<TransactionWithOrders> transactionListWithRoom();
+
     @Query("SELECT * FROM Transactions WHERE is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0 AND is_shared = 0")
     List<Transactions> transactionsList();
 

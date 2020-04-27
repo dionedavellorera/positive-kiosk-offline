@@ -12,6 +12,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -22,8 +23,10 @@ import com.nerdvana.positiveoffline.IUsers;
 import com.nerdvana.positiveoffline.MainActivity;
 import com.nerdvana.positiveoffline.PosClient;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.adapter.SyncDataAdapter;
 import com.nerdvana.positiveoffline.apirequests.TestRequest;
+import com.nerdvana.positiveoffline.apiresponses.ArOnlineResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCashDenominationResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
@@ -32,7 +35,9 @@ import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchRoomResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchRoomStatusResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
+import com.nerdvana.positiveoffline.apiresponses.TakasTypeResponse;
 import com.nerdvana.positiveoffline.background.InserUserAsync;
+import com.nerdvana.positiveoffline.background.InsertArOnlineAsync;
 import com.nerdvana.positiveoffline.background.InsertCashDenominationAsync;
 import com.nerdvana.positiveoffline.background.InsertCreditCardAsync;
 import com.nerdvana.positiveoffline.background.InsertDiscountsAsync;
@@ -42,6 +47,7 @@ import com.nerdvana.positiveoffline.background.InsertPrinterSeriesAsync;
 import com.nerdvana.positiveoffline.background.InsertProductAsync;
 import com.nerdvana.positiveoffline.background.InsertRoomAsync;
 import com.nerdvana.positiveoffline.background.InsertRoomStatusAsync;
+import com.nerdvana.positiveoffline.background.InsertTakasAsync;
 import com.nerdvana.positiveoffline.background.InsertThemeSelectionAsync;
 import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.intf.SyncCallback;
@@ -125,6 +131,8 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         initDiscountListener();
         initFetchRoomListener();
         initRoomStatusListener();
+        initTakasListener();
+        initArOnlineListener();
     }
 
     private void initDiscountListener() {
@@ -145,6 +153,24 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
+    }
+
+    private void initArOnlineListener() {
+        dataSyncViewModel.getArOnlineLiveData().observe(this, new Observer<ArOnlineResponse>() {
+            @Override
+            public void onChanged(ArOnlineResponse arOnlineResponse) {
+                new InsertArOnlineAsync(arOnlineResponse.getResult(), SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+            }
+        });
+    }
+
+    private void initTakasListener() {
+        dataSyncViewModel.getTakasTypeLiveData().observe(this, new Observer<TakasTypeResponse>() {
+            @Override
+            public void onChanged(TakasTypeResponse takasTypeResponse) {
+                new InsertTakasAsync(takasTypeResponse.getResult(), SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+            }
+        });
     }
 
     private void initRoomStatusListener() {
@@ -200,6 +226,8 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                     syncModelList.add(new DataSync("Rooms", false));
                     syncModelList.add(new DataSync("Room Status", false));
                     syncModelList.add(new DataSync("Theme Selection", false));
+                    syncModelList.add(new DataSync("AR Online", false));
+                    syncModelList.add(new DataSync("Takas Type", false));
 
 //                    syncModelList.add(new DataSync("End of Day", true));
 //                    syncModelList.add(new DataSync("Posted Discounts", true));
@@ -223,7 +251,21 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                     if (productExecuting == false) {
                         if (!syncModelList.get(1).getSynced()) {
                             productExecuting = true;
-                            productsViewModel.fetchProductsRequest();
+                            String sytemType = "";
+                            if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
+                                sytemType = "retail";
+
+                            } else {
+                                if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+                                    sytemType = "retail";
+                                } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                                    sytemType = "motel";
+                                } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+                                    sytemType = "restaurant";
+                                }
+                            }
+
+                            productsViewModel.fetchProductsRequest(sytemType);
                         }
                     }
 
@@ -262,6 +304,16 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
 
                     if (!syncModelList.get(10).getSynced()) {
                         new InsertThemeSelectionAsync(SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+                    }
+
+                    if (!syncModelList.get(11).getSynced()) {
+                        dataSyncViewModel.fetchArOnline();
+//                        new InsertThemeSelectionAsync(SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+                    }
+
+                    if (!syncModelList.get(12).getSynced()) {
+                        dataSyncViewModel.fetchTakasType();
+//                        new InsertThemeSelectionAsync(SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
                     }
                 }
 
@@ -389,6 +441,14 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 syncModelList.get(10).setSynced(true);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(10));
                 break;
+            case "ar_online":
+                syncModelList.get(11).setSynced(true);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(11));
+                break;
+            case "takas_type":
+                syncModelList.get(12).setSynced(true);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(12));
+                break;
         }
     }
 
@@ -469,6 +529,16 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
             case "theme selection":
                 dataSyncViewModel.truncateThemeSelection();
                 syncModelList.get(10).setSynced(false);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(10));
+                break;
+            case "ar online":
+                dataSyncViewModel.truncateArOnline();
+                syncModelList.get(11).setSynced(false);
+                dataSyncViewModel.updateIsSynced(syncModelList.get(10));
+                break;
+            case "takas type":
+                dataSyncViewModel.truncateTakas();
+                syncModelList.get(12).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(10));
                 break;
         }

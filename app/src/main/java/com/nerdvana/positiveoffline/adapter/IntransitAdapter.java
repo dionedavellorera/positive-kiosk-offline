@@ -1,6 +1,7 @@
 package com.nerdvana.positiveoffline.adapter;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,9 +11,12 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.intf.PaymentsContract;
@@ -63,14 +67,41 @@ public class IntransitAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         final TransactionWithOrders model = transactionWithOrdersList.get(holder.getAdapterPosition());
 
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-        DateTime dt = formatter.parseDateTime(model.transactions.getSaved_at());
+        if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
+            //retail
+            DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+            DateTime dt = formatter.parseDateTime(model.transactions.getSaved_at());
+            ((IntransitAdapter.ViewHolder)holder).name.setText(model.transactions.getTrans_name().toUpperCase());
+            ((IntransitAdapter.ViewHolder)holder).total.setText(String.valueOf(model.transactions.getGross_sales()));
+            ((IntransitAdapter.ViewHolder)holder).dateCreated.setText(model.transactions.getSaved_at());
+            ((IntransitAdapter.ViewHolder)holder).elapsed.setText(String.valueOf(Minutes.minutesBetween(dt, new DateTime()).getMinutes()) + " MINS");
+            ((IntransitAdapter.ViewHolder)holder).items.setText(String.valueOf(model.ordersList.size()));
+        } else {
+            if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+                //retail
+                DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+                DateTime dt = formatter.parseDateTime(model.transactions.getSaved_at());
+                ((IntransitAdapter.ViewHolder)holder).name.setText(model.transactions.getTrans_name().toUpperCase());
+                ((IntransitAdapter.ViewHolder)holder).total.setText(String.valueOf(model.transactions.getGross_sales()));
+                ((IntransitAdapter.ViewHolder)holder).dateCreated.setText(model.transactions.getSaved_at());
+                ((IntransitAdapter.ViewHolder)holder).elapsed.setText(String.valueOf(Minutes.minutesBetween(dt, new DateTime()).getMinutes()) + " MINS");
+                ((IntransitAdapter.ViewHolder)holder).items.setText(String.valueOf(model.ordersList.size()));
+            } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                //
+            } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+                //resto
+                DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+                DateTime dt = formatter.parseDateTime(model.transactions.getCheck_in_time());
+                ((IntransitAdapter.ViewHolder)holder).name.setText(model.transactions.getRoom_number().toUpperCase());
+                ((IntransitAdapter.ViewHolder)holder).total.setText(String.valueOf(model.transactions.getGross_sales()));
+                ((IntransitAdapter.ViewHolder)holder).dateCreated.setText(model.transactions.getCheck_in_time());
+                ((IntransitAdapter.ViewHolder)holder).elapsed.setText(String.valueOf(Minutes.minutesBetween(dt, new DateTime()).getMinutes()) + " MINS");
+                ((IntransitAdapter.ViewHolder)holder).items.setText(String.valueOf(model.ordersList.size()));
 
-        ((IntransitAdapter.ViewHolder)holder).name.setText(model.transactions.getTrans_name().toUpperCase());
-        ((IntransitAdapter.ViewHolder)holder).total.setText(String.valueOf(model.transactions.getGross_sales()));
-        ((IntransitAdapter.ViewHolder)holder).dateCreated.setText(model.transactions.getSaved_at());
-        ((IntransitAdapter.ViewHolder)holder).elapsed.setText(String.valueOf(Minutes.minutesBetween(dt, new DateTime()).getMinutes()) + " MINS");
-        ((IntransitAdapter.ViewHolder)holder).items.setText(String.valueOf(model.ordersList.size()));
+            }
+        }
+
+
 
     }
 

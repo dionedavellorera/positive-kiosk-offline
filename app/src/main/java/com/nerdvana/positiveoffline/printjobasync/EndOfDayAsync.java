@@ -194,6 +194,32 @@ public class EndOfDayAsync extends AsyncTask<Void, Void, Void> {
                     ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
 
             addTextToPrinter(printer, twoColumns(
+                    "ONLINE SALES",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getTotal_online_payments())),
+                    40,
+                    2,
+                    context)
+                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+
+            addTextToPrinter(printer, twoColumns(
+                    "AR SALES",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getTotal_ar_payments())),
+                    40,
+                    2,
+                    context)
+                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+
+            addTextToPrinter(printer, twoColumns(
+                    "MOB. PMT SALES",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getTotal_mobile_payments())),
+                    40,
+                    2,
+                    context)
+                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+
+
+
+            addTextToPrinter(printer, twoColumns(
                     "VOID",
                     PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getVoid_amount())),
                     40,

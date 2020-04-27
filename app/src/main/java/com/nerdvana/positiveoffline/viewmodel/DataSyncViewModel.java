@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.nerdvana.positiveoffline.apiresponses.ArOnlineResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCashDenominationResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
@@ -15,6 +16,8 @@ import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchRoomResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchRoomStatusResponse;
+import com.nerdvana.positiveoffline.apiresponses.TakasTypeResponse;
+import com.nerdvana.positiveoffline.entities.ArOnline;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.entities.CreditCards;
 import com.nerdvana.positiveoffline.entities.DataSync;
@@ -27,6 +30,7 @@ import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.RoomRates;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
+import com.nerdvana.positiveoffline.entities.Takas;
 import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.repository.DataSyncRepository;
 
@@ -74,6 +78,14 @@ public class DataSyncViewModel extends AndroidViewModel {
         mRepository.truncateThemeSelection();
     }
 
+    public void truncateArOnline() {
+        mRepository.truncateArOnline();
+    }
+
+    public void truncateTakas() {
+        mRepository.truncateTakas();
+    }
+
     public void updatePrinterSeries(PrinterSeries printerSeries) {
         mRepository.update(printerSeries);
     }
@@ -104,6 +116,22 @@ public class DataSyncViewModel extends AndroidViewModel {
 
     public void fetchRoomStatus() {
         mRepository.fetchRoomStatus();
+    }
+
+    public void fetchArOnline() {
+        mRepository.fetchArOnline();
+    }
+
+    public void fetchTakasType() {
+        mRepository.fetchTakasType();
+    }
+
+    public MutableLiveData<ArOnlineResponse> getArOnlineLiveData() {
+        return mRepository.getFetchArOnlineLiveData();
+    }
+
+    public MutableLiveData<TakasTypeResponse> getTakasTypeLiveData() {
+        return mRepository.getFetchTakasTypeLiveData();
     }
 
     public MutableLiveData<FetchDiscountResponse> getDiscountLiveData() {
@@ -175,6 +203,14 @@ public class DataSyncViewModel extends AndroidViewModel {
         return mRepository.getCreditCardList();
     }
 
+    public List<ArOnline> getArOnlineList() throws ExecutionException, InterruptedException {
+        return mRepository.getArOnlineList();
+    }
+
+    public List<Takas> getTakasTypeList() throws ExecutionException, InterruptedException {
+        return mRepository.getTakasTypeList();
+    }
+
 
     public void insertPaymentType(List<PaymentTypes> list) {
         mRepository.insertPaymentType(list);
@@ -182,6 +218,14 @@ public class DataSyncViewModel extends AndroidViewModel {
 
     public void insertRoomStatus(List<RoomStatus> list) {
         mRepository.insertRoomStatus(list);
+    }
+
+    public void insertArOnline(List<ArOnline> list) {
+        mRepository.insertArOnline(list);
+    }
+
+    public void insertTakas(List<Takas> list) {
+        mRepository.insertTakas(list);
     }
 
     public void insertCreditCard(List<CreditCards> list) {

@@ -194,6 +194,17 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                     2,
                     context)
                     ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+
+            if (!TextUtils.isEmpty(transactionCompleteDetails.transactions.getRoom_number())) {
+                addTextToPrinter(printer, twoColumns(
+                        "TABLE",
+                        transactionCompleteDetails.transactions.getRoom_number(),
+                        40,
+                        2,
+                        context)
+                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            }
+
             addPrinterSpace(1, printer);
 
             addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);

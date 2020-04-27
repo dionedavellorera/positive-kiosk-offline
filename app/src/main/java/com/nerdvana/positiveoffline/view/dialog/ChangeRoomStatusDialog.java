@@ -6,8 +6,10 @@ import android.os.Bundle;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.adapter.ChangeRoomStatusAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
@@ -27,7 +29,18 @@ public abstract class ChangeRoomStatusDialog extends BaseDialog implements Actio
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setDialogLayout(R.layout.dialog_change_room_status, "CHANGE ROOM STATUS");
+
+        if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+
+        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+            setDialogLayout(R.layout.dialog_change_room_status, "CHANGE ROOM STATUS");
+        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+            setDialogLayout(R.layout.dialog_change_room_status, "CHANGE TABLE STATUS");
+        } else {
+            setDialogLayout(R.layout.dialog_change_room_status, "NA");
+        }
+
+
         initViews();
 
         ChangeRoomStatusAdapter changeRoomStatusAdapter = new ChangeRoomStatusAdapter(roomStatusList, this);

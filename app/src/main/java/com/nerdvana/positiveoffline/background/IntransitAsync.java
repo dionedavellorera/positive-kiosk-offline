@@ -4,6 +4,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
 import com.epson.epos2.printer.PrinterStatusInfo;
@@ -181,15 +183,42 @@ public class IntransitAsync extends AsyncTask<Void, Void, Void> {
             DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
             for (TransactionWithOrders tr : transactions) {
                 List<String> temp = new ArrayList<>();
-                DateTime dt = formatter.parseDateTime(tr.transactions.getSaved_at());
+
+                if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
+                    DateTime dt = formatter.parseDateTime(tr.transactions.getSaved_at());
+                    temp.add(tr.transactions.getTrans_name());
+                    temp.add(String.valueOf(tr.ordersList.size()));
+                    String dateONly = tr.transactions.getSaved_at().split(" ")[0];
+                    temp.add(dateONly.split("-")[1] + "-" + dateONly.split("-")[2]);
+                    temp.add(String.valueOf(tr.transactions.getGross_sales()));
+                    temp.add(String.valueOf(Minutes.minutesBetween(dt, new DateTime()).getMinutes()) + " MINS");
+                } else {
+                    if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+                        DateTime dt = formatter.parseDateTime(tr.transactions.getSaved_at());
+                        temp.add(tr.transactions.getTrans_name());
+                        temp.add(String.valueOf(tr.ordersList.size()));
+                        String dateONly = tr.transactions.getSaved_at().split(" ")[0];
+                        temp.add(dateONly.split("-")[1] + "-" + dateONly.split("-")[2]);
+                        temp.add(String.valueOf(tr.transactions.getGross_sales()));
+                        temp.add(String.valueOf(Minutes.minutesBetween(dt, new DateTime()).getMinutes()) + " MINS");
+                    } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                        //
+                    } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+
+                        DateTime dt = formatter.parseDateTime(tr.transactions.getCheck_in_time());
+                        temp.add(tr.transactions.getTrans_name());
+                        temp.add(String.valueOf(tr.ordersList.size()));
+                        String dateONly = tr.transactions.getCheck_in_time().split(" ")[0];
+                        temp.add(dateONly.split("-")[1] + "-" + dateONly.split("-")[2]);
+                        temp.add(String.valueOf(tr.transactions.getGross_sales()));
+                        temp.add(String.valueOf(Minutes.minutesBetween(dt, new DateTime()).getMinutes()) + " MINS");
 
 
-                temp.add(tr.transactions.getTrans_name());
-                temp.add(String.valueOf(tr.ordersList.size()));
-                String dateONly = tr.transactions.getSaved_at().split(" ")[0];
-                temp.add(dateONly.split("-")[1] + "-" + dateONly.split("-")[2]);
-                temp.add(String.valueOf(tr.transactions.getGross_sales()));
-                temp.add(String.valueOf(Minutes.minutesBetween(dt, new DateTime()).getMinutes()) + " MINS");
+                    }
+                }
+
+
+
 
                 addTextToPrinter(printer, intransitReceipt(temp), Printer.TRUE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
 

@@ -36,4 +36,5 @@ public class AppConstants {
 
     public static final String HAS_CHANGED = "has_changed";
     public static final String HAS_CHECKED_DATA_FROM_SERVER = "has_checked_data_from_server";
+    public static final String TYPE_VALUE = "type_value";
 }

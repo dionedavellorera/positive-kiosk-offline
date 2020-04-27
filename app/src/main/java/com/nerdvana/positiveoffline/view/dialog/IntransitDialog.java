@@ -3,6 +3,7 @@ package com.nerdvana.positiveoffline.view.dialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,10 +12,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.IntransitAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
@@ -47,9 +50,27 @@ public class IntransitDialog extends BaseDialog implements View.OnClickListener{
 
     private void setIntransitAdapter() {
         try {
-            IntransitAdapter intransitAdapter = new IntransitAdapter(transactionsViewModel.savedTransactionsList(), getContext());
-            rvIntransit.setAdapter(intransitAdapter);
-            rvIntransit.setLayoutManager(new LinearLayoutManager(getContext()));
+            if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
+                IntransitAdapter intransitAdapter = new IntransitAdapter(transactionsViewModel.savedTransactionsList(), getContext());
+                rvIntransit.setAdapter(intransitAdapter);
+                rvIntransit.setLayoutManager(new LinearLayoutManager(getContext()));
+            } else {
+                if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+                    IntransitAdapter intransitAdapter = new IntransitAdapter(transactionsViewModel.savedTransactionsList(), getContext());
+                    rvIntransit.setAdapter(intransitAdapter);
+                    rvIntransit.setLayoutManager(new LinearLayoutManager(getContext()));
+                } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                    //
+                } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+
+                    IntransitAdapter intransitAdapter = new IntransitAdapter(transactionsViewModel.transactionListWithRoom(), getContext());
+                    rvIntransit.setAdapter(intransitAdapter);
+                    rvIntransit.setLayoutManager(new LinearLayoutManager(getContext()));
+
+                }
+            }
+
+
 
 
         } catch (ExecutionException e) {

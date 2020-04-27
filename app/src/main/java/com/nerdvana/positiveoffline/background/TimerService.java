@@ -90,7 +90,7 @@ public class TimerService extends Service {
                 }
 
                 if (secsOfDate % 5 == 0) {
-//                    BusProvider.getInstance().post(new ServerConnectionTest(""));
+                    BusProvider.getInstance().post(new ServerConnectionTest(""));
                 }
 
                 if (secsOfDate % 99999999 == 0) {

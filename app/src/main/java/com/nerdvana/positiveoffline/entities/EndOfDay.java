@@ -22,6 +22,11 @@ public class EndOfDay {
     private Double total_cash_amount;
     private Double total_cash_payments = 0.00;
     private Double total_card_payments = 0.00;
+
+    private Double total_online_payments = 0.00;
+    private Double total_ar_payments = 0.00;
+    private Double total_mobile_payments = 0.00;
+
     private Double total_change = 0.00;
     private String treg;
 
@@ -298,5 +303,29 @@ public class EndOfDay {
 
     public void setTotal_payout(Double total_payout) {
         this.total_payout = total_payout;
+    }
+
+    public Double getTotal_online_payments() {
+        return total_online_payments;
+    }
+
+    public void setTotal_online_payments(Double total_online_payments) {
+        this.total_online_payments = total_online_payments;
+    }
+
+    public Double getTotal_ar_payments() {
+        return total_ar_payments;
+    }
+
+    public void setTotal_ar_payments(Double total_ar_payments) {
+        this.total_ar_payments = total_ar_payments;
+    }
+
+    public Double getTotal_mobile_payments() {
+        return total_mobile_payments;
+    }
+
+    public void setTotal_mobile_payments(Double total_mobile_payments) {
+        this.total_mobile_payments = total_mobile_payments;
     }
 }

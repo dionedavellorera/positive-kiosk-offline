@@ -44,6 +44,7 @@ public class SystemTypeFragment extends Fragment implements RadioGroup.OnChecked
     private void setRadioGroupSelection() {
         if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
             rgSystemType.check(R.id.rbQuickServe);
+
         } else {
             if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
                 rgSystemType.check(R.id.rbQuickServe);
@@ -62,10 +63,13 @@ public class SystemTypeFragment extends Fragment implements RadioGroup.OnChecked
 
         SharedPreferenceManager.saveString(null, "1", AppConstants.HAS_CHANGED);
         if (radioGroup.getCheckedRadioButtonId() == R.id.rbQuickServe) {
+            SharedPreferenceManager.saveString(getContext(), "retail", AppConstants.TYPE_VALUE);
             SharedPreferenceManager.saveString(getContext(), "QS",AppConstants.SELECTED_SYSTEM_TYPE);
         } else if (radioGroup.getCheckedRadioButtonId() == R.id.rbMotel) {
+            SharedPreferenceManager.saveString(getContext(), "motel", AppConstants.TYPE_VALUE);
             SharedPreferenceManager.saveString(getContext(), "hotel",AppConstants.SELECTED_SYSTEM_TYPE);
         } else if (radioGroup.getCheckedRadioButtonId() == R.id.rbRestaurant) {
+            SharedPreferenceManager.saveString(getContext(), "restaurant", AppConstants.TYPE_VALUE);
             SharedPreferenceManager.saveString(getContext(), "restaurant",AppConstants.SELECTED_SYSTEM_TYPE);
         }
 

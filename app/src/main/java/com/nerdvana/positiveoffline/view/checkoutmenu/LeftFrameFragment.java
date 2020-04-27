@@ -823,7 +823,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                 Utils.getPayoutSeriesFormat(
                                                         String.valueOf(
                                                                 Integer.valueOf(
-                                                                        transactionsViewModel.lastPayoutSeriesNumber().getSeries_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                                                        transactionsViewModel.lastPayoutSeriesNumber().getSeries_number().replaceFirst("0", "")) + 1));
                                     }
 
                                 }
@@ -1180,9 +1180,11 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                 }
                 break;
             case 106://OPEN ROOM OR TABLES DEPENDING ON SYSTEM TYPE
+
                 Intent roomsActivityIntent = new Intent(getContext(), RoomsActivity.class);
                 roomsActivityIntent.putExtra(AppConstants.TRANS_ID, TextUtils.isEmpty(transactionId) ? 0 : Integer.valueOf(transactionId));
                 roomsActivityIntent.putExtra(AppConstants.TRANSFER, "n");
+                roomsActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivityForResult(roomsActivityIntent, ROOM_SELECTED_RETURN);
                 break;
             case 996://OPEN VIEW RECEIPT
@@ -1220,7 +1222,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         passwordDialog = new PasswordDialog(getActivity(), "SETTINGS", userViewModel, transactionsViewModel) {
                             @Override
                             public void success(String username) {
-                                startActivity(new Intent(getContext(), SettingsActivity.class));
+                                Intent intent = new Intent(getContext(), SettingsActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(intent);
                             }
                         };
                         passwordDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -1238,7 +1242,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         });
                     }
                 } else {
-                    startActivity(new Intent(getContext(), SettingsActivity.class));
+                    Intent intent = new Intent(getContext(), SettingsActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
                 }
 
                 break;
@@ -1537,7 +1543,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         Utils.getOrFormat(
                                 String.valueOf(
                                         Integer.valueOf(
-                                                transactionsViewModel.lastOrNumber().getReceipt_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                                transactionsViewModel.lastOrNumber().getReceipt_number().replaceFirst("0", "")) + 1));
             }
 
         }
@@ -1553,7 +1559,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                 if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
                     controlNumber = Utils.getCtrlNumberFormat("1");
                 } else {
-                    controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                    controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().replaceFirst("0", "")) + 1));
                 }
 
             }
@@ -1578,7 +1584,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     }
 
     private void doResumeTransaction() {
+
         Intent resumeTransactionIntent = new Intent(getContext(), ResumeTransactionActivity.class);
+        resumeTransactionIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivityForResult(resumeTransactionIntent, RESUME_TRANS_RETURN);
     }
 
@@ -1985,6 +1993,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         Intent roomsActivityIntent = new Intent(getContext(), RoomsActivity.class);
                         roomsActivityIntent.putExtra(AppConstants.TRANS_ID, TextUtils.isEmpty(transactionId) ? 0 : Integer.valueOf(transactionId));
                         roomsActivityIntent.putExtra(AppConstants.TRANSFER, "y");
+                        roomsActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivityForResult(roomsActivityIntent, ROOM_SELECTED_RETURN);
                     } else {
                         Helper.showDialogMessage(getContext(), "No room attached to orders", getString(R.string.header_message));
@@ -2098,7 +2107,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                             if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
                                                 controlNumber = Utils.getCtrlNumberFormat("1");
                                             } else {
-                                                controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                                controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().replaceFirst("0", "")) + 1));
                                             }
 
                                         }
@@ -2185,7 +2194,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                 if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
                                                     controlNumber = Utils.getCtrlNumberFormat("1");
                                                 } else {
-                                                    controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                                    controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().replaceFirst("0", "")) + 1));
                                                 }
 
                                             }
@@ -2302,7 +2311,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                             if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
                                                                 controlNumber = Utils.getCtrlNumberFormat("1");
                                                             } else {
-                                                                controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                                                controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().replaceFirst("0", "")) + 1));
                                                             }
 
                                                         }
@@ -2368,7 +2377,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                     if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
                                                         controlNumber = Utils.getCtrlNumberFormat("1");
                                                     } else {
-                                                        controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                                        controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().replaceFirst("0", "")) + 1));
                                                     }
 
                                                 }
@@ -2423,7 +2432,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                 if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
                                     controlNumber = Utils.getCtrlNumberFormat("1");
                                 } else {
-                                    controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                    controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().replaceFirst("0", "")) + 1));
                                 }
 
                             }

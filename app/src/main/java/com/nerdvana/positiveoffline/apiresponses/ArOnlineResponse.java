@@ -5,7 +5,8 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class FetchPaymentTypeResponse {
+public class ArOnlineResponse {
+
     @SerializedName("result")
     @Expose
     private List<Result> result = null;
@@ -40,61 +41,21 @@ public class FetchPaymentTypeResponse {
         this.message = message;
     }
 
-    public class MobilePayment {
-        @SerializedName("payment_id")
-        @Expose
-        private int paymentId;
-        @SerializedName("mobile_payment_id")
-        @Expose
-        private int mobilePaymentId;
-        @SerializedName("mobile_payment")
-        @Expose
-        private String mobilePayment;
 
-        public int getPaymentId() {
-            return paymentId;
-        }
+    public class Result {
 
-        public void setPaymentId(int paymentId) {
-            this.paymentId = paymentId;
-        }
-
-        public int getMobilePaymentId() {
-            return mobilePaymentId;
-        }
-
-        public void setMobilePaymentId(int mobilePaymentId) {
-            this.mobilePaymentId = mobilePaymentId;
-        }
-
-        public String getMobilePayment() {
-            return mobilePayment;
-        }
-
-        public void setMobilePayment(String mobilePayment) {
-            this.mobilePayment = mobilePayment;
-        }
-    }
-
-    public static class Result {
-        @SerializedName("mobile_payment")
-        @Expose
-        private List<MobilePayment> mobilePaymentList;
         @SerializedName("id")
         @Expose
         private Integer id;
         @SerializedName("core_id")
         @Expose
-        private String coreId;
-        @SerializedName("payment_type")
+        private Integer coreId;
+        @SerializedName("ar_online")
         @Expose
-        private String paymentType;
+        private String arOnline;
         @SerializedName("created_by")
         @Expose
         private Integer createdBy;
-        @SerializedName("flag")
-        @Expose
-        private Integer flag;
         @SerializedName("created_at")
         @Expose
         private String createdAt;
@@ -104,25 +65,6 @@ public class FetchPaymentTypeResponse {
         @SerializedName("deleted_at")
         @Expose
         private Object deletedAt;
-        @SerializedName("image_file")
-        @Expose
-        private String image;
-
-        public List<MobilePayment> getMobilePaymentList() {
-            return mobilePaymentList;
-        }
-
-        public void setMobilePaymentList(List<MobilePayment> mobilePaymentList) {
-            this.mobilePaymentList = mobilePaymentList;
-        }
-
-        public String getImage() {
-            return image;
-        }
-
-        public void setImage(String image) {
-            this.image = image;
-        }
 
         public Integer getId() {
             return id;
@@ -132,20 +74,20 @@ public class FetchPaymentTypeResponse {
             this.id = id;
         }
 
-        public String getCoreId() {
+        public Integer getCoreId() {
             return coreId;
         }
 
-        public void setCoreId(String coreId) {
+        public void setCoreId(Integer coreId) {
             this.coreId = coreId;
         }
 
-        public String getPaymentType() {
-            return paymentType;
+        public String getArOnline() {
+            return arOnline;
         }
 
-        public void setPaymentType(String paymentType) {
-            this.paymentType = paymentType;
+        public void setArOnline(String arOnline) {
+            this.arOnline = arOnline;
         }
 
         public Integer getCreatedBy() {
@@ -154,14 +96,6 @@ public class FetchPaymentTypeResponse {
 
         public void setCreatedBy(Integer createdBy) {
             this.createdBy = createdBy;
-        }
-
-        public Integer getFlag() {
-            return flag;
-        }
-
-        public void setFlag(Integer flag) {
-            this.flag = flag;
         }
 
         public String getCreatedAt() {
@@ -189,5 +123,6 @@ public class FetchPaymentTypeResponse {
         }
 
     }
-}
 
+
+}

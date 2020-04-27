@@ -3,6 +3,7 @@ package com.nerdvana.positiveoffline.database;
 import androidx.room.Database;
 import androidx.room.RoomDatabase;
 
+import com.nerdvana.positiveoffline.dao.ArOnlineDao;
 import com.nerdvana.positiveoffline.dao.CashDenominationDao;
 import com.nerdvana.positiveoffline.dao.CreditCardsDao;
 import com.nerdvana.positiveoffline.dao.CutOffDao;
@@ -25,9 +26,11 @@ import com.nerdvana.positiveoffline.dao.RoomStatusDao;
 import com.nerdvana.positiveoffline.dao.RoomsDao;
 import com.nerdvana.positiveoffline.dao.SerialNumbersDao;
 import com.nerdvana.positiveoffline.dao.ServiceChargeDao;
+import com.nerdvana.positiveoffline.dao.TakasDao;
 import com.nerdvana.positiveoffline.dao.ThemeSelectionDao;
 import com.nerdvana.positiveoffline.dao.TransactionsDao;
 import com.nerdvana.positiveoffline.dao.UserDao;
+import com.nerdvana.positiveoffline.entities.ArOnline;
 import com.nerdvana.positiveoffline.entities.BranchGroup;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.entities.CreditCards;
@@ -52,6 +55,7 @@ import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
 import com.nerdvana.positiveoffline.entities.SerialNumbers;
 import com.nerdvana.positiveoffline.entities.ServiceCharge;
+import com.nerdvana.positiveoffline.entities.Takas;
 import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
@@ -69,8 +73,9 @@ import com.nerdvana.positiveoffline.entities.User;
                         RoomStatus.class, ProductAlacart.class,
                         ThemeSelection.class, BranchGroup.class,
                         Payout.class, ServiceCharge.class,
-                        SerialNumbers.class},
-          version = 180)
+                        SerialNumbers.class, ArOnline.class,
+                        Takas.class},
+          version = 189)
 
 public abstract class PosDatabase extends RoomDatabase {
     public abstract UserDao userDao();
@@ -98,4 +103,6 @@ public abstract class PosDatabase extends RoomDatabase {
     public abstract ThemeSelectionDao themeSelectionDao();
     public abstract ServiceChargeDao serviceChargeDao();
     public abstract SerialNumbersDao serialNumbersDao();
+    public abstract ArOnlineDao arOnlineDao();
+    public abstract TakasDao takasDao();
 }

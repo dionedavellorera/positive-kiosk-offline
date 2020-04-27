@@ -59,6 +59,15 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rooms);
+        if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+
+        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+            setTitle("Rooms");
+        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+            setTitle("Tables");
+        }
+
+
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             transactionId = Integer.valueOf(bundle.getInt(AppConstants.TRANS_ID, 0));
@@ -163,7 +172,7 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
 
                                     }
                                 } else {
-                                    Helper.showDialogMessage(RoomsActivity.this, "No change in room status", getString(R.string.header_message));
+                                    Helper.showDialogMessage(RoomsActivity.this, "No change in table status", getString(R.string.header_message));
                                 }
 
 
@@ -427,6 +436,8 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
 
     private void attachRoomToTransaction(int room_id, int transactionId) {
         try {
+            Log.d("ATTACH_TO_ROOM", String.valueOf(room_id));
+            Log.d("ATTACH_TO_ROOM-transid", String.valueOf(transactionId));
             Rooms newRoom = roomsViewModel.getRoomViaId(room_id);
             Transactions tmpTr = transactionsViewModel.loadedTransactionList(String.valueOf(transactionId)).get(0);
             tmpTr.setId(transactionId);

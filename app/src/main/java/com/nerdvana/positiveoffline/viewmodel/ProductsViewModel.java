@@ -48,8 +48,8 @@ public class ProductsViewModel extends AndroidViewModel {
         return productsRepository.findProductViaBarcode(barcode);
     }
 
-    public void fetchProductsRequest() {
-        productsRepository.fetchProductRequest();
+    public void fetchProductsRequest(String type) {
+        productsRepository.fetchProductRequest(type);
     }
 
     public void insert(List<Products> productsList) {

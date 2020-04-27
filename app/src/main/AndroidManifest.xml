@@ -29,7 +29,8 @@
             android:name=".view.rooms.RoomsActivity"
             android:label="@string/title_activity_rooms"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:launchMode = "singleTop">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.nerdvana.positiveoffline.MainActivity" />

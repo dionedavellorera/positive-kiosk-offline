@@ -85,17 +85,17 @@ public class Utils {
     }
 
     public static String getPayoutSeriesFormat(String value) {
-        String str = String.format("PO-%8s",value);
+        String str = String.format("%12s",value);
         return str.replace(' ','0');
     }
 
     public static String getOrFormat(String value) {
-        String str = String.format("OR-%8s",value);
+        String str = String.format("%12s",value);
         return str.replace(' ','0');
     }
 
     public static String getCtrlNumberFormat(String value) {
-        String str = String.format("CN-%8s",value);
+        String str = String.format("%12s",value);
         return str.replace(' ','0');
     }
 

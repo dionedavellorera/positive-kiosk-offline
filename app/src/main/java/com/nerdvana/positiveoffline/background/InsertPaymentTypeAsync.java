@@ -8,6 +8,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
@@ -46,11 +47,21 @@ public class InsertPaymentTypeAsync extends AsyncTask<Void, Void, Void> {
     protected Void doInBackground(Void... voids) {
         List<PaymentTypes> paymentList = new ArrayList<>();
         for (final FetchPaymentTypeResponse.Result r : list) {
+            PaymentTypes paymentType = null;
+            if (r.getCoreId().equalsIgnoreCase("8")) {
+                paymentType = new PaymentTypes(
+                        Integer.valueOf(r.getCoreId()),
+                        r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
+                        "AR",
+                        GsonHelper.getGson().toJson(r.getMobilePaymentList()));
+            } else {
+                paymentType = new PaymentTypes(
+                        Integer.valueOf(r.getCoreId()),
+                        r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
+                        r.getPaymentType(),
+                        GsonHelper.getGson().toJson(r.getMobilePaymentList()));
+            }
 
-            PaymentTypes paymentType = new PaymentTypes(
-                    Integer.valueOf(r.getCoreId()),
-                    r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
-                    r.getPaymentType());
 
 
             if (r.getImage() != null) {
@@ -91,10 +102,18 @@ public class InsertPaymentTypeAsync extends AsyncTask<Void, Void, Void> {
             paymentList.add(paymentType);
         }
 
+//        PaymentTypes pTypeMobile = new PaymentTypes(
+//                9,
+//                "9.jpg",
+//                "MOBILE PAYMENT");
+//
+//        paymentList.add(pTypeMobile);
+
         PaymentTypes pTypeGuest = new PaymentTypes(
                 999,
                 "8.jpg",
-                "GUEST");
+                "GUEST",
+                GsonHelper.getGson().toJson(new ArrayList<>()));
 
         paymentList.add(pTypeGuest);
 

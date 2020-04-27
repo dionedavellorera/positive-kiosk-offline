@@ -7,8 +7,9 @@ import java.util.Map;
 
 public class FetchProductsRequest extends BaseRequest {
     private Map<String, String> mapValue;
-    public FetchProductsRequest() {
+    public FetchProductsRequest(String type) {
         mapValue = new HashMap<>();
+        mapValue.put("type", type);
     }
 
     public Map<String, String> getMapValue() {

@@ -445,91 +445,200 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
-
-                    <TextView
-                        android:layout_margin="10dp"
-                        android:textSize="16sp"
-                        android:textColor="@color/colorBlack"
-                        android:text="Online transaction"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <View
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginTop="5dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/colorLtGrey"/>
-
-                    <TextView
-                        android:layout_margin="10dp"
-                        android:textSize="16sp"
-                        android:textColor="@color/colorBlack"
-                        android:text="OTA selection"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <View
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginTop="5dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/colorLtGrey"/>
-                    <Spinner
-                        android:layout_margin="10dp"
-                        android:id="@+id/spinnerOnline"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"/>
-
-                    <TextView
-                        android:layout_margin="10dp"
-                        android:textSize="16sp"
-                        android:textColor="@color/colorBlack"
-                        android:text="Voucher details"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <View
-                        android:layout_marginLeft="10dp"
-                        android:layout_marginTop="5dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="@color/colorLtGrey"/>
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_margin="10dp"
-                        android:layout_gravity="center"
+                    <ScrollView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
-                        <com.nerdvana.positiveoffline.view.HidingEditText
-                            android:inputType="text"
-                            android:maxLines="1"
-                            android:imeOptions="actionNext"
-                            android:hint="Voucher code"
-                            android:id="@+id/voucherCode"
+                        <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_margin="10dp"
+                                android:textSize="16sp"
+                                android:textColor="@color/colorBlack"
+                                android:text="Online transaction"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+
+                            <View
+                                android:layout_marginLeft="10dp"
+                                android:layout_marginTop="5dp"
+                                android:layout_marginBottom="5dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="@color/colorLtGrey"/>
 
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_margin="10dp"
-                        android:layout_gravity="center"
+                            <Spinner
+                                android:layout_margin="10dp"
+                                android:id="@+id/spinnerOnline"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"/>
+
+                            <TextView
+                                android:layout_margin="10dp"
+                                android:textSize="16sp"
+                                android:textColor="@color/colorBlack"
+                                android:text="Voucher details"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+
+                            <View
+                                android:layout_marginLeft="10dp"
+                                android:layout_marginTop="5dp"
+                                android:layout_marginBottom="5dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="@color/colorLtGrey"/>
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                android:layout_gravity="center"
+                                android:layout_margin="10dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:imeOptions="actionDone"
+                                    android:hint="Voucher code"
+                                    android:id="@+id/voucherCode"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                android:layout_gravity="center"
+                                android:layout_margin="10dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="numberDecimal"
+                                    android:hint="Voucher amount"
+                                    android:id="@+id/voucherAmount"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <Button
+                                android:id="@+id/addOnline"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="10dp"
+                                android:text="ADD ONLINE PAYMENT"
+                                android:background="@drawable/button_selector"/>
+                        </LinearLayout>
+                    </ScrollView>
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:id="@+id/formTakas"
+                    android:layout_toRightOf="@id/cardPayments"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ScrollView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
-                        <com.nerdvana.positiveoffline.view.HidingEditText
-                            android:maxLines="1"
-                            android:imeOptions="actionDone"
-                            android:inputType="numberDecimal"
-                            android:hint="Voucher amount"
-                            android:id="@+id/voucherAmount"
+                        <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_margin="10dp"
+                                android:textSize="16sp"
+                                android:textColor="@color/colorBlack"
+                                android:text="Takas Transactions"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+
+                            <View
+                                android:layout_marginLeft="10dp"
+                                android:layout_marginTop="5dp"
+                                android:layout_marginBottom="5dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="@color/colorLtGrey"/>
+
+
+                            <Spinner
+                                android:layout_margin="10dp"
+                                android:id="@+id/spinnerTakas"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"/>
+
+                            <TextView
+                                android:layout_margin="10dp"
+                                android:textSize="16sp"
+                                android:textColor="@color/colorBlack"
+                                android:text="Takas details"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+
+                            <View
+                                android:layout_marginLeft="10dp"
+                                android:layout_marginTop="5dp"
+                                android:layout_marginBottom="5dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="@color/colorLtGrey"/>
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                android:layout_gravity="center"
+                                android:layout_margin="10dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:imeOptions="actionDone"
+                                    android:hint="Takas Details"
+                                    android:id="@+id/takasDetails"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                android:layout_gravity="center"
+                                android:layout_margin="10dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="numberDecimal"
+                                    android:hint="Takas amount"
+                                    android:id="@+id/takasAmount"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <Button
+                                android:id="@+id/addTakas"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="10dp"
+                                android:text="ADD TAKAS PAYMENT"
+                                android:background="@drawable/button_selector"/>
+
+
+                        </LinearLayout>
+                    </ScrollView>
+
 
                 </LinearLayout>
+
+
 
                 <LinearLayout
                     android:orientation="vertical"
@@ -721,6 +830,107 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />
                     </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:id="@+id/formMobilePayments"
+                    android:layout_toRightOf="@id/cardPayments"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_margin="10dp"
+                                android:textSize="16sp"
+                                android:textColor="@color/colorBlack"
+                                android:text="Mobile payments"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+
+                            <View
+                                android:layout_marginLeft="10dp"
+                                android:layout_marginTop="5dp"
+                                android:layout_marginBottom="5dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="@color/colorLtGrey"/>
+
+
+                            <Spinner
+                                android:layout_margin="10dp"
+                                android:id="@+id/spinnerMobilePayments"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"/>
+
+                            <TextView
+                                android:layout_margin="10dp"
+                                android:textSize="16sp"
+                                android:textColor="@color/colorBlack"
+                                android:text="Details"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+
+                            <View
+                                android:layout_marginLeft="10dp"
+                                android:layout_marginTop="5dp"
+                                android:layout_marginBottom="5dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="@color/colorLtGrey"/>
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                android:layout_gravity="center"
+                                android:layout_margin="10dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:imeOptions="actionDone"
+                                    android:hint="Reference no."
+                                    android:id="@+id/mobilePaymentReference"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                android:layout_gravity="center"
+                                android:layout_margin="10dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="numberDecimal"
+                                    android:hint="Amount"
+                                    android:id="@+id/mobilePaymentAmount"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <Button
+                                android:id="@+id/addMobilePayment"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="10dp"
+                                android:text="ADD MOBILE PAYMENT"
+                                android:background="@drawable/button_selector"/>
+                        </LinearLayout>
+                    </ScrollView>
+
                 </LinearLayout>
 
                 <Button

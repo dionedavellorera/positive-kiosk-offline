@@ -15,6 +15,7 @@ import com.nerdvana.positiveoffline.apirequests.FetchDiscountRequest;
 import com.nerdvana.positiveoffline.apirequests.FetchPaymentTypeRequest;
 import com.nerdvana.positiveoffline.apirequests.FetchProductsRequest;
 import com.nerdvana.positiveoffline.apirequests.FetchUserRequest;
+import com.nerdvana.positiveoffline.apiresponses.ArOnlineResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCashDenominationResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
@@ -23,6 +24,8 @@ import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchRoomResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchRoomStatusResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchUserResponse;
+import com.nerdvana.positiveoffline.apiresponses.TakasTypeResponse;
+import com.nerdvana.positiveoffline.dao.ArOnlineDao;
 import com.nerdvana.positiveoffline.dao.CashDenominationDao;
 import com.nerdvana.positiveoffline.dao.CreditCardsDao;
 import com.nerdvana.positiveoffline.dao.DataSyncDao;
@@ -35,10 +38,12 @@ import com.nerdvana.positiveoffline.dao.ProductsDao;
 import com.nerdvana.positiveoffline.dao.RoomRatesDao;
 import com.nerdvana.positiveoffline.dao.RoomStatusDao;
 import com.nerdvana.positiveoffline.dao.RoomsDao;
+import com.nerdvana.positiveoffline.dao.TakasDao;
 import com.nerdvana.positiveoffline.dao.ThemeSelectionDao;
 import com.nerdvana.positiveoffline.dao.UserDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
+import com.nerdvana.positiveoffline.entities.ArOnline;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.entities.CreditCards;
 import com.nerdvana.positiveoffline.entities.DataSync;
@@ -51,6 +56,7 @@ import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.RoomRates;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
+import com.nerdvana.positiveoffline.entities.Takas;
 import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.User;
 
@@ -80,6 +86,8 @@ public class DataSyncRepository {
     private ProductsDao productsDao;
     private PrinterLanguageDao printerLanguageDao;
     private RoomStatusDao roomStatusDao;
+    private ArOnlineDao arOnlineDao;
+    private TakasDao takasDao;
     private ThemeSelectionDao themeSelectionDao;
 
     private LiveData<List<DataSync>> allSyncList;
@@ -91,6 +99,10 @@ public class DataSyncRepository {
     private MutableLiveData<FetchDiscountResponse> fetchDiscountLiveData;
     private MutableLiveData<FetchRoomResponse> fetchRoomLiveData;
     private MutableLiveData<FetchRoomStatusResponse> fetchRoomStatusLiveData;
+
+    private MutableLiveData<ArOnlineResponse> fetchArOnlineLiveData;
+    private MutableLiveData<TakasTypeResponse> fetchTakasTypeLiveData;
+
     private MutableLiveData<ThemeSelection> themeSelectionMutableLiveData;
 
     public DataSyncRepository(Application application) {
@@ -108,6 +120,8 @@ public class DataSyncRepository {
         roomStatusDao = posDatabase.roomStatusDao();
         printerLanguageDao = posDatabase.printerLanguageDao();
         themeSelectionDao = posDatabase.themeSelectionDao();
+        arOnlineDao = posDatabase.arOnlineDao();
+        takasDao = posDatabase.takasDao();
         allSyncList = dataSyncDao.syncList();
 
         fetchPaymentTypeLiveData = new MutableLiveData<>();
@@ -117,6 +131,8 @@ public class DataSyncRepository {
         fetchRoomLiveData = new MutableLiveData<>();
         fetchRoomStatusLiveData = new MutableLiveData<>();
         themeSelectionMutableLiveData = new MutableLiveData<>();
+        fetchArOnlineLiveData = new MutableLiveData<>();
+        fetchTakasTypeLiveData = new MutableLiveData<>();
     }
 
 
@@ -132,7 +148,13 @@ public class DataSyncRepository {
         return fetchRoomLiveData;
     }
 
+    public MutableLiveData<ArOnlineResponse> getFetchArOnlineLiveData() {
+        return fetchArOnlineLiveData;
+    }
 
+    public MutableLiveData<TakasTypeResponse> getFetchTakasTypeLiveData() {
+        return fetchTakasTypeLiveData;
+    }
 
     public MutableLiveData<FetchPaymentTypeResponse> getFetchPaymentTypeLiveData() {
         return fetchPaymentTypeLiveData;
@@ -172,6 +194,30 @@ public class DataSyncRepository {
         };
 
         Future<List<CreditCards>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public List<ArOnline> getArOnlineList() throws ExecutionException, InterruptedException {
+        Callable<List<ArOnline>> callable = new Callable<List<ArOnline>>() {
+            @Override
+            public List<ArOnline> call() throws Exception {
+                return arOnlineDao.arList();
+            }
+        };
+
+        Future<List<ArOnline>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+    public List<Takas> getTakasTypeList() throws ExecutionException, InterruptedException {
+        Callable<List<Takas>> callable = new Callable<List<Takas>>() {
+            @Override
+            public List<Takas> call() throws Exception {
+                return takasDao.arList();
+            }
+        };
+
+        Future<List<Takas>> future = Executors.newSingleThreadExecutor().submit(callable);
         return future.get();
     }
 
@@ -291,6 +337,14 @@ public class DataSyncRepository {
         new DataSyncRepository.insertRoomStatusAsync(roomStatusDao).execute(roomStatusList);
     }
 
+    public void insertArOnline(List<ArOnline> arOnlineList) {
+        new DataSyncRepository.insertArOnlineAsync(arOnlineDao).execute(arOnlineList);
+    }
+
+    public void insertTakas(List<Takas> takasList) {
+        new DataSyncRepository.insertTakasAsync(takasDao).execute(takasList);
+    }
+
     public void insertCreditCard(List<CreditCards> creditCards) {
         new DataSyncRepository.insertCreditCardAsync(creditCardsDao).execute(creditCards);
     }
@@ -327,6 +381,15 @@ public class DataSyncRepository {
     public void truncateThemeSelection() {
         new DataSyncRepository.truncateThemeSelection(themeSelectionDao).execute();
     }
+
+    public void truncateArOnline() {
+        new DataSyncRepository.truncateArOnline(arOnlineDao).execute();
+    }
+
+    public void truncateTakas() {
+        new DataSyncRepository.truncateTakas(takasDao).execute();
+    }
+
     public void insert(List<DataSync> dataSync) {
         new DataSyncRepository.insertAsyncTask(dataSyncDao).execute(dataSync);
     }
@@ -562,6 +625,38 @@ public class DataSyncRepository {
         }
     }
 
+    private static class insertArOnlineAsync extends AsyncTask<List<ArOnline>, Void, Void> {
+
+        private ArOnlineDao mAsyncTaskDao;
+
+        insertArOnlineAsync(ArOnlineDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final List<ArOnline>... params) {
+            mAsyncTaskDao.insert(params[0]);
+            return null;
+        }
+    }
+
+    private static class insertTakasAsync extends AsyncTask<List<Takas>, Void, Void> {
+
+        private TakasDao mAsyncTaskDao;
+
+        insertTakasAsync(TakasDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final List<Takas>... params) {
+            mAsyncTaskDao.insert(params[0]);
+            return null;
+        }
+    }
+
+
+
     private static class insertAsyncTask extends AsyncTask<List<DataSync>, Void, Void> {
 
         private DataSyncDao mAsyncTaskDao;
@@ -635,6 +730,44 @@ public class DataSyncRepository {
 
             @Override
             public void onFailure(Call<FetchRoomStatusResponse> call, Throwable t) {
+
+            }
+        });
+
+    }
+
+    public void fetchArOnline() {
+        IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+        FetchDiscountRequest req = new FetchDiscountRequest();
+
+        Call<ArOnlineResponse> call = iUsers.fetchArOnlineRequest(req.getMapValue());
+        call.enqueue(new Callback<ArOnlineResponse>() {
+            @Override
+            public void onResponse(Call<ArOnlineResponse> call, Response<ArOnlineResponse> response) {
+                fetchArOnlineLiveData.postValue(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<ArOnlineResponse> call, Throwable t) {
+
+            }
+        });
+
+    }
+
+    public void fetchTakasType() {
+        IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+        FetchDiscountRequest req = new FetchDiscountRequest();
+
+        Call<TakasTypeResponse> call = iUsers.fetchTakasTypeRequest(req.getMapValue());
+        call.enqueue(new Callback<TakasTypeResponse>() {
+            @Override
+            public void onResponse(Call<TakasTypeResponse> call, Response<TakasTypeResponse> response) {
+                fetchTakasTypeLiveData.postValue(response.body());
+            }
+
+            @Override
+            public void onFailure(Call<TakasTypeResponse> call, Throwable t) {
 
             }
         });
@@ -811,6 +944,46 @@ public class DataSyncRepository {
         @Override
         protected Void doInBackground(List<Void>... lists) {
             mAsyncTaskDao.truncateThemeSelection();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+
+    private static class truncateArOnline extends AsyncTask<List<Void>, Void, Void> {
+
+        private ArOnlineDao mAsyncTaskDao;
+
+        truncateArOnline(ArOnlineDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(List<Void>... lists) {
+            mAsyncTaskDao.truncateArOnline();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+
+    private static class truncateTakas extends AsyncTask<List<Void>, Void, Void> {
+
+        private TakasDao mAsyncTaskDao;
+
+        truncateTakas(TakasDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(List<Void>... lists) {
+            mAsyncTaskDao.truncateTakas();
             return null;
         }
 

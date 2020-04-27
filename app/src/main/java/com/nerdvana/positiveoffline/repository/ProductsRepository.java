@@ -121,9 +121,9 @@ public class ProductsRepository {
         return future.get();
     }
 
-    public void fetchProductRequest() {
+    public void fetchProductRequest(String type) {
         IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
-        FetchProductsRequest req = new FetchProductsRequest();
+        FetchProductsRequest req = new FetchProductsRequest(type);
 
         Call<FetchProductsResponse> call = iUsers.fetchProductsRequest(req.getMapValue());
         call.enqueue(new Callback<FetchProductsResponse>() {

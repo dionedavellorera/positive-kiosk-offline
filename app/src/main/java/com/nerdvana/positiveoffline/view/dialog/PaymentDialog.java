@@ -10,11 +10,13 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.lifecycle.LifecycleOwner;
@@ -22,6 +24,7 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
@@ -29,9 +32,13 @@ import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.CreditCardAdapter;
+import com.nerdvana.positiveoffline.adapter.CustomSpinnerAdapter;
 import com.nerdvana.positiveoffline.adapter.PaymentTypeAdapter;
 import com.nerdvana.positiveoffline.adapter.PaymentsAdapter;
+import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.base.BaseDialog;
+import com.nerdvana.positiveoffline.entities.ArOnline;
 import com.nerdvana.positiveoffline.entities.CreditCards;
 import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.Orders;
@@ -39,6 +46,7 @@ import com.nerdvana.positiveoffline.entities.PaymentTypes;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.RoomStatus;
 import com.nerdvana.positiveoffline.entities.Rooms;
+import com.nerdvana.positiveoffline.entities.Takas;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.CreditCardContract;
@@ -63,10 +71,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import javax.annotation.Nullable;
+
 import static android.view.View.GONE;
 
 public abstract class PaymentDialog extends BaseDialog implements PaymentTypeContract, View.OnClickListener, PaymentsContract {
     private int selectedCreditCardId = 0;
+    private String takasId = "";
+    private String onlineId = "";
+    private String mobilePaymentId = "";
     private String selectedCreditCardName = "";
     private CreditCardAdapter creditCardAdapter;
     private RecyclerView listPayments;
@@ -75,11 +88,16 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     private LinearLayout formOnline;
     private LinearLayout formVoucher;
     private LinearLayout formForex;
+    private LinearLayout formMobilePayments;
     private LinearLayout formGuestInfo;
+    private LinearLayout formTakas;
     private Button add;
     private Button addCash;
     private Button addCard;
     private Button addGuestInfo;
+    private Button addOnline;
+    private Button addTakas;
+    private Button addMobilePayment;
     private ProgressButton pay;
     private HidingEditText cashAmount;
     private RecyclerView listPostedPayments;
@@ -99,6 +117,17 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     private HidingEditText guestTinInput;
     private HidingEditText guestBusinessStyle;
 
+    private HidingEditText voucherCode;
+    private HidingEditText voucherAmount;
+
+    private HidingEditText takasAmount;
+    private HidingEditText takasDetails;
+    private Spinner spinnerTakas;
+
+    private HidingEditText mobilePaymentAmount;
+    private HidingEditText mobilePaymentReference;
+    private Spinner spinnerMobilePayments;
+
     private TextView guestName;
     private TextView guestAddress;
     private TextView guestTin;
@@ -106,6 +135,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     private TextView guestDetailsHeader;
 
     private RecyclerView rvCreditCard;
+
+    private Spinner spinnerOnline;
 
     private DataSyncViewModel dataSyncViewModel;
     private RoomsViewModel roomsViewModel;
@@ -142,7 +173,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         setGuestDetailsClickListener();
         setPaymentTypeAdapter();
         setCancelable(false);
-        showForm("1");
+        showForm("1", null);
         loadPayments();
         loadCreditCardTypes();
         loadOrDetails(transactionId);
@@ -153,11 +184,18 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                     loadPayments();
                 }
             });
+
+            setArOnlineSpinner(dataSyncViewModel.getArOnlineList());
+            setupTakasSpinner(dataSyncViewModel.getTakasTypeList());
+
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+
+
     }
 
     private void setGuestDetailsClickListener() {
@@ -223,10 +261,6 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         rvCreditCard.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
         creditCardAdapter.notifyDataSetChanged();
 
-
-
-
-
     }
 
     private void loadPayments() {
@@ -291,6 +325,9 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
             cashAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
             creditCardAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
+            voucherAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
+            takasAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
+            mobilePaymentAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
 
             if (Utils.roundedOffTwoDecimal(tendered) >= Utils.roundedOffTwoDecimal(amountDue)) {
                 pay.setBackgroundResource(R.drawable.button_selector);
@@ -326,6 +363,18 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
 
     private void initViews() {
+        spinnerMobilePayments = findViewById(R.id.spinnerMobilePayments);
+        mobilePaymentReference = findViewById(R.id.mobilePaymentReference);
+        mobilePaymentAmount = findViewById(R.id.mobilePaymentAmount);
+
+        takasAmount = findViewById(R.id.takasAmount);
+        takasDetails = findViewById(R.id.takasDetails);
+        spinnerTakas = findViewById(R.id.spinnerTakas);
+        formTakas = findViewById(R.id.formTakas);
+
+        voucherCode = findViewById(R.id.voucherCode);
+        voucherAmount = findViewById(R.id.voucherAmount);
+        spinnerOnline = findViewById(R.id.spinnerOnline);
         guestDetailsHeader = findViewById(R.id.guestDetailsHeader);
         rvCreditCard = findViewById(R.id.rvCreditCard);
         cardNumber = findViewById(R.id.cardNumber);
@@ -376,6 +425,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         formOnline = findViewById(R.id.formOnline);
         formVoucher = findViewById(R.id.formGiftCheck);
         formForex = findViewById(R.id.formForex);
+        formMobilePayments = findViewById(R.id.formMobilePayments);
         add = findViewById(R.id.add);
         add.setOnClickListener(this);
 
@@ -385,8 +435,17 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         addCard = findViewById(R.id.addCard);
         addCard.setOnClickListener(this);
 
+        addOnline = findViewById(R.id.addOnline);
+        addOnline.setOnClickListener(this);
+
+        addTakas = findViewById(R.id.addTakas);
+        addTakas.setOnClickListener(this);
+
         addGuestInfo = findViewById(R.id.addGuestInfo);
         addGuestInfo.setOnClickListener(this );
+
+        addMobilePayment = findViewById(R.id.addMobilePayment);
+        addMobilePayment.setOnClickListener(this);
 
         cashAmount = findViewById(R.id.amount);
         totalAmountDue = findViewById(R.id.totalAmountDue);
@@ -426,19 +485,30 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
         switch (paymentTypes.getCore_id()) {
             case 1://CASH
-                showForm("1");
+                showForm("1", null);
                 break;
             case 2://CREDIT CARD
-                showForm("2");
+                showForm("2", null);
+                break;
+            case 3://ONLINE
+                showForm("3", null);
+                break;
+            case 8://ACCOUNTS RECEIVABLE / TAKAS
+                showForm("8", null);
+                break;
+            case 9://MOBILE PAYMENTS
+                showForm("9", paymentTypes.getOther_field());
                 break;
             case 999://GUEST INFO
-                showForm("999");
+                showForm("999", null);
+                break;
         }
     }
 
 
 
-    private void showForm(String coreId) {
+    private void showForm(String coreId, @Nullable String otherData) {
+
         if (coreId.equalsIgnoreCase("1")) { //cash
             formCash.setVisibility(View.VISIBLE);
             formCard.setVisibility(GONE);
@@ -446,6 +516,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formOnline.setVisibility(GONE);
             formForex.setVisibility(GONE);
             formGuestInfo.setVisibility(GONE);
+            formMobilePayments.setVisibility(GONE);
+            formTakas.setVisibility(GONE);
         } else if (coreId.equalsIgnoreCase("2")) { //card
             formCash.setVisibility(GONE);
             formCard.setVisibility(View.VISIBLE);
@@ -453,6 +525,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formOnline.setVisibility(GONE);
             formForex.setVisibility(GONE);
             formGuestInfo.setVisibility(GONE);
+            formMobilePayments.setVisibility(GONE);
+            formTakas.setVisibility(GONE);
         } else if (coreId.equalsIgnoreCase("3")) { //online
             formCash.setVisibility(View.GONE);
             formCard.setVisibility(GONE);
@@ -460,6 +534,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formOnline.setVisibility(View.VISIBLE);
             formForex.setVisibility(GONE);
             formGuestInfo.setVisibility(GONE);
+            formMobilePayments.setVisibility(GONE);
+            formTakas.setVisibility(GONE);
         } else if (coreId.equalsIgnoreCase("5")) { //voucher
             formCash.setVisibility(View.GONE);
             formCard.setVisibility(GONE);
@@ -467,6 +543,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formOnline.setVisibility(GONE);
             formForex.setVisibility(GONE);
             formGuestInfo.setVisibility(GONE);
+            formMobilePayments.setVisibility(GONE);
+            formTakas.setVisibility(GONE);
         } else if (coreId.equalsIgnoreCase("6")) { //forex
             formCash.setVisibility(View.GONE);
             formCard.setVisibility(GONE);
@@ -474,6 +552,58 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formOnline.setVisibility(GONE);
             formForex.setVisibility(View.VISIBLE);
             formGuestInfo.setVisibility(GONE);
+            formMobilePayments.setVisibility(GONE);
+            formTakas.setVisibility(GONE);
+        } else if (coreId.equalsIgnoreCase("8")) { //AR / TAKAS
+            formCash.setVisibility(View.GONE);
+            formCard.setVisibility(GONE);
+            formVoucher.setVisibility(GONE);
+            formOnline.setVisibility(GONE);
+            formForex.setVisibility(GONE);
+            formGuestInfo.setVisibility(GONE);
+            formMobilePayments.setVisibility(GONE);
+            formTakas.setVisibility(View.VISIBLE);
+
+
+
+
+        } else if (coreId.equalsIgnoreCase("9")) { //mobile payment
+            formCash.setVisibility(View.GONE);
+            formCard.setVisibility(GONE);
+            formVoucher.setVisibility(GONE);
+            formOnline.setVisibility(GONE);
+            formForex.setVisibility(GONE);
+            formGuestInfo.setVisibility(GONE);
+            formTakas.setVisibility(GONE);
+            formMobilePayments.setVisibility(View.VISIBLE);
+
+            //dione to do
+
+            TypeToken<List<FetchPaymentTypeResponse.MobilePayment>> token = new TypeToken<List<FetchPaymentTypeResponse.MobilePayment>>() {};
+            final List<FetchPaymentTypeResponse.MobilePayment> mobilePaymentList = GsonHelper.getGson().fromJson(otherData, token.getType());
+
+            if (mobilePaymentList.size() > 0) {
+                List<String> tmpList = new ArrayList<>();
+                for (FetchPaymentTypeResponse.MobilePayment list : mobilePaymentList) {
+                    tmpList.add(list.getMobilePayment().toUpperCase());
+                }
+                CustomSpinnerAdapter rateSpinnerAdapter = new CustomSpinnerAdapter(getContext(), R.id.spinnerItem,
+                        tmpList);
+                spinnerMobilePayments.setAdapter(rateSpinnerAdapter);
+
+                spinnerMobilePayments.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        //fix this when api call ready
+                        mobilePaymentId = String.valueOf(mobilePaymentList.get(position).getMobilePaymentId());
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
+            }
         } else if (coreId.equalsIgnoreCase("999")) {
             formGuestInfo.setVisibility(View.VISIBLE);
             formCash.setVisibility(View.GONE);
@@ -481,6 +611,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formVoucher.setVisibility(GONE);
             formOnline.setVisibility(GONE);
             formForex.setVisibility(View.GONE);
+            formMobilePayments.setVisibility(GONE);
+            formTakas.setVisibility(GONE);
         }
     }
 
@@ -488,6 +620,155 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.addMobilePayment:
+
+                boolean mobilePaymentValid = true;
+                String mobilePaymentErrorMessage = "";
+
+                if (TextUtils.isEmpty(mobilePaymentId.trim())) {
+                    mobilePaymentValid = false;
+                    mobilePaymentErrorMessage += "Please select m. payment type \n" ;
+                }
+
+                if (TextUtils.isEmpty(mobilePaymentReference.getText().toString().trim())) {
+                    mobilePaymentValid = false;
+                    mobilePaymentErrorMessage += "Empty remarks \n";
+                }
+
+                if (!TextUtils.isEmpty(mobilePaymentAmount.getText().toString())) {
+                    if (Double.valueOf(mobilePaymentAmount.getText().toString()) < 1) {
+                        mobilePaymentValid = false;
+                        mobilePaymentErrorMessage += "Cannot enter a value of zero(0)";
+                    }
+                } else {
+                    mobilePaymentValid = false;
+                    mobilePaymentErrorMessage += "Empty amount";
+                }
+
+                if (mobilePaymentValid) {
+
+                    Map<String, String> takasMap = new HashMap<>();
+                    takasMap.put("reference_no", mobilePaymentReference.getText().toString());
+                    takasMap.put("takas_amount", mobilePaymentAmount.getText().toString());
+                    takasMap.put("takas_id", mobilePaymentId);
+
+                    List<Payments> takasPayment = new ArrayList<>();
+                    Payments p = new Payments(
+                            Integer.valueOf(transactionId), paymentTypes.getCore_id(),
+                            Double.valueOf(mobilePaymentAmount.getText().toString()), paymentTypes.getPayment_type(),
+                            0,
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                            Utils.getDateTimeToday());
+                    p.setOther_data(GsonHelper.getGson().toJson(takasMap));
+                    takasPayment.add(p);
+                    transactionsViewModel.insertPayment(takasPayment);
+
+                } else {
+                    Helper.showDialogMessage(getContext(), mobilePaymentErrorMessage, "Information");
+
+                }
+
+
+                break;
+            case R.id.addTakas:
+
+                boolean takasIsValid = true;
+                String takasErrorMessage = "";
+
+                if (TextUtils.isEmpty(takasId.trim())) {
+                    takasIsValid = false;
+                    takasErrorMessage += "Please select takas type \n" ;
+                }
+
+                if (TextUtils.isEmpty(takasDetails.getText().toString().trim())) {
+                    takasIsValid = false;
+                    takasErrorMessage += "Empty takas remarks \n";
+                }
+
+                if (!TextUtils.isEmpty(takasAmount.getText().toString())) {
+                    if (Double.valueOf(takasAmount.getText().toString()) < 1) {
+                        takasIsValid = false;
+                        takasErrorMessage += "Cannot enter a value of zero(0)";
+                    }
+                } else {
+                    takasIsValid = false;
+                    takasErrorMessage += "Empty amount";
+                }
+
+                if (takasIsValid) {
+
+                    Map<String, String> takasMap = new HashMap<>();
+                    takasMap.put("takas_remarks", takasDetails.getText().toString());
+                    takasMap.put("takas_amount", takasAmount.getText().toString());
+                    takasMap.put("takas_id", takasId);
+
+                    List<Payments> takasPayment = new ArrayList<>();
+                    Payments p = new Payments(
+                            Integer.valueOf(transactionId), paymentTypes.getCore_id(),
+                            Double.valueOf(takasAmount.getText().toString()), paymentTypes.getPayment_type(),
+                            0,
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                            Utils.getDateTimeToday());
+                    p.setOther_data(GsonHelper.getGson().toJson(takasMap));
+                    takasPayment.add(p);
+                    transactionsViewModel.insertPayment(takasPayment);
+
+                } else {
+                    Helper.showDialogMessage(getContext(), takasErrorMessage, "Information");
+
+                }
+
+                break;
+            case R.id.addOnline:
+
+                boolean isValid = true;
+                String errorMessage = "";
+
+                if (TextUtils.isEmpty(onlineId.trim())) {
+                    isValid = false;
+                    errorMessage += "Please select ar type \n" ;
+                }
+
+                if (TextUtils.isEmpty(voucherCode.getText().toString().trim())) {
+                    isValid = false;
+                    errorMessage += "Empty voucher code \n";
+                }
+
+                if (!TextUtils.isEmpty(voucherAmount.getText().toString())) {
+                    if (Double.valueOf(voucherAmount.getText().toString()) < 1) {
+                        isValid = false;
+                        errorMessage += "Cannot enter a value of zero(0)";
+                    }
+                } else {
+                    isValid = false;
+                    errorMessage += "Empty amount";
+                }
+
+                if (isValid) {
+                    Map<String, String> onlineMap = new HashMap<>();
+                    onlineMap.put("voucher_code", cardNumber.getText().toString());
+                    onlineMap.put("voucher_amount", voucherAmount.getText().toString());
+                    onlineMap.put("online_id", onlineId);
+
+                    List<Payments> onlinePayment = new ArrayList<>();
+                    Payments p = new Payments(
+                            Integer.valueOf(transactionId), paymentTypes.getCore_id(),
+                            Double.valueOf(voucherAmount.getText().toString()), paymentTypes.getPayment_type(),
+                            0,
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                            Utils.getDateTimeToday());
+                    p.setOther_data(GsonHelper.getGson().toJson(onlineMap));
+                    onlinePayment.add(p);
+                    transactionsViewModel.insertPayment(onlinePayment);
+
+                } else {
+                    Helper.showDialogMessage(getContext(), errorMessage, "Information");
+                }
+
+                break;
             case R.id.pay:
 
                 try {
@@ -548,7 +829,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                         Utils.getOrFormat(
                                                 String.valueOf(
                                                         Integer.valueOf(
-                                                                transactionsViewModel.lastOrNumber().getReceipt_number().split("-")[1].replaceFirst("0", "")) + 1));
+                                                                transactionsViewModel.lastOrNumber().getReceipt_number().replaceFirst("0", "")) + 1));
                             }
 
                         }
@@ -893,6 +1174,62 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         }, 300);
 
 
+    }
+
+    private void setupTakasSpinner(final List<Takas> takasList) {
+
+        final List<String> takasArray = new ArrayList<>();
+        try {
+            for (Takas list : takasList) {
+                takasArray.add(list.getTakas_type());
+            }
+            CustomSpinnerAdapter rateSpinnerAdapter = new CustomSpinnerAdapter(getContext(), R.id.spinnerItem,
+                    takasArray);
+            spinnerTakas.setAdapter(rateSpinnerAdapter);
+
+            spinnerTakas.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                    takasId = String.valueOf(takasList.get(position).getCore_id());
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+        } catch (Exception e) {
+
+        }
+
+
+    }
+
+    private void setArOnlineSpinner(final List<ArOnline> arOnlineList) {
+
+        if (arOnlineList.size() > 0) {
+            List<String> tmpList = new ArrayList<>();
+            for (ArOnline list : arOnlineList) {
+                tmpList.add(list.getAr_online().toUpperCase());
+            }
+            CustomSpinnerAdapter rateSpinnerAdapter = new CustomSpinnerAdapter(getContext(), R.id.spinnerItem,
+                    tmpList);
+            spinnerOnline.setAdapter(rateSpinnerAdapter);
+
+            spinnerOnline.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    //fix this when api call ready
+                    onlineId = String.valueOf(arOnlineList.get(position).getCore_id());
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+        }
     }
 
 }

@@ -1,5 +1,6 @@
 package com.nerdvana.positiveoffline;
 
+import com.nerdvana.positiveoffline.apiresponses.ArOnlineResponse;
 import com.nerdvana.positiveoffline.apiresponses.CutoffServerDataResponse;
 import com.nerdvana.positiveoffline.apiresponses.EndOfDayServerDataResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCashDenominationResponse;
@@ -18,6 +19,7 @@ import com.nerdvana.positiveoffline.apiresponses.PayoutServerDataResponse;
 import com.nerdvana.positiveoffline.apiresponses.PostingDiscountServerDataResponse;
 import com.nerdvana.positiveoffline.apiresponses.SerialNumbersServerDataResponse;
 import com.nerdvana.positiveoffline.apiresponses.ServiceChargeServerDataResponse;
+import com.nerdvana.positiveoffline.apiresponses.TakasTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.TestResponse;
 import com.nerdvana.positiveoffline.apiresponses.TransactionsServerDataResponse;
 import com.nerdvana.positiveoffline.apiresponses.VerifyMachineResponse;
@@ -159,6 +161,14 @@ public interface IUsers {
     @POST("fetchRoomStatus")
     @FormUrlEncoded
     Call<FetchRoomStatusResponse> fetchRoomStatusRequest(@FieldMap Map<String, String> params);
+
+    @POST("fetchAROnline")
+    @FormUrlEncoded
+    Call<ArOnlineResponse> fetchArOnlineRequest(@FieldMap Map<String, String> params);
+
+    @POST("fetchTakasType")
+    @FormUrlEncoded
+    Call<TakasTypeResponse> fetchTakasTypeRequest(@FieldMap Map<String, String> params);
 
 
     @POST("fetchPOSMachineInformations/payouts")

@@ -61,6 +61,4 @@ public class InsertRoomStatusAsync extends AsyncTask<Void, Void, Void> {
         syncCallback.finishedLoading("room_status");
     }
 
-
-
 }

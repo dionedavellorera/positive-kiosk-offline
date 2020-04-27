@@ -138,6 +138,18 @@ public class TransactionsRepository {
 
 
 
+    public List<TransactionWithOrders> transactionListWithRoom() throws ExecutionException, InterruptedException {
+        Callable<List<TransactionWithOrders>> callable = new Callable<List<TransactionWithOrders>>() {
+            @Override
+            public List<TransactionWithOrders> call() throws Exception {
+                return transactionsDao.transactionListWithRoom();
+            }
+        };
+
+        Future<List<TransactionWithOrders>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
     public List<TransactionWithOrders> savedTransactionsList() throws ExecutionException, InterruptedException {
         Callable<List<TransactionWithOrders>> callable = new Callable<List<TransactionWithOrders>>() {
             @Override

@@ -415,6 +415,11 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                 Double total_cash = 0.00;
                 Double total_cash_payments = 0.00;
                 Double total_card_payments = 0.00;
+
+                Double total_online_payments = 0.00;
+                Double total_ar_payments = 0.00;
+                Double total_mobile_payments = 0.00;
+
                 Double total_change = 0.00;
                 Double total_payout = 0.00;
                 Double total_service_charge = 0.00;
@@ -446,6 +451,11 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                     total_cash += cutOff.getTotal_cash_amount();
                     total_cash_payments += cutOff.getTotal_cash_payments();
                     total_card_payments += cutOff.getTotal_card_payments();
+
+                    total_ar_payments += cutOff.getTotal_ar_payments();
+                    total_online_payments += cutOff.getTotal_online_payments();
+                    total_mobile_payments += cutOff.getTotal_mobile_payments();
+
                     total_change += cutOff.getTotal_change() != null ? cutOff.getTotal_change() : 0.00;
 
                     seniorCount += cutOff.getSeniorCount();
@@ -470,6 +480,12 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                 endOfDay.setTotal_cash_amount(Utils.roundedOffTwoDecimal(total_cash));
                 endOfDay.setTotal_cash_payments(Utils.roundedOffTwoDecimal(total_cash_payments));
                 endOfDay.setTotal_card_payments(Utils.roundedOffTwoDecimal(total_card_payments));
+
+                endOfDay.setTotal_online_payments(Utils.roundedOffTwoDecimal(total_online_payments));
+                endOfDay.setTotal_ar_payments(Utils.roundedOffTwoDecimal(total_ar_payments));
+                endOfDay.setTotal_mobile_payments(Utils.roundedOffTwoDecimal(total_mobile_payments));
+
+
                 endOfDay.setTotal_change(total_change);
 
                 endOfDay.setSeniorCount(seniorCount);
@@ -546,6 +562,12 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
 
                     Double total_cash_payments = 0.00;
                     Double total_card_payments = 0.00;
+
+                    Double total_online_payments = 0.00;
+                    Double total_ar_payments = 0.00;
+                    Double total_mobile_payments = 0.00;
+
+
                     Double total_change = 0.00;
                     Double total_service_charge = 0.00;
 
@@ -602,6 +624,15 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                 break;
                             case 2://CARD
                                 total_card_payments += payments.getAmount();
+                                break;
+                            case 3://ONLINE
+                                total_online_payments += payments.getAmount();
+                                break;
+                            case 8://AR
+                                total_ar_payments += payments.getAmount();
+                                break;
+                            case 9://MOBILE PAYMENT
+                                total_mobile_payments += payments.getAmount();
                         }
                     }
 
@@ -659,6 +690,10 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                     cutOff.setTotal_cash_amount(Utils.roundedOffTwoDecimal(totalCash));
                     cutOff.setTotal_cash_payments(Utils.roundedOffTwoDecimal(total_cash_payments));
                     cutOff.setTotal_card_payments(Utils.roundedOffTwoDecimal(total_card_payments));
+
+                    cutOff.setTotal_online_payments(Utils.roundedOffTwoDecimal(total_online_payments));
+                    cutOff.setTotal_ar_payments(Utils.roundedOffTwoDecimal(total_ar_payments));
+                    cutOff.setTotal_mobile_payments(Utils.roundedOffTwoDecimal(total_mobile_payments));
 
                     cutOff.setSeniorCount(seniorCount);
                     cutOff.setSeniorAmount(seniorAmount);

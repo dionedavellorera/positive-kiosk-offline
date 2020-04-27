@@ -68,8 +68,22 @@ public class PaymentTypeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             }
         });
 
-        if (model.getCore_id() != 1 && model.getCore_id() != 2 && model.getCore_id() != 999) {
+        if (model.getCore_id() != 1 && //CASH
+                model.getCore_id() != 2 && //CARD
+                model.getCore_id() != 3 && //ONLINE
+                model.getCore_id() != 8 && //ACCOUNT RECEIVABLE
+                model.getCore_id() != 9 && //MOBILE PAYMENTS
+                model.getCore_id() != 999 //GUEST INFO
+        ) {
             ((ViewHolder)holder).rootView.getLayoutParams().height = 0;
+        } else {
+
+            ((ViewHolder)holder).rootView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+//            int width = itemView.getMeasuredWidth();
+            int height = ((ViewHolder)holder).rootView.getMeasuredHeight();
+
+
+            ((ViewHolder)holder).rootView.getLayoutParams().height = height;
         }
 
         ((ViewHolder)holder).name.setText(model.getPayment_type());

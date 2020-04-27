@@ -520,6 +520,10 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.savedTransactionsList();
     }
 
+    public List<TransactionWithOrders> transactionListWithRoom() throws ExecutionException, InterruptedException {
+        return transactionsRepository.transactionListWithRoom();
+    }
+
     public List<ProductAlacart> getBranchAlacart(String product_id) throws ExecutionException, InterruptedException {
         return transactionsRepository.getBranchAlacart(product_id);
     }
