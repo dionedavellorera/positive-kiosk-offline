@@ -468,8 +468,16 @@
                                 android:layout_height="1dp"
                                 android:background="@color/colorLtGrey"/>
 
+                            <Button
+                                android:layout_margin="10dp"
+                                android:background="@drawable/button_selector"
+                                android:id="@+id/btnSelectOnlinePayment"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="PRESS TO SELECT ONLINE PAYMENT"/>
 
                             <Spinner
+                                android:visibility="gone"
                                 android:layout_margin="10dp"
                                 android:id="@+id/spinnerOnline"
                                 android:layout_width="match_parent"
@@ -568,7 +576,17 @@
                                 android:background="@color/colorLtGrey"/>
 
 
+                            <Button
+                                android:layout_margin="10dp"
+                                android:background="@drawable/button_selector"
+                                android:id="@+id/btnSelectArPayment"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="PRESS TO SELECT AR PAYMENT"/>
+
+
                             <Spinner
+                                android:visibility="gone"
                                 android:layout_margin="10dp"
                                 android:id="@+id/spinnerTakas"
                                 android:layout_width="match_parent"
@@ -865,8 +883,16 @@
                                 android:layout_height="1dp"
                                 android:background="@color/colorLtGrey"/>
 
+                            <Button
+                                android:layout_margin="10dp"
+                                android:background="@drawable/button_selector"
+                                android:id="@+id/btnSelectMobilePayment"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="PRESS TO SELECT MOBILE PAYMENT"/>
 
                             <Spinner
+                                android:visibility="gone"
                                 android:layout_margin="10dp"
                                 android:id="@+id/spinnerMobilePayments"
                                 android:layout_width="match_parent"

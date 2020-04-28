@@ -7,9 +7,9 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "Takas")
 public class Takas {
 
-    @PrimaryKey(autoGenerate = true)
+
+    @PrimaryKey(autoGenerate = false)
     @NonNull
-    private int id;
     private int core_id;
     private String takas_type;
 
@@ -17,10 +17,6 @@ public class Takas {
     public Takas(int core_id, String takas_type) {
         this.core_id = core_id;
         this.takas_type = takas_type;
-    }
-
-    public int getId() {
-        return id;
     }
 
     public int getCore_id() {
@@ -31,9 +27,6 @@ public class Takas {
         return takas_type;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public void setCore_id(int core_id) {
         this.core_id = core_id;

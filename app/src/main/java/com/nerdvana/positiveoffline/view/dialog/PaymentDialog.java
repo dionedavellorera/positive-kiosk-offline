@@ -54,6 +54,7 @@ import com.nerdvana.positiveoffline.intf.PaymentTypeContract;
 import com.nerdvana.positiveoffline.intf.PaymentsContract;
 import com.nerdvana.positiveoffline.model.CreditCardListModel;
 import com.nerdvana.positiveoffline.model.SettingsMenuModel;
+import com.nerdvana.positiveoffline.model.StringModel;
 import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.view.HidingEditText;
 import com.nerdvana.positiveoffline.view.ProgressButton;
@@ -98,6 +99,9 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     private Button addOnline;
     private Button addTakas;
     private Button addMobilePayment;
+    private Button btnSelectOnlinePayment;
+    private Button btnSelectMobilePayment;
+    private Button btnSelectArPayment;
     private ProgressButton pay;
     private HidingEditText cashAmount;
     private RecyclerView listPostedPayments;
@@ -148,6 +152,9 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     private Context context;
 
 
+    private List<StringModel> arOnlineString = new ArrayList<>();
+    private List<StringModel> mobileString = new ArrayList<>();
+    private List<StringModel> arString = new ArrayList<>();
 
 
     public PaymentDialog(Context context, DataSyncViewModel dataSyncViewModel,
@@ -186,7 +193,16 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             });
 
             setArOnlineSpinner(dataSyncViewModel.getArOnlineList());
+
+            for (ArOnline arList : dataSyncViewModel.getArOnlineList()) {
+                arOnlineString.add(new StringModel(arList.getCore_id(), arList.getAr_online()));
+            }
+
             setupTakasSpinner(dataSyncViewModel.getTakasTypeList());
+
+            for (Takas taks : dataSyncViewModel.getTakasTypeList()) {
+                arString.add(new StringModel(taks.getCore_id(), taks.getTakas_type()));
+            }
 
         } catch (ExecutionException e) {
             e.printStackTrace();
@@ -429,6 +445,12 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
         add = findViewById(R.id.add);
         add.setOnClickListener(this);
 
+        btnSelectArPayment = findViewById(R.id.btnSelectArPayment);
+        btnSelectArPayment.setOnClickListener(this);
+
+        btnSelectMobilePayment = findViewById(R.id.btnSelectMobilePayment);
+        btnSelectMobilePayment.setOnClickListener(this);
+
         addCash = findViewById(R.id.addCash);
         addCash.setOnClickListener(this);
 
@@ -446,6 +468,9 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
         addMobilePayment = findViewById(R.id.addMobilePayment);
         addMobilePayment.setOnClickListener(this);
+
+        btnSelectOnlinePayment = findViewById(R.id.btnSelectOnlinePayment);
+        btnSelectOnlinePayment.setOnClickListener(this);
 
         cashAmount = findViewById(R.id.amount);
         totalAmountDue = findViewById(R.id.totalAmountDue);
@@ -583,26 +608,28 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             final List<FetchPaymentTypeResponse.MobilePayment> mobilePaymentList = GsonHelper.getGson().fromJson(otherData, token.getType());
 
             if (mobilePaymentList.size() > 0) {
-                List<String> tmpList = new ArrayList<>();
+//                List<StringModel> tmpList = new ArrayList<>();
                 for (FetchPaymentTypeResponse.MobilePayment list : mobilePaymentList) {
-                    tmpList.add(list.getMobilePayment().toUpperCase());
+                    mobileString.add(new StringModel(list.getMobilePaymentId(), list.getMobilePayment().toUpperCase()));
                 }
-                CustomSpinnerAdapter rateSpinnerAdapter = new CustomSpinnerAdapter(getContext(), R.id.spinnerItem,
-                        tmpList);
-                spinnerMobilePayments.setAdapter(rateSpinnerAdapter);
 
-                spinnerMobilePayments.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                        //fix this when api call ready
-                        mobilePaymentId = String.valueOf(mobilePaymentList.get(position).getMobilePaymentId());
-                    }
 
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-
-                    }
-                });
+//                CustomSpinnerAdapter rateSpinnerAdapter = new CustomSpinnerAdapter(getContext(), R.id.spinnerItem,
+//                        tmpList);
+//                spinnerMobilePayments.setAdapter(rateSpinnerAdapter);
+//
+//                spinnerMobilePayments.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+//                    @Override
+//                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//                        //fix this when api call ready
+//                        mobilePaymentId = String.valueOf(mobilePaymentList.get(position).getMobilePaymentId());
+//                    }
+//
+//                    @Override
+//                    public void onNothingSelected(AdapterView<?> parent) {
+//
+//                    }
+//                });
             }
         } else if (coreId.equalsIgnoreCase("999")) {
             formGuestInfo.setVisibility(View.VISIBLE);
@@ -620,6 +647,39 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.btnSelectMobilePayment:
+                StringSelectionDialog stringSelectionDialog1 = new StringSelectionDialog(getContext(), "SELECT PAYMENT", mobileString) {
+
+                    @Override
+                    public void stringSelected(StringModel selected) {
+                        mobilePaymentId = String.valueOf(selected.getId());
+                        btnSelectMobilePayment.setText(selected.getString());
+                    }
+                };
+                stringSelectionDialog1.show();
+                break;
+            case R.id.btnSelectArPayment:
+                StringSelectionDialog stringSelectionDialog2 = new StringSelectionDialog(getContext(), "SELECT PAYMENT", arString) {
+
+                    @Override
+                    public void stringSelected(StringModel selected) {
+                        takasId = String.valueOf(selected.getId());
+                        btnSelectArPayment.setText(selected.getString());
+                    }
+                };
+                stringSelectionDialog2.show();
+                break;
+            case R.id.btnSelectOnlinePayment:
+                StringSelectionDialog stringSelectionDialog = new StringSelectionDialog(getContext(), "SELECT PAYMENT", arOnlineString) {
+
+                    @Override
+                    public void stringSelected(StringModel selected) {
+                        onlineId = String.valueOf(selected.getId());
+                        btnSelectOnlinePayment.setText(selected.getString());
+                    }
+                };
+                stringSelectionDialog.show();
+                break;
             case R.id.addMobilePayment:
 
                 boolean mobilePaymentValid = true;
