@@ -12,11 +12,14 @@ public class Takas {
     @NonNull
     private int core_id;
     private String takas_type;
+    private String image_file;
 
 
-    public Takas(int core_id, String takas_type) {
+    public Takas(int core_id, String takas_type,
+                 String image_file) {
         this.core_id = core_id;
         this.takas_type = takas_type;
+        this.image_file = image_file;
     }
 
     public int getCore_id() {
@@ -34,5 +37,13 @@ public class Takas {
 
     public void setTakas_type(String takas_type) {
         this.takas_type = takas_type;
+    }
+
+    public String getImage_file() {
+        return image_file;
+    }
+
+    public void setImage_file(String image_file) {
+        this.image_file = image_file;
     }
 }

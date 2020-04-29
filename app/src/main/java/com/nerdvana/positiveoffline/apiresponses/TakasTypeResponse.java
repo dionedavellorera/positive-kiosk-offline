@@ -43,7 +43,9 @@ public class TakasTypeResponse {
 
 
     public class Result {
-
+        @SerializedName("image_file")
+        @Expose
+        private String image_file;
         @SerializedName("id")
         @Expose
         private Integer id;
@@ -59,6 +61,14 @@ public class TakasTypeResponse {
         @SerializedName("deleted_at")
         @Expose
         private Object deletedAt;
+
+        public String getImage_file() {
+            return image_file;
+        }
+
+        public void setImage_file(String image_file) {
+            this.image_file = image_file;
+        }
 
         public Integer getId() {
             return id;

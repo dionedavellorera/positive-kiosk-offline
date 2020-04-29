@@ -11,10 +11,13 @@ public class ArOnline {
     @NonNull
     private int core_id;
     private String ar_online;
+    private String image_file;
 
-    public ArOnline(int core_id, String ar_online) {
+    public ArOnline(int core_id, String ar_online,
+                    String image_file) {
         this.core_id = core_id;
         this.ar_online = ar_online;
+        this.image_file = image_file;
     }
 
     public int getCore_id() {
@@ -32,5 +35,13 @@ public class ArOnline {
 
     public void setAr_online(String ar_online) {
         this.ar_online = ar_online;
+    }
+
+    public String getImage_file() {
+        return image_file;
+    }
+
+    public void setImage_file(String image_file) {
+        this.image_file = image_file;
     }
 }

@@ -35,11 +35,14 @@ public abstract class StringSelectionDialog extends BaseDialog implements String
     private List<StringModel> stringList;
     private Button btnSearch;
     private TextView displayHeader;
+    private String from;
     public StringSelectionDialog(Context context, String header,
-                                 List<StringModel> stringList) {
+                                 List<StringModel> stringList,
+                                 String from) {
         super(context);
         this.header = header;
         this.stringList = stringList;
+        this.from = from;
     }
 
     @Override
@@ -53,7 +56,7 @@ public abstract class StringSelectionDialog extends BaseDialog implements String
 
     private void setAdapter() {
 
-        stringAdapter = new StringAdapter(stringList, this, getContext(), false);
+        stringAdapter = new StringAdapter(stringList, this, getContext(), false, from);
         rvStringSelection.setAdapter(stringAdapter);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 7);
         rvStringSelection.setLayoutManager(gridLayoutManager);

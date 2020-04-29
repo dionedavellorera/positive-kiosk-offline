@@ -648,7 +648,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btnSelectMobilePayment:
-                StringSelectionDialog stringSelectionDialog1 = new StringSelectionDialog(getContext(), "SELECT PAYMENT", mobileString) {
+                StringSelectionDialog stringSelectionDialog1 = new StringSelectionDialog(getContext(), "SELECT PAYMENT", mobileString, "mobilepayment") {
 
                     @Override
                     public void stringSelected(StringModel selected) {
@@ -659,7 +659,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                 stringSelectionDialog1.show();
                 break;
             case R.id.btnSelectArPayment:
-                StringSelectionDialog stringSelectionDialog2 = new StringSelectionDialog(getContext(), "SELECT PAYMENT", arString) {
+                StringSelectionDialog stringSelectionDialog2 = new StringSelectionDialog(getContext(), "SELECT PAYMENT", arString, "takas") {
 
                     @Override
                     public void stringSelected(StringModel selected) {
@@ -670,7 +670,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                 stringSelectionDialog2.show();
                 break;
             case R.id.btnSelectOnlinePayment:
-                StringSelectionDialog stringSelectionDialog = new StringSelectionDialog(getContext(), "SELECT PAYMENT", arOnlineString) {
+                StringSelectionDialog stringSelectionDialog = new StringSelectionDialog(getContext(), "SELECT PAYMENT", arOnlineString, "aronline") {
 
                     @Override
                     public void stringSelected(StringModel selected) {

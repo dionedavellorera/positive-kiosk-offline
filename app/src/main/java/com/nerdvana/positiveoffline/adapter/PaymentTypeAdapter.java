@@ -92,9 +92,9 @@ public class PaymentTypeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
                 + "/POS/PAYMENT_TYPE/" + model.getImage_url());
 
         if (model.getCore_id() == 999) {
-            Picasso.get().load(R.mipmap.baseline_assignment_black_48dp).into(((PaymentTypeAdapter.ViewHolder)holder).image);
+            Picasso.get().load(R.mipmap.baseline_assignment_black_48dp).placeholder(R.drawable.pos_logo_edited).into(((PaymentTypeAdapter.ViewHolder)holder).image);
         } else {
-            Picasso.get().load(direct).into(((PaymentTypeAdapter.ViewHolder)holder).image);
+            Picasso.get().load(direct).placeholder(R.drawable.pos_logo_edited).into(((PaymentTypeAdapter.ViewHolder)holder).image);
         }
 
 

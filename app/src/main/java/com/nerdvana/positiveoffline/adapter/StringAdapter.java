@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Environment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,13 +44,15 @@ public class StringAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private StringSelectionContract stringSelectionContract;
     private Context context;
     private boolean isDarkMode;
+    private String from;
     public StringAdapter(List<StringModel> strList, StringSelectionContract stringSelectionContract,
-                           Context context, boolean isDarkMode) {
+                           Context context, boolean isDarkMode, String from) {
         this.isDarkMode = isDarkMode;
         this.stringList = new ArrayList<>(strList);
         this.context = context;
         this.stringSelectionContract = stringSelectionContract;
         stringFilteredList = new ArrayList<>(strList);
+        this.from = from;
 
     }
 
@@ -105,9 +108,11 @@ public class StringAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         private TextView name;
+        private ImageView ivImage;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.name);
+            ivImage = itemView.findViewById(R.id.ivImage);
         }
     }
 
@@ -140,6 +145,22 @@ public class StringAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         } else {
             ((StringAdapter.ViewHolder)holder).name.setBackgroundColor(context.getResources().getColor(R.color.colorDarkLighter));
             ((StringAdapter.ViewHolder)holder).name.setTextColor(Color.WHITE);
+        }
+
+        Log.d("WEKWEK", String.valueOf(from));
+
+        if (from.equalsIgnoreCase("takas")) {
+            File direct = new File(Environment.getExternalStorageDirectory()
+                    + "/POS/TAKAS/" + model.getId()+".jpg");
+            Picasso.get().load(direct).placeholder(R.drawable.pos_logo_edited).into(((ViewHolder)holder).ivImage);
+        } else if (from.equalsIgnoreCase("aronline")) {
+            File direct = new File(Environment.getExternalStorageDirectory()
+                    + "/POS/ARONLINE/" + model.getId()+".jpg");
+            Picasso.get().load(direct).placeholder(R.drawable.pos_logo_edited).into(((ViewHolder)holder).ivImage);
+        } else if (from.equalsIgnoreCase("mobilepayment")) {
+            File direct = new File(Environment.getExternalStorageDirectory()
+                    + "/POS/MOBILEPAYMENT/" + model.getId() +".jpg");
+            Picasso.get().load(direct).placeholder(R.drawable.pos_logo_edited).into(((ViewHolder)holder).ivImage);
         }
 
     }

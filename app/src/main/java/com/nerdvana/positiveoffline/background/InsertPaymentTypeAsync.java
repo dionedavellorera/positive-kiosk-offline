@@ -5,6 +5,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.nerdvana.positiveoffline.AppConstants;
@@ -62,39 +63,71 @@ public class InsertPaymentTypeAsync extends AsyncTask<Void, Void, Void> {
                         GsonHelper.getGson().toJson(r.getMobilePaymentList()));
             }
 
+            if (r.getMobilePaymentList().size() > 0) {
+                for (FetchPaymentTypeResponse.MobilePayment mobilePayment : r.getMobilePaymentList()) {
+                    if (mobilePayment.getImageFile() != null) {
+                        File direct = new File(Environment.getExternalStorageDirectory()
+                                + "/POS/MOBILEPAYMENT");
+                        if (!direct.exists()) {
+                            direct.mkdirs();
+                        }
+                        File directory = Environment.getExternalStorageDirectory();
+                        File file = new File(directory, "/POS/MOBILEPAYMENT/" + mobilePayment.getMobilePaymentId() + ".jpg");
+
+                        if (!file.exists()) {
+
+                            if (!TextUtils.isEmpty(r.getImage())) {
+                                DownloadManager mgr = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+
+//                        Uri downloadUri = Uri.parse(SharedPreferenceManager.getString(null, AppConstants.HOST) + "/uploads/icon/" + r.getImage());
+                                Uri downloadUri = Uri.parse(mobilePayment.getImageFile());
+                                DownloadManager.Request request = new DownloadManager.Request(
+                                        downloadUri);
+
+                                request.setAllowedNetworkTypes(
+                                        DownloadManager.Request.NETWORK_WIFI
+                                                | DownloadManager.Request.NETWORK_MOBILE)
+                                        .setAllowedOverRoaming(false).setTitle(mobilePayment.getMobilePayment())
+//                        .setDescription(r.)
+                                        .setDestinationInExternalPublicDir("/POS/MOBILEPAYMENT", String.valueOf(mobilePayment.getMobilePaymentId()) + ".jpg");
+
+                                mgr.enqueue(request);
+                            }
+                        }
+                    }
+                }
+            }
 
 
             if (r.getImage() != null) {
                 File direct = new File(Environment.getExternalStorageDirectory()
                         + "/POS/PAYMENT_TYPE");
-
                 if (!direct.exists()) {
                     direct.mkdirs();
                 }
-
                 File directory = Environment.getExternalStorageDirectory();
                 File file = new File(directory, "/POS/PAYMENT_TYPE/" + r.getCoreId() + ".jpg");
 
                 if (!file.exists()) {
 
-                    DownloadManager mgr = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+                    if (!TextUtils.isEmpty(r.getImage())) {
+                        DownloadManager mgr = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
 
-                    Uri downloadUri = Uri.parse(SharedPreferenceManager.getString(null, AppConstants.HOST) + "/uploads/icon/" + r.getImage());
-                    DownloadManager.Request request = new DownloadManager.Request(
-                            downloadUri);
+//                        Uri downloadUri = Uri.parse(SharedPreferenceManager.getString(null, AppConstants.HOST) + "/uploads/icon/" + r.getImage());
+                        Uri downloadUri = Uri.parse(r.getImage());
+                        DownloadManager.Request request = new DownloadManager.Request(
+                                downloadUri);
 
-                    request.setAllowedNetworkTypes(
-                            DownloadManager.Request.NETWORK_WIFI
-                                    | DownloadManager.Request.NETWORK_MOBILE)
-                            .setAllowedOverRoaming(false).setTitle(r.getPaymentType())
+                        request.setAllowedNetworkTypes(
+                                DownloadManager.Request.NETWORK_WIFI
+                                        | DownloadManager.Request.NETWORK_MOBILE)
+                                .setAllowedOverRoaming(false).setTitle(r.getPaymentType())
 //                        .setDescription(r.)
-                            .setDestinationInExternalPublicDir("/POS/PAYMENT_TYPE", String.valueOf(r.getCoreId()) + ".jpg");
+                                .setDestinationInExternalPublicDir("/POS/PAYMENT_TYPE", String.valueOf(r.getCoreId()) + ".jpg");
 
-                    mgr.enqueue(request);
-
-
+                        mgr.enqueue(request);
+                    }
                 }
-
             }
 
 

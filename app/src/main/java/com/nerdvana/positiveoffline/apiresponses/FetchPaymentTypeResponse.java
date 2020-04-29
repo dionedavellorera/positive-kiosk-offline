@@ -41,6 +41,7 @@ public class FetchPaymentTypeResponse {
     }
 
     public class MobilePayment {
+
         @SerializedName("payment_id")
         @Expose
         private int paymentId;
@@ -50,6 +51,17 @@ public class FetchPaymentTypeResponse {
         @SerializedName("mobile_payment")
         @Expose
         private String mobilePayment;
+        @SerializedName("image_file")
+        @Expose
+        private String imageFile;
+
+        public String getImageFile() {
+            return imageFile;
+        }
+
+        public void setImageFile(String imageFile) {
+            this.imageFile = imageFile;
+        }
 
         public int getPaymentId() {
             return paymentId;
