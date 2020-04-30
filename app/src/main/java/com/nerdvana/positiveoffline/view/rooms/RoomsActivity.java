@@ -206,7 +206,7 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
 
                                 Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(transactionId);
 
-                                changeRoomStatus(tmpRm, 3, true);
+                                changeRoomStatus(tmpRm, 1, true);
 
                                 changeRoomStatus(rooms, 2, false);
 
@@ -304,7 +304,7 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
                 if (rooms.getStatus_id() == 1) {
                     Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(transactionId);
 
-                    changeRoomStatus(tmpRm, 3, true);
+                    changeRoomStatus(tmpRm, 1, true);
 
                     changeRoomStatus(rooms, 2, false);
 

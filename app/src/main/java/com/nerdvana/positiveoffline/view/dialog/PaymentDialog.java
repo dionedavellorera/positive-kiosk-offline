@@ -593,6 +593,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
 
         } else if (coreId.equalsIgnoreCase("9")) { //mobile payment
+            mobileString = new ArrayList<>();
             formCash.setVisibility(View.GONE);
             formCard.setVisibility(GONE);
             formVoucher.setVisibility(GONE);
@@ -946,7 +947,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                         transactionsViewModel.update(transactions);
                         dismiss();
 
-                        RoomStatus roomStatus = roomsViewModel.getRoomStatusViaId(3);
+                        RoomStatus roomStatus = roomsViewModel.getRoomStatusViaId(1);
 
                         Rooms rooms = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
                         if (rooms != null) {

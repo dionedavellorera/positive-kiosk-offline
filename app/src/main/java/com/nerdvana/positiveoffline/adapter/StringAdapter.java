@@ -109,10 +109,12 @@ public class StringAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     static class ViewHolder extends RecyclerView.ViewHolder {
         private TextView name;
         private ImageView ivImage;
+        private RelativeLayout rootView;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.name);
             ivImage = itemView.findViewById(R.id.ivImage);
+            rootView = itemView.findViewById(R.id.rootView);
         }
     }
 
@@ -128,7 +130,14 @@ public class StringAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         TooltipCompat.setTooltipText(((StringAdapter.ViewHolder)holder).name, model.getString().toUpperCase());
 
 
-        ((StringAdapter.ViewHolder)holder).name.setOnClickListener(new View.OnClickListener() {
+//        ((StringAdapter.ViewHolder)holder).name.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                stringSelectionContract.clicked(model);
+//            }
+//        });
+
+        ((ViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 stringSelectionContract.clicked(model);

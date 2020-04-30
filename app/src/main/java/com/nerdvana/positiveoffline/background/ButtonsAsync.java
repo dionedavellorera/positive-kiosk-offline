@@ -83,7 +83,7 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
 
             } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
                 //"label": "Branch > POS > Function > SOA"
-                buttonsModelList.add(new ButtonsModel(107,"SWITCH TABLE", "",1, 69));
+                buttonsModelList.add(new ButtonsModel(107,"TRANSFER TABLE", "",1, 69));
                 buttonsModelList.add(new ButtonsModel(111,"DINE IN/TAKE OUT", "",1, 69));
                 buttonsModelList.add(new ButtonsModel(112,"SHARE TRANSACTION", "",1, 69));
 

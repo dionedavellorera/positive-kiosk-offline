@@ -262,13 +262,18 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
             public void onChanged(List<Transactions> transactions) {
 
 
-                if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+                if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
                     lin00.setVisibility(View.GONE);
-                } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
-                    lin00.setVisibility(View.VISIBLE);
-                } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
-                    lin00.setVisibility(View.VISIBLE);
+                } else {
+                    if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+                        lin00.setVisibility(View.GONE);
+                    } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                        lin00.setVisibility(View.VISIBLE);
+                    } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+                        lin00.setVisibility(View.VISIBLE);
+                    }
                 }
+
 
 
                 try {
@@ -775,6 +780,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                     try {
                         if (transactionsViewModel.loadedTransactionList(transactionId).size() > 0) {
                             Transactions mTmpTr = transactionsViewModel.loadedTransactionList(transactionId).get(0);
+                            mTmpTr.setCheck_in_time("");
+                            mTmpTr.setCheck_out_time("");
+                            mTmpTr.setRoom_id(0);
+                            mTmpTr.setRoom_number("");
                             mTmpTr.setIs_backed_out(true);
                             mTmpTr.setIs_backed_out_by(userViewModel.searchLoggedInUser().get(0).getUsername());
                             mTmpTr.setIs_backed_out_at(Utils.getDateTimeToday());
@@ -782,7 +791,12 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         }
 
                         Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
-                        changeRoomStatus(tmpRm, 3, true);
+                        if (tmpRm != null) {
+                            tmpRm.setCheck_in_time("");
+                        }
+
+
+                        changeRoomStatus(tmpRm, 1, true);
 
                         final TransactionCompleteDetails tr = transactionsViewModel.getTransactionViaTransactionId(transactionId);
 
@@ -1154,7 +1168,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
             case 107://TRANSFER ROOM
                 if (Utils.isPasswordProtected(userViewModel, "69")) {
                     if (passwordDialog == null) {
-                        passwordDialog = new PasswordDialog(getActivity(),"TRANSFER ROOM", userViewModel, transactionsViewModel) {
+                        passwordDialog = new PasswordDialog(getActivity(),"TRANSFER TABLE", userViewModel, transactionsViewModel) {
                             @Override
                             public void success(String username) {
                                 doTransferRoomFunction();
@@ -2964,17 +2978,12 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                             } else {
                                 tvRoomTableNumber.setText("TABLE:NA");
                             }
-
                             tmpRm.setTransaction_id("");
-                            tmpRm.setStatus_description("DIRTY");
-                            tmpRm.setStatus_id(3);
-                            tmpRm.setHex_color("#009cff");
                             tmpRm.setCheck_in_time("");
-
                             tmpRm.setReservation_name("");
                             tmpRm.setReservation_time("");
                             tmpRm.setTime_reservation_made("");
-                            roomsViewModel.update(tmpRm);
+                            changeRoomStatus(tmpRm, 1 , false);
 
                             List<Orders> tmpOrds = transactionsViewModel.orderList(transactionId);
                             if (tmpOrds.size() > 0) {
@@ -3017,14 +3026,18 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     public void onResume() {
         super.onResume();
 
-
-        if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+        if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
             lin00.setVisibility(View.GONE);
-        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
-            lin00.setVisibility(View.VISIBLE);
-        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
-            lin00.setVisibility(View.VISIBLE);
+        } else {
+            if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+                lin00.setVisibility(View.GONE);
+            } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                lin00.setVisibility(View.VISIBLE);
+            } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+                lin00.setVisibility(View.VISIBLE);
+            }
         }
+
 
         try {
             if (transactionsList().size() > 0) {
