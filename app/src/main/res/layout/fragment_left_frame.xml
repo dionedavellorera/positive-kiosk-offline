@@ -20,6 +20,34 @@
             android:background="@color/colorWhite02"
             android:id="@+id/lin00">
 
+        <LinearLayout
+            android:visibility="gone"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorWhite02"
+            android:id="@+id/lin11">
+            <TextView
+                android:padding="5dp"
+                android:id="@+id/tvForDelivery"
+                android:textStyle="bold"
+                android:gravity="left"
+                android:layout_width="0dp"
+                android:layout_weight="0.8"
+                android:layout_height="wrap_content"
+                android:text="FOR DELIVERY"/>
+
+            <Button
+                android:background="@drawable/button_selector_red"
+                android:layout_margin="3dp"
+                android:gravity="center"
+                android:id="@+id/btnRemoveForDelivery"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:text="CANCEL"/>
+
+        </LinearLayout>
+
 
             <TextView
                 android:padding="5dp"
@@ -39,6 +67,7 @@
                 android:layout_height="30dp"
 
                 android:text="REMOVE"/>
+
 
         </LinearLayout>
 

@@ -160,11 +160,11 @@ public class StringAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         if (from.equalsIgnoreCase("takas")) {
             File direct = new File(Environment.getExternalStorageDirectory()
-                    + "/POS/TAKAS/" + model.getId()+".jpg");
+                    + "/POS/ARONLINE/" + model.getId()+".jpg");
             Picasso.get().load(direct).placeholder(R.drawable.pos_logo_edited).into(((ViewHolder)holder).ivImage);
         } else if (from.equalsIgnoreCase("aronline")) {
             File direct = new File(Environment.getExternalStorageDirectory()
-                    + "/POS/ARONLINE/" + model.getId()+".jpg");
+                    + "/POS/ONLINEPAYMENT/" + model.getId()+".jpg");
             Picasso.get().load(direct).placeholder(R.drawable.pos_logo_edited).into(((ViewHolder)holder).ivImage);
         } else if (from.equalsIgnoreCase("mobilepayment")) {
             File direct = new File(Environment.getExternalStorageDirectory()

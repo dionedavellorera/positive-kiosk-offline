@@ -49,18 +49,30 @@ public class InsertPaymentTypeAsync extends AsyncTask<Void, Void, Void> {
         List<PaymentTypes> paymentList = new ArrayList<>();
         for (final FetchPaymentTypeResponse.Result r : list) {
             PaymentTypes paymentType = null;
-            if (r.getCoreId().equalsIgnoreCase("8")) {
+            if (r.getCoreId().equalsIgnoreCase("3")) { //ONLINE
                 paymentType = new PaymentTypes(
                         Integer.valueOf(r.getCoreId()),
                         r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
-                        "AR",
+                        r.getPaymentType(),
+                        GsonHelper.getGson().toJson(r.getOnlinePaymentList()));
+            } else if (r.getCoreId().equalsIgnoreCase("8")) {
+                paymentType = new PaymentTypes(
+                        Integer.valueOf(r.getCoreId()),
+                        r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
+                        r.getPaymentType(),
+                        GsonHelper.getGson().toJson(r.getAccountReceivableList()));
+            } else if (r.getCoreId().equalsIgnoreCase("9")) {
+                paymentType = new PaymentTypes(
+                        Integer.valueOf(r.getCoreId()),
+                        r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
+                        r.getPaymentType(),
                         GsonHelper.getGson().toJson(r.getMobilePaymentList()));
             } else {
                 paymentType = new PaymentTypes(
                         Integer.valueOf(r.getCoreId()),
                         r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
                         r.getPaymentType(),
-                        GsonHelper.getGson().toJson(r.getMobilePaymentList()));
+                        GsonHelper.getGson().toJson(new ArrayList<>()));
             }
 
             if (r.getMobilePaymentList().size() > 0) {
@@ -97,6 +109,78 @@ public class InsertPaymentTypeAsync extends AsyncTask<Void, Void, Void> {
                     }
                 }
             }
+
+            if (r.getOnlinePaymentList().size() > 0) {
+                for (FetchPaymentTypeResponse.OnlinePayment onlinePayment : r.getOnlinePaymentList()) {
+                    if (onlinePayment.getImageFile() != null) {
+                        File direct = new File(Environment.getExternalStorageDirectory()
+                                + "/POS/ONLINEPAYMENT");
+                        if (!direct.exists()) {
+                            direct.mkdirs();
+                        }
+                        File directory = Environment.getExternalStorageDirectory();
+                        File file = new File(directory, "/POS/ONLINEPAYMENT/" + onlinePayment.getOnlinePaymentId() + ".jpg");
+
+                        if (!file.exists()) {
+
+                            if (!TextUtils.isEmpty(r.getImage())) {
+                                DownloadManager mgr = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+
+//                        Uri downloadUri = Uri.parse(SharedPreferenceManager.getString(null, AppConstants.HOST) + "/uploads/icon/" + r.getImage());
+                                Uri downloadUri = Uri.parse(onlinePayment.getImageFile());
+                                DownloadManager.Request request = new DownloadManager.Request(
+                                        downloadUri);
+
+                                request.setAllowedNetworkTypes(
+                                        DownloadManager.Request.NETWORK_WIFI
+                                                | DownloadManager.Request.NETWORK_MOBILE)
+                                        .setAllowedOverRoaming(false).setTitle(onlinePayment.getOnlinePayment())
+//                        .setDescription(r.)
+                                        .setDestinationInExternalPublicDir("/POS/ONLINEPAYMENT", String.valueOf(onlinePayment.getOnlinePaymentId()) + ".jpg");
+
+                                mgr.enqueue(request);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (r.getAccountReceivableList().size() > 0) {
+                for (FetchPaymentTypeResponse.AccountReceivable accountReceivable : r.getAccountReceivableList()) {
+                    if (accountReceivable.getImageFile() != null) {
+                        File direct = new File(Environment.getExternalStorageDirectory()
+                                + "/POS/ARONLINE");
+                        if (!direct.exists()) {
+                            direct.mkdirs();
+                        }
+                        File directory = Environment.getExternalStorageDirectory();
+                        File file = new File(directory, "/POS/ARONLINE/" + accountReceivable.getArPaymentId() + ".jpg");
+
+                        if (!file.exists()) {
+
+                            if (!TextUtils.isEmpty(r.getImage())) {
+                                DownloadManager mgr = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+
+//                        Uri downloadUri = Uri.parse(SharedPreferenceManager.getString(null, AppConstants.HOST) + "/uploads/icon/" + r.getImage());
+                                Uri downloadUri = Uri.parse(accountReceivable.getImageFile());
+                                DownloadManager.Request request = new DownloadManager.Request(
+                                        downloadUri);
+
+                                request.setAllowedNetworkTypes(
+                                        DownloadManager.Request.NETWORK_WIFI
+                                                | DownloadManager.Request.NETWORK_MOBILE)
+                                        .setAllowedOverRoaming(false).setTitle(accountReceivable.getAccountReceivablePayment())
+//                        .setDescription(r.)
+                                        .setDestinationInExternalPublicDir("/POS/ARONLINE", String.valueOf(accountReceivable.getArPaymentId()) + ".jpg");
+
+                                mgr.enqueue(request);
+                            }
+                        }
+                    }
+                }
+            }
+
+
 
 
             if (r.getImage() != null) {

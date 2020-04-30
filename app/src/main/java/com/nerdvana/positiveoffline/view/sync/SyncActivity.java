@@ -226,8 +226,8 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                     syncModelList.add(new DataSync("Rooms", false));
                     syncModelList.add(new DataSync("Room Status", false));
                     syncModelList.add(new DataSync("Theme Selection", false));
-                    syncModelList.add(new DataSync("AR Online", false));
-                    syncModelList.add(new DataSync("Takas Type", false));
+//                    syncModelList.add(new DataSync("AR Online", false));
+//                    syncModelList.add(new DataSync("Takas Type", false));
 
 //                    syncModelList.add(new DataSync("End of Day", true));
 //                    syncModelList.add(new DataSync("Posted Discounts", true));
@@ -306,15 +306,15 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                         new InsertThemeSelectionAsync(SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
                     }
 
-                    if (!syncModelList.get(11).getSynced()) {
-                        dataSyncViewModel.fetchArOnline();
-//                        new InsertThemeSelectionAsync(SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
-                    }
-
-                    if (!syncModelList.get(12).getSynced()) {
-                        dataSyncViewModel.fetchTakasType();
-//                        new InsertThemeSelectionAsync(SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
-                    }
+//                    if (!syncModelList.get(11).getSynced()) {
+//                        dataSyncViewModel.fetchArOnline();
+////                        new InsertThemeSelectionAsync(SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+//                    }
+//
+//                    if (!syncModelList.get(12).getSynced()) {
+//                        dataSyncViewModel.fetchTakasType();
+////                        new InsertThemeSelectionAsync(SyncActivity.this, dataSyncViewModel, SyncActivity.this).execute();
+//                    }
                 }
 
             }
@@ -441,14 +441,14 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 syncModelList.get(10).setSynced(true);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(10));
                 break;
-            case "ar_online":
-                syncModelList.get(11).setSynced(true);
-                dataSyncViewModel.updateIsSynced(syncModelList.get(11));
-                break;
-            case "takas_type":
-                syncModelList.get(12).setSynced(true);
-                dataSyncViewModel.updateIsSynced(syncModelList.get(12));
-                break;
+//            case "ar_online":
+//                syncModelList.get(11).setSynced(true);
+//                dataSyncViewModel.updateIsSynced(syncModelList.get(11));
+//                break;
+//            case "takas_type":
+//                syncModelList.get(12).setSynced(true);
+//                dataSyncViewModel.updateIsSynced(syncModelList.get(12));
+//                break;
         }
     }
 
@@ -531,16 +531,16 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 syncModelList.get(10).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(10));
                 break;
-            case "ar online":
-                dataSyncViewModel.truncateArOnline();
-                syncModelList.get(11).setSynced(false);
-                dataSyncViewModel.updateIsSynced(syncModelList.get(10));
-                break;
-            case "takas type":
-                dataSyncViewModel.truncateTakas();
-                syncModelList.get(12).setSynced(false);
-                dataSyncViewModel.updateIsSynced(syncModelList.get(10));
-                break;
+//            case "ar online":
+//                dataSyncViewModel.truncateArOnline();
+//                syncModelList.get(11).setSynced(false);
+//                dataSyncViewModel.updateIsSynced(syncModelList.get(10));
+//                break;
+//            case "takas type":
+//                dataSyncViewModel.truncateTakas();
+//                syncModelList.get(12).setSynced(false);
+//                dataSyncViewModel.updateIsSynced(syncModelList.get(10));
+//                break;
         }
     }
 }

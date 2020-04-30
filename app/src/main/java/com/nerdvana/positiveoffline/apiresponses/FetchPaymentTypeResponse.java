@@ -88,7 +88,108 @@ public class FetchPaymentTypeResponse {
         }
     }
 
+    public class AccountReceivable {
+
+        @SerializedName("payment_id")
+        @Expose
+        private int paymentId;
+        @SerializedName("ar_payment_id")
+        @Expose
+        private int arPaymentId;
+        @SerializedName("account_receivable_payment")
+        @Expose
+        private String accountReceivablePayment;
+        @SerializedName("image_file")
+        @Expose
+        private String imageFile;
+
+        public int getPaymentId() {
+            return paymentId;
+        }
+
+        public void setPaymentId(int paymentId) {
+            this.paymentId = paymentId;
+        }
+
+        public int getArPaymentId() {
+            return arPaymentId;
+        }
+
+        public void setArPaymentId(int arPaymentId) {
+            this.arPaymentId = arPaymentId;
+        }
+
+        public String getAccountReceivablePayment() {
+            return accountReceivablePayment;
+        }
+
+        public void setAccountReceivablePayment(String accountReceivablePayment) {
+            this.accountReceivablePayment = accountReceivablePayment;
+        }
+
+        public String getImageFile() {
+            return imageFile;
+        }
+
+        public void setImageFile(String imageFile) {
+            this.imageFile = imageFile;
+        }
+    }
+
+    public class OnlinePayment {
+
+        @SerializedName("payment_id")
+        @Expose
+        private int paymentId;
+        @SerializedName("online_payment_id")
+        @Expose
+        private int onlinePaymentId;
+        @SerializedName("online_payment")
+        @Expose
+        private String onlinePayment;
+        @SerializedName("image_file")
+        @Expose
+        private String imageFile;
+
+        public int getPaymentId() {
+            return paymentId;
+        }
+
+        public void setPaymentId(int paymentId) {
+            this.paymentId = paymentId;
+        }
+
+        public int getOnlinePaymentId() {
+            return onlinePaymentId;
+        }
+
+        public void setOnlinePaymentId(int onlinePaymentId) {
+            this.onlinePaymentId = onlinePaymentId;
+        }
+
+        public String getOnlinePayment() {
+            return onlinePayment;
+        }
+
+        public void setOnlinePayment(String onlinePayment) {
+            this.onlinePayment = onlinePayment;
+        }
+
+        public String getImageFile() {
+            return imageFile;
+        }
+
+        public void setImageFile(String imageFile) {
+            this.imageFile = imageFile;
+        }
+    }
     public static class Result {
+        @SerializedName("online_payment")
+        @Expose
+        private List<OnlinePayment> onlinePaymentList;
+        @SerializedName("account_receivable")
+        @Expose
+        private List<AccountReceivable> accountReceivableList;
         @SerializedName("mobile_payment")
         @Expose
         private List<MobilePayment> mobilePaymentList;
@@ -119,6 +220,22 @@ public class FetchPaymentTypeResponse {
         @SerializedName("image_file")
         @Expose
         private String image;
+
+        public List<OnlinePayment> getOnlinePaymentList() {
+            return onlinePaymentList;
+        }
+
+        public void setOnlinePaymentList(List<OnlinePayment> onlinePaymentList) {
+            this.onlinePaymentList = onlinePaymentList;
+        }
+
+        public List<AccountReceivable> getAccountReceivableList() {
+            return accountReceivableList;
+        }
+
+        public void setAccountReceivableList(List<AccountReceivable> accountReceivableList) {
+            this.accountReceivableList = accountReceivableList;
+        }
 
         public List<MobilePayment> getMobilePaymentList() {
             return mobilePaymentList;

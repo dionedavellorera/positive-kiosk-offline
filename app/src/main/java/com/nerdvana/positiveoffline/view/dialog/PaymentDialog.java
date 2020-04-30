@@ -192,17 +192,17 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                 }
             });
 
-            setArOnlineSpinner(dataSyncViewModel.getArOnlineList());
-
-            for (ArOnline arList : dataSyncViewModel.getArOnlineList()) {
-                arOnlineString.add(new StringModel(arList.getCore_id(), arList.getAr_online()));
-            }
-
-            setupTakasSpinner(dataSyncViewModel.getTakasTypeList());
-
-            for (Takas taks : dataSyncViewModel.getTakasTypeList()) {
-                arString.add(new StringModel(taks.getCore_id(), taks.getTakas_type()));
-            }
+//            setArOnlineSpinner(dataSyncViewModel.getArOnlineList());
+//
+//            for (ArOnline arList : dataSyncViewModel.getArOnlineList()) {
+//                arOnlineString.add(new StringModel(arList.getCore_id(), arList.getAr_online()));
+//            }
+//
+//            setupTakasSpinner(dataSyncViewModel.getTakasTypeList());
+//
+//            for (Takas taks : dataSyncViewModel.getTakasTypeList()) {
+//                arString.add(new StringModel(taks.getCore_id(), taks.getTakas_type()));
+//            }
 
         } catch (ExecutionException e) {
             e.printStackTrace();
@@ -516,10 +516,10 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                 showForm("2", null);
                 break;
             case 3://ONLINE
-                showForm("3", null);
+                showForm("3", paymentTypes.getOther_field());
                 break;
             case 8://ACCOUNTS RECEIVABLE / TAKAS
-                showForm("8", null);
+                showForm("8", paymentTypes.getOther_field());
                 break;
             case 9://MOBILE PAYMENTS
                 showForm("9", paymentTypes.getOther_field());
@@ -553,6 +553,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formMobilePayments.setVisibility(GONE);
             formTakas.setVisibility(GONE);
         } else if (coreId.equalsIgnoreCase("3")) { //online
+            arOnlineString = new ArrayList<>();
             formCash.setVisibility(View.GONE);
             formCard.setVisibility(GONE);
             formVoucher.setVisibility(GONE);
@@ -561,6 +562,17 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formGuestInfo.setVisibility(GONE);
             formMobilePayments.setVisibility(GONE);
             formTakas.setVisibility(GONE);
+
+            TypeToken<List<FetchPaymentTypeResponse.OnlinePayment>> token = new TypeToken<List<FetchPaymentTypeResponse.OnlinePayment>>() {};
+            final List<FetchPaymentTypeResponse.OnlinePayment> onlinePaymentList = GsonHelper.getGson().fromJson(otherData, token.getType());
+
+            if (onlinePaymentList.size() > 0) {
+                for (FetchPaymentTypeResponse.OnlinePayment list : onlinePaymentList) {
+                    arOnlineString.add(new StringModel(list.getOnlinePaymentId(), list.getOnlinePayment().toUpperCase()));
+                }
+            }
+
+
         } else if (coreId.equalsIgnoreCase("5")) { //voucher
             formCash.setVisibility(View.GONE);
             formCard.setVisibility(GONE);
@@ -580,6 +592,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formMobilePayments.setVisibility(GONE);
             formTakas.setVisibility(GONE);
         } else if (coreId.equalsIgnoreCase("8")) { //AR / TAKAS
+            arString = new ArrayList<>();
             formCash.setVisibility(View.GONE);
             formCard.setVisibility(GONE);
             formVoucher.setVisibility(GONE);
@@ -589,6 +602,14 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formMobilePayments.setVisibility(GONE);
             formTakas.setVisibility(View.VISIBLE);
 
+            TypeToken<List<FetchPaymentTypeResponse.AccountReceivable>> token = new TypeToken<List<FetchPaymentTypeResponse.AccountReceivable>>() {};
+            final List<FetchPaymentTypeResponse.AccountReceivable> accountReceivableList = GsonHelper.getGson().fromJson(otherData, token.getType());
+
+            if (accountReceivableList.size() > 0) {
+                for (FetchPaymentTypeResponse.AccountReceivable list : accountReceivableList) {
+                    arString.add(new StringModel(list.getArPaymentId(), list.getAccountReceivablePayment().toUpperCase()));
+                }
+            }
 
 
 
@@ -603,34 +624,14 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formTakas.setVisibility(GONE);
             formMobilePayments.setVisibility(View.VISIBLE);
 
-            //dione to do
 
             TypeToken<List<FetchPaymentTypeResponse.MobilePayment>> token = new TypeToken<List<FetchPaymentTypeResponse.MobilePayment>>() {};
             final List<FetchPaymentTypeResponse.MobilePayment> mobilePaymentList = GsonHelper.getGson().fromJson(otherData, token.getType());
 
             if (mobilePaymentList.size() > 0) {
-//                List<StringModel> tmpList = new ArrayList<>();
                 for (FetchPaymentTypeResponse.MobilePayment list : mobilePaymentList) {
                     mobileString.add(new StringModel(list.getMobilePaymentId(), list.getMobilePayment().toUpperCase()));
                 }
-
-
-//                CustomSpinnerAdapter rateSpinnerAdapter = new CustomSpinnerAdapter(getContext(), R.id.spinnerItem,
-//                        tmpList);
-//                spinnerMobilePayments.setAdapter(rateSpinnerAdapter);
-//
-//                spinnerMobilePayments.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-//                    @Override
-//                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-//                        //fix this when api call ready
-//                        mobilePaymentId = String.valueOf(mobilePaymentList.get(position).getMobilePaymentId());
-//                    }
-//
-//                    @Override
-//                    public void onNothingSelected(AdapterView<?> parent) {
-//
-//                    }
-//                });
             }
         } else if (coreId.equalsIgnoreCase("999")) {
             formGuestInfo.setVisibility(View.VISIBLE);

@@ -162,8 +162,11 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     private TextView listItemQty;
     private TextView listItemPrice;
     private TextView tvRoomTableNumber;
+    private TextView tvForDelivery;
     private LinearLayout lin00;
+    private LinearLayout lin11;
     private Button btnRemoveRoomTable;
+    private Button btnRemoveForDelivery;
 
 
 
@@ -178,11 +181,15 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     }
 
     private void initViews(View view) {
+        btnRemoveForDelivery = view.findViewById(R.id.btnRemoveForDelivery);
+        btnRemoveForDelivery.setOnClickListener(this);
         btnRemoveRoomTable = view.findViewById(R.id.btnRemoveRoomTable);
         btnRemoveRoomTable.setOnClickListener(this);
         rootRel = view.findViewById(R.id.rootRel);
         lin00 = view.findViewById(R.id.lin00);
+        lin11 = view.findViewById(R.id.lin11);
         tvRoomTableNumber = view.findViewById(R.id.tvRoomTableNumber);
+        tvForDelivery = view.findViewById(R.id.tvForDelivery);
         rootCard = view.findViewById(R.id.rootCard);
         listItemName = view.findViewById(R.id.listItemName);
         listItemQty = view.findViewById(R.id.listItemQty);
@@ -376,6 +383,28 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
+                if (!TextUtils.isEmpty(transactionId)) {
+                    try {
+                        if (loadedTransactionsList(transactionId).size() > 0) {
+                            Transactions tr = loadedTransactionsList(transactionId).get(0);
+                            if (tr.getTransaction_type().equalsIgnoreCase("DELIVERY")) {
+                                lin11.setVisibility(View.VISIBLE);
+                                tvRoomTableNumber.setVisibility(View.GONE);
+                                btnRemoveRoomTable.setVisibility(View.GONE);
+                            } else {
+                                lin11.setVisibility(View.GONE);
+                                tvRoomTableNumber.setVisibility(View.VISIBLE);
+                                btnRemoveRoomTable.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    } catch (Exception e) {
+
+                    }
+
+                }
+
+
             }
         });
     }
@@ -527,6 +556,32 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 171://SET TRANSACTION FOR DELIVERY
+                if (!TextUtils.isEmpty(transactionId)) {
+                    boolean hasRoom = false;
+                    try {
+                        Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
+                        if (tmpRm != null) {
+                            hasRoom = true;
+                        }
+
+                        if (hasRoom) {
+                            Helper.showDialogMessage(getActivity(), "Cannot proceed, transaction is for dine in", getContext().getString(R.string.header_message));
+                        } else {
+                            List<Transactions> tmpTrLst = transactionsViewModel.loadedTransactionList(transactionId);
+                            if (tmpTrLst.size() > 0) {
+                                Transactions tns = tmpTrLst.get(0);
+                                tns.setTransaction_type("DELIVERY");
+                                transactionsViewModel.update(tns);
+                            }
+                        }
+                    } catch (Exception e) {
+
+                    }
+                } else {
+                    Helper.showDialogMessage(getActivity(), "No transaction yet", getContext().getString(R.string.header_message));
+                }
+                break;
             case 120://SET SERIAL NUMBER
                 if (!TextUtils.isEmpty(transactionId)) {
                     if (transactionsViewModel.orderListWithFixedAsset(transactionId).size() > 0) {
@@ -780,6 +835,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                     try {
                         if (transactionsViewModel.loadedTransactionList(transactionId).size() > 0) {
                             Transactions mTmpTr = transactionsViewModel.loadedTransactionList(transactionId).get(0);
+//                            mTmpTr.setTransaction_type("");
                             mTmpTr.setCheck_in_time("");
                             mTmpTr.setCheck_out_time("");
                             mTmpTr.setRoom_id(0);
@@ -2143,6 +2199,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                 Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
                                                 Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
                                         );
+                                        trs.setTransaction_type("DINEIN");
                                         trs.setRoom_number(selectedTable.getRoom_name());
                                         trs.setRoom_id(selectedTable.getRoom_id());
                                         trs.setCheck_in_time(Utils.getDateTimeToday());
@@ -2159,6 +2216,19 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                     break;
                                 case "existing_trans_new_room":
                                     try {
+
+                                        try {
+                                            List<Transactions> tmpTrList = loadedTransactionsList(transactionId);
+                                            if (tmpTrList.size() > 0) {
+                                                Transactions t = tmpTrList.get(0);
+                                                t.setTransaction_type("DINEIN");
+                                                transactionsViewModel.update(t);
+                                            }
+                                        } catch (Exception e) {
+
+                                        }
+
+
                                         Rooms rooms = roomsViewModel.getRoomViaId(mSelectedRoom.getRoom_id());
                                         rooms.setTransaction_id(transactionId);
                                         rooms.setCheck_in_time(Utils.getDateTimeToday());
@@ -2337,15 +2407,16 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
 
                                                     List<Transactions> tr = new ArrayList<>();
-
-                                                    tr.add(new Transactions(
+                                                    Transactions myTrans = new Transactions(
                                                             controlNumber,
                                                             getUser().getUsername(),
                                                             Utils.getDateTimeToday(),
                                                             0,
                                                             Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
                                                             Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
-                                                    ));
+                                                    );
+                                                    myTrans.setTransaction_type("TAKEOUT");
+                                                    tr.add(myTrans);
                                                     transactionsViewModel.insert(tr);
 
 
@@ -2401,18 +2472,31 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                 e.printStackTrace();
                                             }
 
-
                                             List<Transactions> tr = new ArrayList<>();
-
-                                            tr.add(new Transactions(
+                                            Transactions myTrans = new Transactions(
                                                     controlNumber,
                                                     getUser().getUsername(),
                                                     Utils.getDateTimeToday(),
                                                     0,
                                                     Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
                                                     Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
-                                            ));
+                                            );
+                                            myTrans.setTransaction_type("TAKEOUT");
+                                            tr.add(myTrans);
                                             transactionsViewModel.insert(tr);
+
+
+//                                            List<Transactions> tr = new ArrayList<>();
+//
+//                                            tr.add(new Transactions(
+//                                                    controlNumber,
+//                                                    getUser().getUsername(),
+//                                                    Utils.getDateTimeToday(),
+//                                                    0,
+//                                                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+//                                                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+//                                            ));
+//                                            transactionsViewModel.insert(tr);
 
 
                                         }
@@ -2456,18 +2540,30 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                             e.printStackTrace();
                         }
 
-
                         List<Transactions> tr = new ArrayList<>();
-
-                        tr.add(new Transactions(
+                        Transactions myTrans = new Transactions(
                                 controlNumber,
                                 getUser().getUsername(),
                                 Utils.getDateTimeToday(),
                                 0,
                                 Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
                                 Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
-                        ));
+                        );
+                        myTrans.setTransaction_type("TAKEOUT");
+                        tr.add(myTrans);
                         transactionsViewModel.insert(tr);
+
+//                        List<Transactions> tr = new ArrayList<>();
+//
+//                        tr.add(new Transactions(
+//                                controlNumber,
+//                                getUser().getUsername(),
+//                                Utils.getDateTimeToday(),
+//                                0,
+//                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
+//                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+//                        ));
+//                        transactionsViewModel.insert(tr);
 
 
                     }
@@ -2965,6 +3061,24 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     @Override
     public void onClick(View view) {
         switch (view.getId()){
+            case R.id.btnRemoveForDelivery:
+                if (!TextUtils.isEmpty(transactionId)) {
+                    try {
+                        List<Transactions> tmpTrLst = transactionsViewModel.loadedTransactionList(transactionId);
+                        if (tmpTrLst.size() > 0) {
+                            Transactions tns = tmpTrLst.get(0);
+                            tns.setTransaction_type("TAKEOUT");
+                            transactionsViewModel.update(tns);
+                        } else {
+                            Helper.showDialogMessage(getActivity(), "No transaction yet", getString(R.string.header_message));
+                        }
+                    }catch (Exception e) {
+
+                    }
+                } else {
+                    Helper.showDialogMessage(getActivity(), "No transaction yet", getString(R.string.header_message));
+                }
+                break;
             case R.id.btnRemoveRoomTable:
                 try {
                     if (!TextUtils.isEmpty(transactionId)) {
@@ -3002,6 +3116,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                             tns.setCheck_in_time("");
                             tns.setRoom_id(0);
                             tns.setRoom_number("");
+                            tns.setTransaction_type("TAKEOUT");
                             transactionsViewModel.update(tns);
                         }
 

@@ -90,6 +90,8 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
                 buttonsModelList.add(new ButtonsModel(109,"SOA", "",4, 123));
                 //0 FOR ALL
                 buttonsModelList.add(new ButtonsModel(106,"TABLES", "",1, 0));
+
+                buttonsModelList.add(new ButtonsModel(171,"FOR DELIVERY", "",4, 0));
             }
         }
         Collections.sort(buttonsModelList);

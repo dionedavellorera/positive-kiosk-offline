@@ -68,6 +68,8 @@ public class Transactions {
 
     private int is_shared = 0;
 
+    private String transaction_type = "";
+
 
     public Transactions(@NonNull String control_number,
                         String user_id, String treg,
@@ -489,4 +491,11 @@ public class Transactions {
     }
 
 
+    public String getTransaction_type() {
+        return transaction_type;
+    }
+
+    public void setTransaction_type(String transaction_type) {
+        this.transaction_type = transaction_type;
+    }
 }
