@@ -219,12 +219,13 @@ public class InsertPaymentTypeAsync extends AsyncTask<Void, Void, Void> {
             paymentList.add(paymentType);
         }
 
-//        PaymentTypes pTypeMobile = new PaymentTypes(
-//                9,
-//                "9.jpg",
-//                "MOBILE PAYMENT");
-//
-//        paymentList.add(pTypeMobile);
+        PaymentTypes pTypeMobile = new PaymentTypes(
+                998,
+                "9.jpg",
+                "DELIVERY DETAILS",
+                GsonHelper.getGson().toJson(new ArrayList<>()));
+
+        paymentList.add(pTypeMobile);
 
         PaymentTypes pTypeGuest = new PaymentTypes(
                 999,

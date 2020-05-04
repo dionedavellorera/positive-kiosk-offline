@@ -70,6 +70,8 @@ public class Transactions {
 
     private String transaction_type = "";
 
+    private String delivery_to = "";
+    private String delivery_address = "";
 
     public Transactions(@NonNull String control_number,
                         String user_id, String treg,
@@ -102,7 +104,10 @@ public class Transactions {
                         String completed_at, String saved_at, String is_cut_off_at,
                         Boolean is_cancelled, String is_cancelled_by, String is_cancelled_at,
                         String tin_number,
-                        Boolean is_backed_out, String is_backed_out_by, String is_backed_out_at) {
+                        Boolean is_backed_out, String is_backed_out_by, String is_backed_out_at,
+                        String delivery_to, String delivery_address) {
+        this.delivery_to = delivery_to;
+        this.delivery_address = delivery_address;
         this.is_backed_out_by = is_backed_out_by;
         this.is_backed_out_at = is_backed_out_at;
         this.is_backed_out = is_backed_out;
@@ -135,6 +140,22 @@ public class Transactions {
         this.vat_amount = vat_amount;
         this.discount_amount = discountAmount;
         this.change = change;
+    }
+
+    public String getDelivery_to() {
+        return delivery_to;
+    }
+
+    public void setDelivery_to(String delivery_to) {
+        this.delivery_to = delivery_to;
+    }
+
+    public String getDelivery_address() {
+        return delivery_address;
+    }
+
+    public void setDelivery_address(String delivery_address) {
+        this.delivery_address = delivery_address;
     }
 
     public Boolean getIs_backed_out() {

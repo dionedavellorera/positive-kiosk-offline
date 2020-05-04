@@ -31,11 +31,14 @@ public class PaymentTypeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
     private List<PaymentTypes> paymentTypesList;
     private Context context;
     private PaymentTypeContract paymentTypeContract;
+    private String transactionType;
     public PaymentTypeAdapter(List<PaymentTypes> paymentTypesList, Context context,
-                              PaymentTypeContract paymentTypeContract) {
+                              PaymentTypeContract paymentTypeContract,
+                              String transactionType) {
         this.paymentTypesList = paymentTypesList;
         this.context = context;
         this.paymentTypeContract = paymentTypeContract;
+        this.transactionType = transactionType;
     }
 
     @NonNull
@@ -68,34 +71,43 @@ public class PaymentTypeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHo
             }
         });
 
-        if (model.getCore_id() != 1 && //CASH
-                model.getCore_id() != 2 && //CARD
-                model.getCore_id() != 3 && //ONLINE
-                model.getCore_id() != 8 && //ACCOUNT RECEIVABLE
-                model.getCore_id() != 9 && //MOBILE PAYMENTS
-                model.getCore_id() != 999 //GUEST INFO
-        ) {
-            ((ViewHolder)holder).rootView.getLayoutParams().height = 0;
-        } else {
-
+        if (transactionType.equalsIgnoreCase("delivery") && model.getCore_id() == 998) {
             ((ViewHolder)holder).rootView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-//            int width = itemView.getMeasuredWidth();
             int height = ((ViewHolder)holder).rootView.getMeasuredHeight();
-
-
             ((ViewHolder)holder).rootView.getLayoutParams().height = height;
+        } else {
+            if (model.getCore_id() != 1 && //CASH
+                    model.getCore_id() != 2 && //CARD
+                    model.getCore_id() != 3 && //ONLINE
+                    model.getCore_id() != 8 && //ACCOUNT RECEIVABLE
+                    model.getCore_id() != 9 && //MOBILE PAYMENTS
+                    model.getCore_id() != 999 //GUEST INFO
+            ) {
+                ((ViewHolder)holder).rootView.getLayoutParams().height = 0;
+            } else {
+                ((ViewHolder)holder).rootView.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+                int height = ((ViewHolder)holder).rootView.getMeasuredHeight();
+                ((ViewHolder)holder).rootView.getLayoutParams().height = height;
+            }
         }
+
+
 
         ((ViewHolder)holder).name.setText(model.getPayment_type());
 
         File direct = new File(Environment.getExternalStorageDirectory()
                 + "/POS/PAYMENT_TYPE/" + model.getImage_url());
 
-        if (model.getCore_id() == 999) {
-            Picasso.get().load(R.mipmap.baseline_assignment_black_48dp).placeholder(R.drawable.pos_logo_edited).into(((PaymentTypeAdapter.ViewHolder)holder).image);
+        if (transactionType.equalsIgnoreCase("delivery") && model.getCore_id() == 998) {
+            Picasso.get().load(R.drawable.ic_shipping).placeholder(R.drawable.pos_logo_edited).into(((PaymentTypeAdapter.ViewHolder)holder).image);
         } else {
-            Picasso.get().load(direct).placeholder(R.drawable.pos_logo_edited).into(((PaymentTypeAdapter.ViewHolder)holder).image);
+            if (model.getCore_id() == 999) {
+                Picasso.get().load(R.mipmap.baseline_assignment_black_48dp).placeholder(R.drawable.pos_logo_edited).into(((PaymentTypeAdapter.ViewHolder)holder).image);
+            } else {
+                Picasso.get().load(direct).placeholder(R.drawable.pos_logo_edited).into(((PaymentTypeAdapter.ViewHolder)holder).image);
+            }
         }
+
 
 
 

@@ -24,13 +24,16 @@ import com.nerdvana.positiveoffline.adapter.SharedTransactionPaymentsAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.SharedTransactionsContract;
 import com.nerdvana.positiveoffline.intf.StOrderContract;
 import com.nerdvana.positiveoffline.model.StPaymentsModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
+import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public abstract class ShareTransactionDialog extends BaseDialog implements View.OnClickListener,
         SharedTransactionsContract, StOrderContract {
@@ -49,9 +52,12 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
     private int selectedCustomerPosition = 999;
 
     private DataSyncViewModel dataSyncViewModel;
+    private UserViewModel userViewModel;
     public ShareTransactionDialog(Context context, List<Orders> ordersList,
-                                  int orderCount, DataSyncViewModel dataSyncViewModel) {
+                                  int orderCount, DataSyncViewModel dataSyncViewModel,
+                                  UserViewModel userViewModel) {
         super(context);
+        this.userViewModel = userViewModel;
         this.ordersList = ordersList;
         this.orderCount = orderCount;
         this.dataSyncViewModel = dataSyncViewModel;
@@ -200,24 +206,28 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
         CashFormDialog cashFormDialog = new CashFormDialog(getContext()) {
             @Override
             public void confirmPayment(String cashAmount) {
+                try {
+                    Payments p = new Payments(
+                            1,//to fix later
+                            1,
+                            Double.valueOf(cashAmount), "CASH",
+                            0,
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                            Utils.getDateTimeToday(),
+                            1,
+                            getUser().getUsername(),
+                            Utils.getDateTimeToday());
+                    p.setOther_data("");
 
-                Payments p = new Payments(
-                        1,//to fix later
-                        1,
-                        Double.valueOf(cashAmount), "CASH",
-                        0,
-                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
-                        Utils.getDateTimeToday());
-                p.setOther_data("");
+                    stPaymentsList.get(position).getPaymentsList().add(p);
 
-                stPaymentsList.get(position).getPaymentsList().add(p);
+                    if (stPaymentsAdapter != null) {
+                        stPaymentsAdapter.notifyDataSetChanged();
+                    }
+                } catch (Exception e) {
 
-                if (stPaymentsAdapter != null) {
-                    stPaymentsAdapter.notifyDataSetChanged();
                 }
-
-
             }
         };
         cashFormDialog.show();
@@ -229,22 +239,29 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
         CardFormDialog cardFormDialog = new CardFormDialog(getContext(), dataSyncViewModel) {
             @Override
             public void cardPaymentAdded(String creditCardAmount, String cardJsonData) {
+                try {
+                    Payments p = new Payments(
+                            1, 2,
+                            Double.valueOf(creditCardAmount), "CARD",
+                            0,
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                            Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                            Utils.getDateTimeToday(),
+                            1,
+                            getUser().getUsername(),
+                            Utils.getDateTimeToday());
+                    p.setOther_data(cardJsonData);
 
-                Payments p = new Payments(
-                        1, 2,
-                        Double.valueOf(creditCardAmount), "CARD",
-                        0,
-                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
-                        Utils.getDateTimeToday());
-                p.setOther_data(cardJsonData);
 
+                    stPaymentsList.get(position).getPaymentsList().add(p);
 
-                stPaymentsList.get(position).getPaymentsList().add(p);
+                    if (stPaymentsAdapter != null) {
+                        stPaymentsAdapter.notifyDataSetChanged();
+                    }
+                } catch (Exception e) {
 
-                if (stPaymentsAdapter != null) {
-                    stPaymentsAdapter.notifyDataSetChanged();
                 }
+
 
             }
         };
@@ -404,5 +421,9 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
             stProdAdapter.notifyDataSetChanged();
         }
 
+    }
+
+    private User getUser() throws ExecutionException, InterruptedException {
+        return userViewModel.searchLoggedInUser().get(0);
     }
 }

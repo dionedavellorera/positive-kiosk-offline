@@ -194,7 +194,9 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                         reference.getTin_number(),
                         reference.getIs_backed_out(),
                         reference.getIs_backed_out_by(),
-                        reference.getIs_backed_out_at()
+                        reference.getIs_backed_out_at(),
+                        reference.getDelivery_to(),
+                        reference.getDelivery_address()
                 );
                 transactions.setRoom_id(reference.getRoom_id());
                 transactions.setRoom_number(reference.getRoom_number());
@@ -230,6 +232,7 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                         }
                     };
 
+                    passwordDialog.show();
 
                 } else {
                     transactionsViewModel.update(transactions);

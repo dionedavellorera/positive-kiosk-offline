@@ -524,6 +524,14 @@ public class EJFileCreator {
             }
         }
 
+        if (transactionCompleteDetails.transactions.getTransaction_type().equalsIgnoreCase("takeout")) {
+            finalString += PrinterUtils.receiptString("TAKEOUT", "", context, true);
+        } else if (transactionCompleteDetails.transactions.getTransaction_type().equalsIgnoreCase("delivery")) {
+            finalString += PrinterUtils.receiptString("DELIVERY", "", context, true);
+        } else {
+            finalString += PrinterUtils.receiptString("DINE IN", "", context, true);
+        }
+
         finalString += PrinterUtils.receiptString("", "", context, true);
         finalString += PrinterUtils.receiptString("OR NO", transactionCompleteDetails.transactions.getReceipt_number(), context, false);
 //        finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
@@ -744,6 +752,40 @@ public class EJFileCreator {
                     true);
             finalString += PrinterUtils.receiptString(
                     "BUSINESS STYLE:_________________",
+                    "",
+                    context,
+                    true);
+        }
+
+        if (transactionCompleteDetails.transactions.getTransaction_type().equalsIgnoreCase("delivery")) {
+            finalString += PrinterUtils.receiptString(
+                    "CONTROL#",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    transactionCompleteDetails.transactions.getControl_number(),
+                    "",
+                    context,
+                    true);
+
+            finalString += PrinterUtils.receiptString(
+                    "DELIVERY FOR",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    transactionCompleteDetails.transactions.getDelivery_to(),
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "DELIVERY ADDRESS",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    transactionCompleteDetails.transactions.getDelivery_address(),
                     "",
                     context,
                     true);

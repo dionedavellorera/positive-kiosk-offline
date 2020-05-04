@@ -32,6 +32,12 @@ public class Payments {
 
     private String treg;
 
+    private int is_redeemed = 0;
+    private String is_redeemed_by = "";
+    private String is_redeemed_at = "";
+
+    private String is_redeemed_for = "";
+
     @Ignore
     public Payments() {}
 
@@ -40,7 +46,12 @@ public class Payments {
     public Payments(int transaction_id, int core_id,
                     @NonNull Double amount, @NonNull String name,
                     int is_sent_to_server, int machine_id,
-                    int branch_id, String treg) {
+                    int branch_id, String treg,
+                    int is_redeemed, String is_redeemed_by,
+                    String is_redeemed_at) {
+        this.is_redeemed = is_redeemed;
+        this.is_redeemed_by = is_redeemed_by;
+        this.is_redeemed_at = is_redeemed_at;
         this.is_sent_to_server = is_sent_to_server;
         this.machine_id = machine_id;
         this.branch_id = branch_id;
@@ -49,6 +60,32 @@ public class Payments {
         this.amount = amount;
         this.name = name;
         this.treg = treg;
+    }
+
+
+
+    public int getIs_redeemed() {
+        return is_redeemed;
+    }
+
+    public void setIs_redeemed(int is_redeemed) {
+        this.is_redeemed = is_redeemed;
+    }
+
+    public String getIs_redeemed_by() {
+        return is_redeemed_by;
+    }
+
+    public void setIs_redeemed_by(String is_redeemed_by) {
+        this.is_redeemed_by = is_redeemed_by;
+    }
+
+    public String getIs_redeemed_at() {
+        return is_redeemed_at;
+    }
+
+    public void setIs_redeemed_at(String is_redeemed_at) {
+        this.is_redeemed_at = is_redeemed_at;
     }
 
     public String getTreg() {
@@ -148,5 +185,13 @@ public class Payments {
 
     public void setCut_off_id(int cut_off_id) {
         this.cut_off_id = cut_off_id;
+    }
+
+    public String getIs_redeemed_for() {
+        return is_redeemed_for;
+    }
+
+    public void setIs_redeemed_for(String is_redeemed_for) {
+        this.is_redeemed_for = is_redeemed_for;
     }
 }

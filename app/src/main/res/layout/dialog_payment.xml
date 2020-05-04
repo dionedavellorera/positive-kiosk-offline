@@ -47,6 +47,118 @@
                     android:layout_height="match_parent"
                     android:background="@color/colorLtGrey" />
 
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:id="@+id/formDeliveryInfo"
+                    android:layout_toRightOf="@id/cardPayments"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:padding="5dp"
+                                android:textSize="16sp"
+                                android:textColor="@color/colorBlack"
+                                android:text="Delivery info assignment"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+
+                            <View
+                                android:layout_marginLeft="10dp"
+                                android:layout_marginTop="5dp"
+                                android:layout_marginBottom="5dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="@color/colorLtGrey"/>
+
+
+
+
+
+
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                android:layout_gravity="center"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:imeOptions="actionDone"
+                                    android:hint="Name"
+                                    android:id="@+id/guestNameDeliveryInput"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                android:layout_gravity="center"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="text"
+                                    android:gravity="left"
+                                    android:hint="Address"
+                                    android:id="@+id/guestAddressDeliveryInput"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                android:layout_gravity="center"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+                                <com.nerdvana.positiveoffline.view.HidingEditText
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:imeOptions="actionDone"
+                                    android:inputType="text"
+                                    android:gravity="left"
+                                    android:hint="REF NO#"
+                                    android:enabled="false"
+                                    android:id="@+id/guestReferenceDeliveryInput"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+
+
+                            <Button
+                                android:textColor="@color/colorWhite"
+                                android:layout_margin="10dp"
+                                android:background="@drawable/button_selector"
+                                android:id="@+id/addDeliveryInfo"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Add Delivery Info"/>
+
+
+                        </LinearLayout>
+
+                    </ScrollView>
+
+
+
+                </LinearLayout>
+
+
+
                 <LinearLayout
                     android:orientation="vertical"
                     android:visibility="gone"

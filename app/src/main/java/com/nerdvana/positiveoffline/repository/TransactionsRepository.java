@@ -238,12 +238,33 @@ public class TransactionsRepository {
         return future.get();
     }
 
-        public LiveData<List<Payments>> getLdPaymentList(String transactionId) {
+    public LiveData<List<Payments>> getLdPaymentList(String transactionId) {
         return paymentsDao.ldPaymentList(transactionId);
     }
 
+    public LiveData<List<Payments>> getLdUnredeemedPaymentList() {
+        return paymentsDao.ldUnredeemedPaymentList();
+    }
+
+
+
+
     public LiveData<List<Orders>> getOrders() {
         return ordersDao.ldOrderList();
+    }
+
+
+
+    public List<Payments> getUnredeemedPaymentList() throws ExecutionException, InterruptedException {
+        Callable<List<Payments>> callable = new Callable<List<Payments>>() {
+            @Override
+            public List<Payments> call() throws Exception {
+                return paymentsDao.getUnredeemedPaymentList();
+            }
+        };
+
+        Future<List<Payments>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
     }
 
 

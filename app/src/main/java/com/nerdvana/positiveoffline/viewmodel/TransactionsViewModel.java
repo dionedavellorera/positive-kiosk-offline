@@ -443,6 +443,14 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.getLdPaymentList(transactionId);
     }
 
+    public LiveData<List<Payments>> ldUnredeemedPaymentList() throws ExecutionException, InterruptedException {
+        return transactionsRepository.getLdUnredeemedPaymentList();
+    }
+
+
+    public List<Payments> getUnredeemedPaymentList() throws ExecutionException, InterruptedException {
+        return transactionsRepository.getUnredeemedPaymentList();
+    }
 
     public List<Payments> paymentList(String transactionId) throws ExecutionException, InterruptedException {
         return transactionsRepository.getPaymentList(transactionId);

@@ -64,6 +64,7 @@ import com.nerdvana.positiveoffline.model.StPaymentsModel;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.view.dialog.AlacartCompositionDialog;
+import com.nerdvana.positiveoffline.view.dialog.ArRedeemingDialog;
 import com.nerdvana.positiveoffline.view.dialog.BundleCompositionDialog;
 import com.nerdvana.positiveoffline.view.dialog.ChangeQtyDialog;
 import com.nerdvana.positiveoffline.view.dialog.CollectionDialog;
@@ -107,6 +108,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
     int lastIncrementalId = 0;
     //regiondialogs
+    private ArRedeemingDialog arRedeemingDialog;
     private ShareTransactionDialog shareTransactionDialog;
     private CollectionDialog collectionDialog;
     private PayoutDialog payoutDialog;
@@ -511,7 +513,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                     transactions.getTin_number(),
                     transactions.getIs_backed_out(),
                     transactions.getIs_backed_out_by(),
-                    transactions.getIs_backed_out_at()
+                    transactions.getIs_backed_out_at(),
+                    transactions.getDelivery_to(),
+                    transactions.getDelivery_address()
             );
             tr.setRoom_id(transactions.getRoom_id());
             tr.setRoom_number(transactions.getRoom_number());
@@ -556,6 +560,24 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 172:
+                if (arRedeemingDialog == null) {
+                    arRedeemingDialog = new ArRedeemingDialog(getActivity(), transactionsViewModel, userViewModel);
+                    arRedeemingDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss(DialogInterface dialogInterface) {
+                            arRedeemingDialog = null;
+                        }
+                    });
+                    arRedeemingDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialogInterface) {
+                            arRedeemingDialog = null;
+                        }
+                    });
+                    arRedeemingDialog.show();
+                }
+                break;
             case 171://SET TRANSACTION FOR DELIVERY
                 if (!TextUtils.isEmpty(transactionId)) {
                     boolean hasRoom = false;
@@ -611,7 +633,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                             }
                             if (orderCount > 1) {
                                 shareTransactionDialog = new ShareTransactionDialog(getActivity(), orderList,
-                                        orderCount, dataSyncViewModel) {
+                                        orderCount, dataSyncViewModel, userViewModel) {
                                     @Override
                                     public void confirmPayments(List<StPaymentsModel> list) {
                                         //create transaction step 1
@@ -3068,6 +3090,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         if (tmpTrLst.size() > 0) {
                             Transactions tns = tmpTrLst.get(0);
                             tns.setTransaction_type("TAKEOUT");
+                            tns.setDelivery_address("");
+                            tns.setDelivery_to("");
                             transactionsViewModel.update(tns);
                         } else {
                             Helper.showDialogMessage(getActivity(), "No transaction yet", getString(R.string.header_message));

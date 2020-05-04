@@ -178,6 +178,14 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                 }
             }
 
+            if (transactionCompleteDetails.transactions.getTransaction_type().equalsIgnoreCase("takeout")) {
+                addTextToPrinter(printer, "TAKEOUT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+            } else if (transactionCompleteDetails.transactions.getTransaction_type().equalsIgnoreCase("delivery")) {
+                addTextToPrinter(printer, "DELIVERY", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+            } else {
+                addTextToPrinter(printer, "DINE IN", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+            }
+
 
             addPrinterSpace(1, printer);
             addTextToPrinter(printer, twoColumns(
@@ -424,6 +432,15 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                 addTextToPrinter(printer, "BUSINESS STYLE:_________________", Printer.TRUE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
             }
 
+
+            if (transactionCompleteDetails.transactions.getTransaction_type().equalsIgnoreCase("delivery")) {
+                addTextToPrinter(printer, "CONTROL#", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+                addTextToPrinter(printer, transactionCompleteDetails.transactions.getControl_number(), Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+                addTextToPrinter(printer, "DELIVERY FOR", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+                addTextToPrinter(printer, transactionCompleteDetails.transactions.getDelivery_to(), Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+                addTextToPrinter(printer, "DELIVERY ADDRESS", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+                addTextToPrinter(printer, transactionCompleteDetails.transactions.getDelivery_address(), Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+            }
 
 
 

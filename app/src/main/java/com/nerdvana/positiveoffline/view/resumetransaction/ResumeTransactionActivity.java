@@ -191,7 +191,9 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
                 transactions.getTin_number(),
                 transactions.getIs_backed_out(),
                 transactions.getIs_backed_out_by(),
-                transactions.getIs_backed_out_at()
+                transactions.getIs_backed_out_at(),
+                transactions.getDelivery_to(),
+                transactions.getDelivery_address()
         );
         tr.setRoom_id(transactions.getRoom_id());
         tr.setRoom_number(transactions.getRoom_number());
