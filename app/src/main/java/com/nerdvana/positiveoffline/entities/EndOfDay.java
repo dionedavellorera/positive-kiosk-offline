@@ -51,6 +51,9 @@ public class EndOfDay {
 
     private Double total_payout = 0.00;
 
+    private Double cash_redeemed_from_prev_ar = 0.00;
+    private Double card_redeemed_from_prev_ar = 0.00;
+
     @Ignore
     public EndOfDay() {}
 
@@ -79,6 +82,22 @@ public class EndOfDay {
         this.treg = treg;
         this.begOrNo = begOrNo;
         this.endOrNo = endOrNo;
+    }
+
+    public Double getCash_redeemed_from_prev_ar() {
+        return cash_redeemed_from_prev_ar;
+    }
+
+    public void setCash_redeemed_from_prev_ar(Double cash_redeemed_from_prev_ar) {
+        this.cash_redeemed_from_prev_ar = cash_redeemed_from_prev_ar;
+    }
+
+    public Double getCard_redeemed_from_prev_ar() {
+        return card_redeemed_from_prev_ar;
+    }
+
+    public void setCard_redeemed_from_prev_ar(Double card_redeemed_from_prev_ar) {
+        this.card_redeemed_from_prev_ar = card_redeemed_from_prev_ar;
     }
 
     public Double getTotal_service_charge() {

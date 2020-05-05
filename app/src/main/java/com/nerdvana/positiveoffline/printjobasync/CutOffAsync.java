@@ -295,6 +295,22 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
                         ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             }
 
+            addTextToPrinter(printer, "SALES REFLECTED BELOW ARE AR FROM PREVIOUS SHIFT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+            addTextToPrinter(printer, twoColumns(
+                    "AR CASH SALES",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCash_redeemed_from_prev_ar())),
+                    40,
+                    2,
+                    context)
+                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+
+            addTextToPrinter(printer, twoColumns(
+                    "AR CARD SALES",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCard_redeemed_from_prev_ar())),
+                    40,
+                    2,
+                    context)
+                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
 
 
             PrinterUtils.addFooterToPrinter(printer);

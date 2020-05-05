@@ -1814,21 +1814,30 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                         e.printStackTrace();
                                     }
 
-                                    try {
-                                        if (transactionsList().size() > 0) {
-                                            selectedTable = null;
-                                            transactionId = String.valueOf(transactionsList().get(0).getId());
-                                            setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                                    //DIoNE
 
+                                    final Handler handler = new Handler();
+                                    handler.postDelayed(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                if (transactionsList().size() > 0) {
+                                                    selectedTable = null;
+                                                    transactionId = String.valueOf(transactionsList().get(0).getId());
+                                                    setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                                                } else {
+                                                    defaults();
+                                                }
+                                            } catch (ExecutionException e) {
+                                                e.printStackTrace();
+                                            } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                            }
 
-                                        } else {
-                                            defaults();
                                         }
-                                    } catch (ExecutionException e) {
-                                        e.printStackTrace();
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
+                                    }, 300);
+
+
                                 }
                             };
                             paymentDialog.show();
@@ -2709,8 +2718,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         productFinalAmount,
                         selectedProduct.getProduct(),
                         selectedProduct.getDepartmentId(),
-                        Utils.roundedOffTwoDecimal((selectedProduct.getAmount() / 1.12) * .12),
-                        Utils.roundedOffTwoDecimal(selectedProduct.getAmount() / 1.12),
+                        Utils.roundedOffTwoDecimal((productFinalAmount / 1.12) * .12),
+                        Utils.roundedOffTwoDecimal(productFinalAmount / 1.12),
                         0.00,
                         0.00,
                         selectedProduct.getDepartment(),

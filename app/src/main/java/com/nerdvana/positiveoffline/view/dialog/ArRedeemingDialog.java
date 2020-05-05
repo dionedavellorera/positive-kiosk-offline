@@ -13,7 +13,10 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.nerdvana.positiveoffline.AppConstants;
+import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.R;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.RedeemPaymentsAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
@@ -23,6 +26,7 @@ import com.nerdvana.positiveoffline.intf.PaymentsContract;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -108,6 +112,24 @@ public class ArRedeemingDialog extends BaseDialog implements PaymentsContract {
                             payments.setIs_redeemed_at(Utils.getDateTimeToday());
                             payments.setIs_redeemed_for("CASH");
                             transactionsViewModel.updatePayment(payments);
+
+                            List<Payments> cashPayment = new ArrayList<>();
+                            Payments p = new Payments(
+                                    Integer.valueOf(payments.getTransaction_id()), 1,
+                                    Double.valueOf(payments.getAmount()), "Cash",
+                                    0,
+                                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                                    Utils.getDateTimeToday(),
+                                    1,
+                                    getUser().getUsername(),
+                                    Utils.getDateTimeToday());
+                            p.setOther_data("");
+//                            p.setCut_off_id(payments.getCut_off_id());
+                            p.setLink_payment_id(String.valueOf(payments.getId()));
+                            p.setIs_from_other_shift(payments.getCut_off_id() != 0 ? 1 : 0);
+                            cashPayment.add(p);
+                            transactionsViewModel.insertPayment(cashPayment);
                         } catch (Exception e) {
 
                         }
@@ -119,6 +141,27 @@ public class ArRedeemingDialog extends BaseDialog implements PaymentsContract {
                             payments.setIs_redeemed_at(Utils.getDateTimeToday());
                             payments.setIs_redeemed_for("CARD");
                             transactionsViewModel.updatePayment(payments);
+
+
+                            List<Payments> cardPayment = new ArrayList<>();
+                            Payments p = new Payments(
+                                    Integer.valueOf(payments.getTransaction_id()), 2,
+                                    Double.valueOf(payments.getAmount()), "Card",
+                                    0,
+                                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                    Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                                    Utils.getDateTimeToday(),
+                                    1,
+                                    getUser().getUsername(),
+                                    Utils.getDateTimeToday());
+//                            p.setCut_off_id(payments.getCut_off_id());
+                            p.setOther_data(payments.getOther_data());
+                            p.setLink_payment_id(String.valueOf(payments.getId()));
+                            p.setIs_from_other_shift(payments.getCut_off_id() != 0 ? 1 : 0);
+                            cardPayment.add(p);
+                            transactionsViewModel.insertPayment(cardPayment);
+
+
                         } catch (Exception e) {
 
                         }

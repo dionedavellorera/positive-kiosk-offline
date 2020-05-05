@@ -38,6 +38,9 @@ public class Payments {
 
     private String is_redeemed_for = "";
 
+    private String link_payment_id = "";
+    private int is_from_other_shift = 0;
+
     @Ignore
     public Payments() {}
 
@@ -62,7 +65,21 @@ public class Payments {
         this.treg = treg;
     }
 
+    public int getIs_from_other_shift() {
+        return is_from_other_shift;
+    }
 
+    public void setIs_from_other_shift(int is_from_other_shift) {
+        this.is_from_other_shift = is_from_other_shift;
+    }
+
+    public String getLink_payment_id() {
+        return link_payment_id;
+    }
+
+    public void setLink_payment_id(String link_payment_id) {
+        this.link_payment_id = link_payment_id;
+    }
 
     public int getIs_redeemed() {
         return is_redeemed;

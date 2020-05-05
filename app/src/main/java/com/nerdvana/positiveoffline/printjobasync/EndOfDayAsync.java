@@ -217,6 +217,21 @@ public class EndOfDayAsync extends AsyncTask<Void, Void, Void> {
                     context)
                     ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
 
+            addTextToPrinter(printer, twoColumns(
+                    "LATE CASH REDEEM",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getCash_redeemed_from_prev_ar())),
+                    40,
+                    2,
+                    context)
+                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+
+            addTextToPrinter(printer, twoColumns(
+                    "LATE CARD REDEEM",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getCard_redeemed_from_prev_ar())),
+                    40,
+                    2,
+                    context)
+                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
 
 
             addTextToPrinter(printer, twoColumns(

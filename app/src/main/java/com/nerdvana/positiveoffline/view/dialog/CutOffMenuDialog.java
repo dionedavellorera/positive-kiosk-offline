@@ -424,6 +424,10 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                 Double total_payout = 0.00;
                 Double total_service_charge = 0.00;
 
+                Double cash_redeemed_from_prev_ar = 0.00;
+                Double card_redeemed_from_prev_ar = 0.00;
+
+
                 int seniorCount = 0;
                 Double seniorAmount = 0.00;
                 int pwdCount = 0;
@@ -433,6 +437,8 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                 List<String> orNumberArray = new ArrayList<>();
 
                 for (CutOff cutOff : cutOffViewModel.getUnCutOffData()) {
+                    cash_redeemed_from_prev_ar += cutOff.getCash_redeemed_from_prev_ar();
+                    card_redeemed_from_prev_ar += cutOff.getCard_redeemed_from_prev_ar();
                     total_service_charge += cutOff.getTotal_service_charge();
                     cutOff.setIs_sent_to_server(0);
                     orNumberArray.add(cutOff.getBegOrNo());
@@ -467,6 +473,8 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                 }
 
                 EndOfDay endOfDay = cutOffViewModel.getEndOfDay(end_of_day_id);
+                endOfDay.setCard_redeemed_from_prev_ar(card_redeemed_from_prev_ar);
+                endOfDay.setCash_redeemed_from_prev_ar(cash_redeemed_from_prev_ar);
                 endOfDay.setTotal_service_charge(total_service_charge);
                 endOfDay.setTotal_payout(total_payout);
                 endOfDay.setIs_sent_to_server(0);
@@ -567,6 +575,9 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                     Double total_ar_payments = 0.00;
                     Double total_mobile_payments = 0.00;
 
+                    Double cash_redeemed_from_prev_ar = 0.00;
+                    Double card_redeemed_from_prev_ar = 0.00;
+
 
                     Double total_change = 0.00;
                     Double total_service_charge = 0.00;
@@ -615,25 +626,34 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
 
 
                     for (Payments payments : cutOffViewModel.getAllPayments()) {
-                        payments.setIs_sent_to_server(0);
-                        payments.setCut_off_id((int) cut_off_id);
-                        cutOffViewModel.update(payments);
                         switch (payments.getCore_id()) {
                             case 1://CASH
+                                if (payments.getIs_from_other_shift() != 0) {
+                                    cash_redeemed_from_prev_ar += payments.getAmount();
+                                }
                                 total_cash_payments += payments.getAmount();
                                 break;
                             case 2://CARD
+                                if (payments.getIs_from_other_shift() != 0) {
+                                    card_redeemed_from_prev_ar += payments.getAmount();
+                                }
                                 total_card_payments += payments.getAmount();
                                 break;
                             case 3://ONLINE
                                 total_online_payments += payments.getAmount();
                                 break;
                             case 8://AR
-                                total_ar_payments += payments.getAmount();
+                                if (payments.getIs_redeemed() == 0) {
+                                    total_ar_payments += payments.getAmount();
+                                }
                                 break;
                             case 9://MOBILE PAYMENT
                                 total_mobile_payments += payments.getAmount();
                         }
+
+                        payments.setIs_sent_to_server(0);
+                        payments.setCut_off_id((int) cut_off_id);
+                        cutOffViewModel.update(payments);
                     }
 
                     for (Payout payout : cutOffViewModel.getUnCutOffPayouts()) {
@@ -663,8 +683,15 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         }
                     }
 
+                    Log.d("DATA-PREVCASH", String.valueOf(cash_redeemed_from_prev_ar));
+                    Log.d("DATA-PREVCARD", String.valueOf(card_redeemed_from_prev_ar));
+
+                    Log.d("DATA-ONLINEPAY", String.valueOf(total_online_payments));
+                    Log.d("DATA-ARPAY", String.valueOf(total_ar_payments));
+                    Log.d("DATA-MOBILEPAY", String.valueOf(total_mobile_payments));
 
                     Log.d("DATA-CASHPAY", String.valueOf(total_cash_payments));
+                    Log.d("DATA-CARDPAY", String.valueOf(total_card_payments));
                     Log.d("DATA-GROSSSALE", String.valueOf(gross_sales));
                     Log.d("DATA-NETSALES", String.valueOf(net_sales));
                     Log.d("DATA-VATSALES", String.valueOf(vatable_sales));

@@ -130,12 +130,12 @@ public class StringAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         TooltipCompat.setTooltipText(((StringAdapter.ViewHolder)holder).name, model.getString().toUpperCase());
 
 
-//        ((StringAdapter.ViewHolder)holder).name.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                stringSelectionContract.clicked(model);
-//            }
-//        });
+        ((StringAdapter.ViewHolder)holder).name.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stringSelectionContract.clicked(model);
+            }
+        });
 
         ((ViewHolder)holder).rootView.setOnClickListener(new View.OnClickListener() {
             @Override

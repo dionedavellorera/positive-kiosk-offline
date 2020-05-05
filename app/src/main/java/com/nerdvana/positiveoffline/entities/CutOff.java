@@ -42,6 +42,9 @@ public class CutOff {
     private int machine_id;
     private int branch_id;
 
+    private Double cash_redeemed_from_prev_ar = 0.00;
+    private Double card_redeemed_from_prev_ar = 0.00;
+
     private Double total_service_charge = 0.00;
 
     @Ignore
@@ -71,6 +74,22 @@ public class CutOff {
         this.begOrNo = begOrNo;
         this.endOrNo = endOrNo;
         this.total_service_charge = total_service_charge;
+    }
+
+    public Double getCash_redeemed_from_prev_ar() {
+        return cash_redeemed_from_prev_ar;
+    }
+
+    public void setCash_redeemed_from_prev_ar(Double cash_redeemed_from_prev_ar) {
+        this.cash_redeemed_from_prev_ar = cash_redeemed_from_prev_ar;
+    }
+
+    public Double getCard_redeemed_from_prev_ar() {
+        return card_redeemed_from_prev_ar;
+    }
+
+    public void setCard_redeemed_from_prev_ar(Double card_redeemed_from_prev_ar) {
+        this.card_redeemed_from_prev_ar = card_redeemed_from_prev_ar;
     }
 
     public Double getTotal_service_charge() {

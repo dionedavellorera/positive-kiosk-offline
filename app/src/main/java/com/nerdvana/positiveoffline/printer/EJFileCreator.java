@@ -112,6 +112,10 @@ public class EJFileCreator {
             finalString += PrinterUtils.receiptString("PAYOUT", "0.00", context, false);
         }
 
+        finalString += PrinterUtils.receiptString("SALES REFLECTED BELOW ARE AR FROM PREVIOUS SHIFT", "", context, true);
+        finalString += PrinterUtils.receiptString("AR CASH SALES", "-"+PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCash_redeemed_from_prev_ar())), context, false);
+        finalString += PrinterUtils.receiptString("AR CARD SALES", "-"+PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCard_redeemed_from_prev_ar())), context, false);
+
         finalString += PrinterUtils.receiptString("", "", context, true);
 
         finalString += PrinterUtils.receiptString(
@@ -318,6 +322,17 @@ public class EJFileCreator {
                 PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getVoid_amount())),
                 context,
                 false);
+        finalString += PrinterUtils.receiptString(
+                "LATE CASH REDEEM",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getCash_redeemed_from_prev_ar())),
+                context,
+                false);
+        finalString += PrinterUtils.receiptString(
+                "LATE CARD REDEEM",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getCard_redeemed_from_prev_ar())),
+                context,
+                false);
+
 
         finalString += PrinterUtils.receiptString(
                 "SENIOR",
