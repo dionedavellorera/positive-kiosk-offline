@@ -233,8 +233,8 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
 
                     if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
                         addTextToPrinter(printer, twoColumns(
-                                "-" + qty +  " " + orders.getName(),
-                                "0.00",
+                                qty +  "  " + orders.getName(),
+                                PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
                                 40,
                                 2,
                                 context)
@@ -242,7 +242,7 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                     } else {
                         addTextToPrinter(printer, twoColumns(
                                 qty +  " " + orders.getName(),
-                                PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount())),
+                                PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
                                 40,
                                 2,
                                 context)
@@ -263,9 +263,9 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
 
 
                     if (orders.getVatExempt() <= 0) {
-                        amountDue += orders.getOriginal_amount();
+                        amountDue += orders.getOriginal_amount() * orders.getQty();
                     } else {
-                        amountDue += orders.getAmount();
+                        amountDue += orders.getAmount() * orders.getQty();
                     }
                 }
 

@@ -33,7 +33,10 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
+import com.epson.epos2.printer.PrinterStatusInfo;
+import com.epson.epos2.printer.ReceiveListener;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.apirequests.ServerDataRequest;
@@ -61,11 +64,13 @@ import com.nerdvana.positiveoffline.entities.SerialNumbers;
 import com.nerdvana.positiveoffline.entities.ServiceCharge;
 import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.Transactions;
+import com.nerdvana.positiveoffline.functions.PrinterFunctions;
 import com.nerdvana.positiveoffline.model.HasPendingDataOnLocalModel;
 import com.nerdvana.positiveoffline.model.ServerDataCompletionModel;
 import com.nerdvana.positiveoffline.model.ShiftUpdateModel;
 import com.nerdvana.positiveoffline.model.TimerUpdateModel;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
+import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.printjobasync.BackoutAsync;
 import com.nerdvana.positiveoffline.background.CheatAsync;
 import com.nerdvana.positiveoffline.printjobasync.PayoutAsync;
@@ -109,6 +114,7 @@ import com.starmicronics.stario.StarIOPortException;
 import com.starmicronics.stario.StarResultCode;
 import com.starmicronics.starioextension.ConnectionCallback;
 import com.starmicronics.starioextension.ICommandBuilder;
+import com.starmicronics.starioextension.StarIoExt;
 import com.starmicronics.starioextension.StarIoExtManager;
 import com.starmicronics.starioextension.StarIoExtManagerListener;
 
@@ -130,7 +136,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import static com.nerdvana.positiveoffline.printer.PrinterUtils.addPrinterSpace;
 import static com.nerdvana.positiveoffline.printer.PrinterUtils.addTextToPrinter;
+import static com.nerdvana.positiveoffline.printer.PrinterUtils.twoColumns;
 
 public class MainActivity extends AppCompatActivity implements AsyncFinishCallBack {
 
@@ -1216,7 +1224,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
     @Subscribe
     public void print(PrintModel printModel) {
-
+Log.d("RECEIPTDATA", printModel.getType());
         switch (printModel.getType()) {
             case "PRINT_PAYOUT":
                 addAsync(new PayoutAsync(printModel, MainActivity.this,
@@ -1265,6 +1273,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                         iLocalizeReceipts, SStarPort.getStarIOPort(),true), "reprint_receipt");
                 break;
             case "PRINT_RECEIPT":
+//                orTest(printModel);
                 saveEjFile(printModel);
                 addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
@@ -1304,6 +1313,212 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                         iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_zread");
                 break;
         }
+
+    }
+
+    private void orTest(PrintModel printModel) {
+        String finalOrString = "";
+        final TransactionCompleteDetails transactionCompleteDetails = GsonHelper.getGson().fromJson(printModel.getData(), TransactionCompleteDetails.class);
+
+        Log.d("RECEIPTDATA", new String(new char[Integer.valueOf(SharedPreferenceManager.getString(getApplicationContext(), AppConstants.MAX_COLUMN_COUNT))]));
+        Log.d("RECEIPTDATA", "QTY  DESCRIPTION          AMOUNT");
+        Log.d("RECEIPTDATA", new String(new char[Integer.valueOf(SharedPreferenceManager.getString(getApplicationContext(), AppConstants.MAX_COLUMN_COUNT))]));
+
+        Double amountDue = 0.00;
+        for (Orders orders : transactionCompleteDetails.ordersList) {
+            if (!orders.getIs_void()) {
+                String qty = "";
+
+                qty += orders.getQty();
+
+                if (String.valueOf(orders.getQty()).length() < 4) {
+                    for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
+                        qty += " ";
+                    }
+                }
+
+                if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+                    Log.d("RECEIPTDATA", twoColumns(
+                            qty +  "  " + orders.getName(),
+                            PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+                            40,
+                            2,
+                            getApplicationContext()));
+
+
+                } else {
+                    Log.d("RECEIPTDATA", twoColumns(
+                            qty +  " " + orders.getName(),
+                            PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+                            40,
+                            2,
+                            getApplicationContext()));
+
+                }
+
+                if (orders.getDiscountAmount() > 0) {
+                    Log.d("RECEIPTDATA", twoColumns(
+                            "LESS",
+                            PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getDiscountAmount())),
+                            40,
+                            2,
+                            getApplicationContext()));
+
+                }
+
+
+
+
+
+
+                if (orders.getVatExempt() <= 0) {
+                    amountDue += orders.getOriginal_amount() * orders.getQty();
+                } else {
+                    amountDue += orders.getAmount() * orders.getQty();
+                }
+            }
+
+        }
+
+
+
+        if (transactionCompleteDetails.postedDiscountsList.size() > 0) {
+            Log.d("RECEIPTDATA" , "DISCOUNT LIST");
+
+            for (PostedDiscounts postedDiscounts : transactionCompleteDetails.postedDiscountsList) {
+                if (!postedDiscounts.getIs_void()) {
+
+                    Log.d("RECEIPTDATA" , twoColumns(
+                            postedDiscounts.getDiscount_name(),
+                            postedDiscounts.getCard_number(),
+                            40,
+                            2,
+                            getApplicationContext()));
+
+                }
+            }
+        }
+
+        Log.d("RECEIPTDATA", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVatable_sales()))));
+        Log.d("RECEIPTDATA", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_amount()))));
+        Log.d("RECEIPTDATA", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_exempt_sales()))));
+        Log.d("RECEIPTDATA", twoColumns(
+                "ZERO-RATED SALES",
+                "0.00",
+                40,
+                2,
+                getApplicationContext()));
+
+
+
+
+
+        if (transactionCompleteDetails.transactions.getService_charge_value() > 0) {
+            Log.d("RECEIPTDATA", twoColumns(
+                    "SERVICE CHARGE",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(transactionCompleteDetails.transactions.getService_charge_value())),
+                    40,
+                    2,
+                    getApplicationContext()));
+
+        } else {
+            Log.d("RECEIPTDATA", twoColumns(
+                    "SERVICE CHARGE",
+                    "0.00",
+                    40,
+                    2,
+                    getApplicationContext()));
+
+        }
+
+        Log.d("RECEIPTDATA", twoColumns(
+                "SUB TOTAL",
+                PrinterUtils.returnWithTwoDecimal(
+                        String.valueOf(
+                                Utils.roundedOffTwoDecimal(
+                                        transactionCompleteDetails.transactions.getGross_sales()
+                                ) +
+                                        Utils.roundedOffTwoDecimal(
+                                                transactionCompleteDetails.transactions.getService_charge_value()
+                                        )
+                        )),
+                40,
+                2,
+                getApplicationContext()));
+
+        Log.d("RECEIPTDATA", twoColumns(
+                "AMOUNT DUE",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue) + Utils.roundedOffTwoDecimal(
+                        transactionCompleteDetails.transactions.getService_charge_value()
+                )),
+                40,
+                2,
+                getApplicationContext()));
+
+        Double payments = 0.00;
+        List<Integer> tmpArray = new ArrayList<>();
+        String pymntType = "";
+        for (Payments pym : transactionCompleteDetails.paymentsList) {
+            if (!tmpArray.contains(pym.getCore_id())) {
+                tmpArray.add(pym.getCore_id());
+                pymntType = pym.getName();
+            }
+            payments += Utils.roundedOffTwoDecimal(pym.getAmount());
+        }
+
+
+        Log.d("RECEIPTDATA", twoColumns(
+                "TENDERED",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(payments))),
+                40,
+                2,
+                getApplicationContext()));
+        Log.d("RECEIPTDATA", twoColumns(
+                "CHANGE",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getChange()))),
+                40,
+                2,
+                getApplicationContext()));
+
+
+        Log.d("RECEIPTDATA", twoColumns(
+                "PAYMENT TYPE",
+                tmpArray.size() > 1 ? "MULTIPLE" : pymntType
+                ,
+                40,
+                2,getApplicationContext()));
+        Log.d("RECEIPTDATA", "SOLD TO");
+
+
+
+        if (transactionCompleteDetails.orDetails != null) {
+            Log.d("RECEIPTDATA", "NAME:" + transactionCompleteDetails.orDetails.getName());
+            Log.d("RECEIPTDATA", "ADDRESS:" + transactionCompleteDetails.orDetails.getAddress());
+            Log.d("RECEIPTDATA", "TIN#:" + transactionCompleteDetails.orDetails.getTin_number());
+            Log.d("RECEIPTDATA", "BUSINESS STYLE:" + transactionCompleteDetails.orDetails.getBusiness_style());
+        } else {
+            Log.d("RECEIPTDATA", "NAME:" + "---");
+            Log.d("RECEIPTDATA", "ADDRESS:" + "---");
+            Log.d("RECEIPTDATA", "TIN#:" + "---");
+            Log.d("RECEIPTDATA", "BUSINESS STYLE:" + "----");
+        }
+
+
+        if (transactionCompleteDetails.transactions.getTransaction_type().equalsIgnoreCase("delivery")) {
+
+            Log.d("RECEIPTDATA", "CONTROL#");
+            Log.d("RECEIPTDATA", transactionCompleteDetails.transactions.getControl_number());
+
+            Log.d("RECEIPTDATA", "DELIVERY FOR");
+            Log.d("RECEIPTDATA", transactionCompleteDetails.transactions.getDelivery_to());
+
+            Log.d("RECEIPTDATA", "DELIVERY ADDRESS");
+            Log.d("RECEIPTDATA", transactionCompleteDetails.transactions.getDelivery_address());
+
+        }
+
+
+
 
     }
 
@@ -1728,7 +1943,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void shiftUpdate(ShiftUpdateModel shiftUpdateModel) {
         try {
-            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 2.0.2");
+            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 2.0.3");
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {

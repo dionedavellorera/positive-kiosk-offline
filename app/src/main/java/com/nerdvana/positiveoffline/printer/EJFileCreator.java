@@ -569,9 +569,9 @@ public class EJFileCreator {
                 }
 
                 if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
-                    finalString += PrinterUtils.receiptString("-" + qty +  " " + orders.getName(), "0.00", context, false);
+                    finalString += PrinterUtils.receiptString(qty +  "  " + orders.getName(), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())), context, false);
                 } else {
-                    finalString += PrinterUtils.receiptString(qty +  " " + orders.getName(), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount())), context, false);
+                    finalString += PrinterUtils.receiptString(qty +  " " + orders.getName(), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())), context, false);
                 }
 
                 if (orders.getDiscountAmount() > 0) {
@@ -580,9 +580,9 @@ public class EJFileCreator {
 
 
                 if (orders.getVatExempt() <= 0) {
-                    amountDue += orders.getOriginal_amount();
+                    amountDue += orders.getOriginal_amount()  * orders.getQty();
                 } else {
-                    amountDue += orders.getAmount();
+                    amountDue += orders.getAmount()  * orders.getQty();
                 }
             }
 
