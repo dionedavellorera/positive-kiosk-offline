@@ -113,8 +113,8 @@ public class EJFileCreator {
         }
 
         finalString += PrinterUtils.receiptString("SALES REFLECTED BELOW ARE AR FROM PREVIOUS SHIFT", "", context, true);
-        finalString += PrinterUtils.receiptString("AR CASH SALES", "-"+PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCash_redeemed_from_prev_ar())), context, false);
-        finalString += PrinterUtils.receiptString("AR CARD SALES", "-"+PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCard_redeemed_from_prev_ar())), context, false);
+        finalString += PrinterUtils.receiptString("AR CASH SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCash_redeemed_from_prev_ar())), context, false);
+        finalString += PrinterUtils.receiptString("AR CARD SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCard_redeemed_from_prev_ar())), context, false);
 
         finalString += PrinterUtils.receiptString("", "", context, true);
 
@@ -549,7 +549,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString("", "", context, true);
         finalString += PrinterUtils.receiptString("OR NO", transactionCompleteDetails.transactions.getReceipt_number(), context, false);
-//        finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
+        finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
         finalString += PrinterUtils.receiptString("", "", context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
         finalString += PrinterUtils.receiptString("QTY  DESCRIPTION          AMOUNT", "", context, true);
@@ -1608,7 +1608,7 @@ public class EJFileCreator {
                 } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
 
                     DateTime dt = formatter.parseDateTime(tr.transactions.getCheck_in_time());
-                    temp.add(tr.transactions.getTrans_name());
+                    temp.add(tr.transactions.getRoom_number());
                     temp.add(String.valueOf(tr.ordersList.size()));
                     String dateONly = tr.transactions.getCheck_in_time().split(" ")[0];
                     temp.add(dateONly.split("-")[1] + "-" + dateONly.split("-")[2]);

@@ -1048,6 +1048,9 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                     tmp.getDelivery_address()
                             );
 
+                            transactions.setIs_shared(tmp.getIs_shared());
+                            transactions.setTransaction_type(tmp.getTransaction_type());
+
                             transactions.setService_charge_is_percentage(isPercentage);
                             transactions.setService_charge_value(serviceCharge);
 

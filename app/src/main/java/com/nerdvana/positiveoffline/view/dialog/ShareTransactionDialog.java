@@ -146,11 +146,12 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
                     }
 
                     if (loopCount != stPaymentsList.size()) {
-                        Helper.showDialogMessage(getContext(), "DI LAHAT MAY ORDER", "Information");
+//                        Helper.showDialogMessage(getContext(), "DI LAHAT MAY ORDER", "Information");
+                        Helper.showDialogMessage(getContext(), "Please attach an item to share to all customers", "Information");
                     } else if (mOrderCount != orderCount) {
-                        Helper.showDialogMessage(getContext(), "MAY DI KA NA PUNCH", "Information");
+                        Helper.showDialogMessage(getContext(), "Please allocate all items to sharing customers", "Information");
                     } else if (mPayment < mTotal) {
-                        Helper.showDialogMessage(getContext(), "MAY KULANG NA PAYMENT", "Information");
+                        Helper.showDialogMessage(getContext(), "Insufficient payment", "Information");
                     }else {
 
                         confirmPayments(stPaymentsList);

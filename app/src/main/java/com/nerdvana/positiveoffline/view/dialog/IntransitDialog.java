@@ -95,14 +95,53 @@ public class IntransitDialog extends BaseDialog implements View.OnClickListener{
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fabPrintIntransit:
+
+
                 try {
-                    Helper.showDialogMessage(getContext(), "Printing intransit ..", "Information");
-                    BusProvider.getInstance().post(new PrintModel("PRINT_INTRANSIT", GsonHelper.getGson().toJson(transactionsViewModel.savedTransactionsList())));
+                    if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
+                        if (transactionsViewModel.savedTransactionsList().size() > 0) {
+                            BusProvider.getInstance().post(new PrintModel("PRINT_INTRANSIT", GsonHelper.getGson().toJson(transactionsViewModel.savedTransactionsList())));
+                            Helper.showDialogMessage(getContext(), "Printing intransit ..", "Information");
+                        } else {
+                            //prompt no data
+                            Helper.showDialogMessage(getContext(), "No intransit data", "Information");
+                        }
+
+                    } else {
+                        if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+                            if (transactionsViewModel.savedTransactionsList().size() > 0) {
+                                BusProvider.getInstance().post(new PrintModel("PRINT_INTRANSIT", GsonHelper.getGson().toJson(transactionsViewModel.savedTransactionsList())));
+                                Helper.showDialogMessage(getContext(), "Printing intransit ..", "Information");
+                            } else {
+                                //prompt no data
+                                Helper.showDialogMessage(getContext(), "No intransit data", "Information");
+                            }
+                        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                            //
+                        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+
+                            if (transactionsViewModel.transactionListWithRoom().size() > 0) {
+                                BusProvider.getInstance().post(new PrintModel("PRINT_INTRANSIT", GsonHelper.getGson().toJson(transactionsViewModel.transactionListWithRoom())));
+                                Helper.showDialogMessage(getContext(), "Printing intransit ..", "Information");
+                            } else {
+                                //no data
+                                Helper.showDialogMessage(getContext(), "No intransit data", "Information");
+                            }
+
+
+                        }
+                    }
+
+
+
+
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
+
                 break;
         }
     }

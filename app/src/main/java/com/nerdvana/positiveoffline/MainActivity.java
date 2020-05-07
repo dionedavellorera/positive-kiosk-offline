@@ -33,7 +33,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.epson.epos2.printer.Printer;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.apirequests.ServerDataRequest;
 import com.nerdvana.positiveoffline.apirequests.TestRequest;
 import com.nerdvana.positiveoffline.apiresponses.CutoffServerDataResponse;
@@ -63,6 +65,7 @@ import com.nerdvana.positiveoffline.model.HasPendingDataOnLocalModel;
 import com.nerdvana.positiveoffline.model.ServerDataCompletionModel;
 import com.nerdvana.positiveoffline.model.ShiftUpdateModel;
 import com.nerdvana.positiveoffline.model.TimerUpdateModel;
+import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.printjobasync.BackoutAsync;
 import com.nerdvana.positiveoffline.background.CheatAsync;
 import com.nerdvana.positiveoffline.printjobasync.PayoutAsync;
@@ -109,6 +112,11 @@ import com.starmicronics.starioextension.ICommandBuilder;
 import com.starmicronics.starioextension.StarIoExtManager;
 import com.starmicronics.starioextension.StarIoExtManagerListener;
 
+import org.joda.time.DateTime;
+import org.joda.time.Minutes;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -121,6 +129,8 @@ import java.util.concurrent.ExecutionException;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static com.nerdvana.positiveoffline.printer.PrinterUtils.addTextToPrinter;
 
 public class MainActivity extends AppCompatActivity implements AsyncFinishCallBack {
 
@@ -1214,6 +1224,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                         iLocalizeReceipts, SStarPort.getStarIOPort(),true), "print_payout");
                 break;
             case "PRINT_INTRANSIT":
+//                intransitTest(printModel);
                 addAsync(new IntransitAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
                         iLocalizeReceipts, SStarPort.getStarIOPort(),true), "intransit");
@@ -1296,6 +1307,93 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
     }
 
+    private void intransitTest(PrintModel printModel) {
+        String intransitString = "";
+        TypeToken<List<TransactionWithOrders>> token = new TypeToken<List<TransactionWithOrders>>() {};
+        List<TransactionWithOrders> transactions = GsonHelper.getGson().fromJson(printModel.getData(), token.getType());
+
+
+//        addTextToPrinter(printer, "INTRANSIT SLIP", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 2);
+        intransitString += "INTRANSIT SLIP\n";
+
+        List<String> t = new ArrayList<>();
+        t.add("I");
+        t.add("II");
+        t.add("III");
+        t.add("IV");
+        t.add("V");
+
+        intransitString += intransitReceipt(t);
+
+
+
+
+
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        for (TransactionWithOrders tr : transactions) {
+            List<String> temp = new ArrayList<>();
+
+            if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
+                DateTime dt = formatter.parseDateTime(tr.transactions.getSaved_at());
+                temp.add(tr.transactions.getTrans_name());
+                temp.add(String.valueOf(tr.ordersList.size()));
+                String dateONly = tr.transactions.getSaved_at().split(" ")[0];
+                temp.add(dateONly.split("-")[1] + "-" + dateONly.split("-")[2]);
+                temp.add(String.valueOf(tr.transactions.getGross_sales()));
+                temp.add(String.valueOf(Minutes.minutesBetween(dt, new DateTime()).getMinutes()) + " MINS");
+            } else {
+                if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+                    DateTime dt = formatter.parseDateTime(tr.transactions.getSaved_at());
+                    temp.add(tr.transactions.getTrans_name());
+                    temp.add(String.valueOf(tr.ordersList.size()));
+                    String dateONly = tr.transactions.getSaved_at().split(" ")[0];
+                    temp.add(dateONly.split("-")[1] + "-" + dateONly.split("-")[2]);
+                    temp.add(String.valueOf(tr.transactions.getGross_sales()));
+                    temp.add(String.valueOf(Minutes.minutesBetween(dt, new DateTime()).getMinutes()) + " MINS");
+                } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                    //
+                } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+
+                    DateTime dt = formatter.parseDateTime(tr.transactions.getCheck_in_time());
+                    temp.add(tr.transactions.getRoom_number());
+                    temp.add(String.valueOf(tr.ordersList.size()));
+                    String dateONly = tr.transactions.getCheck_in_time().split(" ")[0];
+                    temp.add(dateONly.split("-")[1] + "-" + dateONly.split("-")[2]);
+                    temp.add(String.valueOf(tr.transactions.getGross_sales()));
+                    temp.add(String.valueOf(Minutes.minutesBetween(dt, new DateTime()).getMinutes()) + " MINS");
+
+
+                }
+            }
+
+
+            intransitString += intransitReceipt(temp);
+
+            Log.d("DIONEINTRANSIT", intransitString);
+//            addTextToPrinter(printer, intransitReceipt(temp), Printer.TRUE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
+
+        }
+
+    }
+
+    private String intransitReceipt(List<String> details) {
+        String finalString = "";
+        float maxColumn = Float.valueOf(SharedPreferenceManager.getString(getApplicationContext(), AppConstants.MAX_COLUMN_COUNT));
+        int perColumn = (int)maxColumn / details.size();
+
+        for (int i = 0; i < details.size(); i++) {
+            if (details.size() >= perColumn) {
+                finalString += details.get(i);
+            } else {
+                finalString += details.get(i);
+                float temp = perColumn - details.get(i).length();
+                for (int j = 0; j < temp; j++) {
+                    finalString += " ";
+                }
+            }
+        }
+        return finalString;
+    }
 
     private void addAsync(AsyncTask asyncTask, String taskName) {
         if (myPrintJobs.size() < 1) {
@@ -1630,7 +1728,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void shiftUpdate(ShiftUpdateModel shiftUpdateModel) {
         try {
-            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 1.6.8");
+            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 2.0.2");
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {

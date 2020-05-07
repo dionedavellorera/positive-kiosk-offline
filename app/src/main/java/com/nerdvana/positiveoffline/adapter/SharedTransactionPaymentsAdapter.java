@@ -166,7 +166,7 @@ public class SharedTransactionPaymentsAdapter extends RecyclerView.Adapter<Recyc
 
         changeTotal = tenderedTotal - orderTotal;
 
-        ((ViewHolder)holder).stOrderTotal.setText(String.valueOf("TOTAL:" + orderTotal));
+        ((ViewHolder)holder).stOrderTotal.setText(String.valueOf("TOTAL AMOUNT TO PAY:" + orderTotal));
         ((ViewHolder)holder).stOrderTendered.setText(String.valueOf("TENDERED:" + tenderedTotal));
         ((ViewHolder)holder).stOrderChange.setText(String.valueOf("CHANGE:" + changeTotal));
 

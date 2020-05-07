@@ -288,19 +288,22 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                 try {
                     if (!TextUtils.isEmpty(transactionId)) {
                         if (selectedTable != null) {
-                            transactionId = String.valueOf(transactions.get(transactions.size() - 1).getId());
-                            selectedTable.setTransaction_id(transactionId);
-                            if (selectedTable.getCheck_in_time().isEmpty()) {
-                                selectedTable.setCheck_in_time(Utils.getDateTimeToday());
+                            if (transactions.size() > 0) {
+                                transactionId = String.valueOf(transactions.get(transactions.size() - 1).getId());
+                                selectedTable.setTransaction_id(transactionId);
+                                if (selectedTable.getCheck_in_time().isEmpty()) {
+                                    selectedTable.setCheck_in_time(Utils.getDateTimeToday());
+                                }
+
+                                roomsViewModel.update(selectedTable);
                             }
+
                             if (!TextUtils.isEmpty(selectedTable.getCheck_in_time())) {
                                 tvRoomTableNumber.setText("TABLE:" + selectedTable.getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), selectedTable.getCheck_in_time()));
                             } else {
                                 tvRoomTableNumber.setText("TABLE:NA");
                             }
 
-
-                            roomsViewModel.update(selectedTable);
                         } else {
                             if (roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)) != null) {
                                 if (!TextUtils.isEmpty(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time())) {
@@ -764,12 +767,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                     //print receipt per transaction
 
 
-
-                                                    BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(tr.getReceipt_number())));
-
-
-
-
+                                                    //PEKPEK
+                                                    BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(transactionsViewModel.getTransaction(tr.getReceipt_number()))));
+//                                                    BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT", GsonHelper.getGson().toJson(tr.getReceipt_number())));
 
                                                 } catch (Exception e) {
 
@@ -1821,13 +1821,15 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                         @Override
                                         public void run() {
                                             try {
+                                                defaults();
                                                 if (transactionsList().size() > 0) {
-                                                    selectedTable = null;
+//                                                    selectedTable = null;
                                                     transactionId = String.valueOf(transactionsList().get(0).getId());
                                                     setOrderAdapter(transactionsViewModel.orderList(transactionId));
-                                                } else {
-                                                    defaults();
                                                 }
+//                                                else {
+//                                                    defaults();
+//                                                }
                                             } catch (ExecutionException e) {
                                                 e.printStackTrace();
                                             } catch (InterruptedException e) {

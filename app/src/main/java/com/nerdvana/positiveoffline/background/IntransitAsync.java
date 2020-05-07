@@ -206,7 +206,7 @@ public class IntransitAsync extends AsyncTask<Void, Void, Void> {
                     } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
 
                         DateTime dt = formatter.parseDateTime(tr.transactions.getCheck_in_time());
-                        temp.add(tr.transactions.getTrans_name());
+                        temp.add(tr.transactions.getRoom_number());
                         temp.add(String.valueOf(tr.ordersList.size()));
                         String dateONly = tr.transactions.getCheck_in_time().split(" ")[0];
                         temp.add(dateONly.split("-")[1] + "-" + dateONly.split("-")[2]);
