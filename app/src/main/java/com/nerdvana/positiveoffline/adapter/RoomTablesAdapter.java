@@ -125,7 +125,7 @@ public class RoomTablesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
             public void onClick(View view) {
 
                 if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
-                    roomContract.showRates(rooms.getRoom_id());
+//                    roomContract.showRates(rooms.getRoom_id());
                 } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
                     roomContract.showTableOptions(rooms.getRoom_id());
                 }

@@ -1224,9 +1224,10 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
     @Subscribe
     public void print(PrintModel printModel) {
-Log.d("RECEIPTDATA", printModel.getType());
+
         switch (printModel.getType()) {
             case "PRINT_PAYOUT":
+                saveEjFile(printModel);
                 addAsync(new PayoutAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
                         iLocalizeReceipts, SStarPort.getStarIOPort(),true), "print_payout");
@@ -1248,11 +1249,13 @@ Log.d("RECEIPTDATA", printModel.getType());
                         iLocalizeReceipts, SStarPort.getStarIOPort(),true), "cheat");
                 break;
             case "POST_VOID":
+                saveEjFile(printModel);
                 addAsync(new PostVoidAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
                         iLocalizeReceipts, SStarPort.getStarIOPort(),true), "post_void");
                 break;
             case "BACKOUT":
+                saveEjFile(printModel);
                 addAsync(new BackoutAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
                         iLocalizeReceipts, SStarPort.getStarIOPort(),true), "backout");

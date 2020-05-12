@@ -97,6 +97,10 @@ public class TransactionsViewModel extends AndroidViewModel {
         transactionsRepository.update(transaction);
     }
 
+    public Integer updateLong(Transactions transaction) throws ExecutionException, InterruptedException {
+        return transactionsRepository.updateLong(transaction);
+    }
+
     public void recomputeTransaction(List<Orders> orderList, String transactionId) {
         Double grossSales = 0.00;
         Double netSales = 0.00;

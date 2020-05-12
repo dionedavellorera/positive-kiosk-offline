@@ -76,5 +76,7 @@ public interface TransactionsDao {
     @Update()
     void update(Transactions transaction);
 
+    @Update()
+    Integer updateLong(Transactions transaction);
 
 }

@@ -457,6 +457,11 @@ public class TransactionsRepository {
         new TransactionsRepository.updateAsyncTask(transactionsDao, transactions).execute();
     }
 
+    public Integer updateLong(Transactions transactions) throws ExecutionException, InterruptedException {
+        return new TransactionsRepository.updateLongAsyncTask(transactionsDao, transactions).execute().get();
+    }
+
+
     public void insertOrDetails(OrDetails orDetails) {
         new TransactionsRepository.insertOrDetailsAsyncTask(orDetailsDao).execute(orDetails);
     }
@@ -677,6 +682,27 @@ public class TransactionsRepository {
                 super.onPostExecute(aVoid);
             }
         }
+
+    private static class updateLongAsyncTask extends AsyncTask<Transactions, Void, Integer> {
+        private TransactionsDao mAsyncTaskDao;
+        private Transactions transactions;
+        updateLongAsyncTask(TransactionsDao dao, Transactions transactions) {
+            mAsyncTaskDao = dao;
+            this.transactions = transactions;
+        }
+
+
+        @Override
+        protected Integer doInBackground(Transactions... tr) {
+            return (int)mAsyncTaskDao.updateLong(transactions);
+        }
+
+        @Override
+        protected void onPostExecute(Integer integer) {
+            super.onPostExecute(integer);
+        }
+    }
+
 
     private static class updateAsyncTask extends AsyncTask<Transactions, Void, Void> {
 
