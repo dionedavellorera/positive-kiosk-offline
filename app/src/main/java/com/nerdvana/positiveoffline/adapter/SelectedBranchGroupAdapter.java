@@ -65,7 +65,7 @@ public class SelectedBranchGroupAdapter extends RecyclerView.Adapter<RecyclerVie
                 .placeholder(R.drawable.pos_logo_edited)
                 .into(((SelectedBranchGroupAdapter.ViewHolder)holder).ivImage);
 
-        ((SelectedBranchGroupAdapter.ViewHolder)holder).tvName.setText(model.getProduct());
+        ((SelectedBranchGroupAdapter.ViewHolder)holder).tvName.setText(String.format("%s %s", model.getProduct(), String.valueOf(model.getPrice())));
         ((ViewHolder)holder).tvQty.setText(String.valueOf(model.getSelectedQty()) + " PC/S");
         ((ViewHolder)holder).row.setOnClickListener(new View.OnClickListener() {
             @Override

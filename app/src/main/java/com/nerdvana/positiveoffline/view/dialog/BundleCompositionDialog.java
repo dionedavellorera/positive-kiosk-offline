@@ -31,7 +31,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public abstract class BundleCompositionDialog extends BaseDialog implements View.OnClickListener{
-
+    private int selectedFilteredGroupPosition = 0;
+    private BranchGroupFilterAdapter branchGroupFilterAdapter;
     private List<ProductAlacart> productAlacartList;
     private List<BranchGroup> branchGroupList;
     private List<BranchGroup> selectedBranchGroupList = new ArrayList<>();
@@ -82,6 +83,7 @@ public abstract class BundleCompositionDialog extends BaseDialog implements View
             @Override
             public void clicked(BranchGroup branchGroup, int position) {
                 int qty = selectedBranchGroupList.get(position).getSelectedQty() - 1;
+                //dione
                 if (qty <= 0) {
                     selectedBranchGroupList.remove(position);
                     selectedBranchGroupAdapter.notifyItemRemoved(position);
@@ -89,6 +91,16 @@ public abstract class BundleCompositionDialog extends BaseDialog implements View
                     selectedBranchGroupList.get(position).setSelectedQty(qty);
                     selectedBranchGroupAdapter.notifyItemChanged(position);
                 }
+                for (BranchGroupFilterModel bgfm : branchGroupFilterModelList) {
+                    if (bgfm.getBranch_group_id() == Integer.valueOf(branchGroup.getBranch_group_id())) {
+                        bgfm.setSelected_qty_in_branch(bgfm.getSelected_qty_in_branch() - 1);
+                        if (branchGroupFilterAdapter != null) {
+                            branchGroupFilterAdapter.notifyItemChanged(selectedFilteredGroupPosition);
+                        }
+                    }
+                }
+//                branchGroupFilterModelList.get(selectedFilteredGroupPosition).setSelected_qty_in_branch(branchGroupFilterModelList.get(selectedFilteredGroupPosition).getSelected_qty_in_branch() + 1);
+
             }
         };
     }
@@ -104,6 +116,9 @@ public abstract class BundleCompositionDialog extends BaseDialog implements View
         bgpaContract = new BgpaContract() {
             @Override
             public void clicked(BranchGroup branchGroup) {
+
+
+
                 double maxQty = 0;
                 for (BranchGroup bg : branchGroupList) {
                       if (bg.getBranch_group_id().equalsIgnoreCase(branchGroup.getBranch_group_id())) {
@@ -133,7 +148,13 @@ public abstract class BundleCompositionDialog extends BaseDialog implements View
 
 
                 if (isExisting) {
+
+
                     if (totalSelectedPerBranch < maxQty) {
+                        branchGroupFilterModelList.get(selectedFilteredGroupPosition).setSelected_qty_in_branch(branchGroupFilterModelList.get(selectedFilteredGroupPosition).getSelected_qty_in_branch() + 1);
+                        if (branchGroupFilterAdapter != null) {
+                            branchGroupFilterAdapter.notifyItemChanged(selectedFilteredGroupPosition);
+                        }
                         int totalSelectedTmp = selectedBranchGroupList.get(selectedPosition).getSelectedQty() + 1;
                         selectedBranchGroupList.get(selectedPosition).setSelectedQty(totalSelectedTmp);
                         if (selectedBranchGroupAdapter != null) selectedBranchGroupAdapter.notifyItemChanged(selectedPosition);
@@ -143,6 +164,10 @@ public abstract class BundleCompositionDialog extends BaseDialog implements View
                 } else {
                     if (totalSelectedPerBranch < maxQty) {
                         branchGroup.setSelectedQty(1);
+                        branchGroupFilterModelList.get(selectedFilteredGroupPosition).setSelected_qty_in_branch(branchGroupFilterModelList.get(selectedFilteredGroupPosition).getSelected_qty_in_branch() + 1);
+                        if (branchGroupFilterAdapter != null) {
+                            branchGroupFilterAdapter.notifyItemChanged(selectedFilteredGroupPosition);
+                        }
                         selectedBranchGroupList.add(branchGroup);
                         if (selectedBranchGroupAdapter != null) selectedBranchGroupAdapter.notifyDataSetChanged();
                     } else {
@@ -160,6 +185,9 @@ public abstract class BundleCompositionDialog extends BaseDialog implements View
             @Override
             public void clicked(int position) {
                 try {
+                    selectedFilteredGroupPosition = position;
+                    //DITO UNG PAG CLICK NG FILTER
+                    Log.d("MYLOG", branchGroupFilterModelList.get(position).getBranch_group_name());
                     setBranchGroupProductAdapter(
                             transactionsViewModel.getFilteredProductsPerCategory(String.valueOf(branchGroupFilterModelList.get(position).getBranch_group_id())),
                             bgpaContract);
@@ -180,7 +208,8 @@ public abstract class BundleCompositionDialog extends BaseDialog implements View
                         new BranchGroupFilterModel(
                                 Integer.valueOf(bg.getBranch_group_id()),
                                 bg.getBranch_group_name(),
-                                bg.getBranch_qty() * qtyMultiplier));
+                                bg.getBranch_qty() * qtyMultiplier,
+                                0));
 
                 totalRequiredCount += bg.getBranch_qty() * qtyMultiplier;
             }
@@ -198,7 +227,7 @@ public abstract class BundleCompositionDialog extends BaseDialog implements View
             }
         }
 
-        BranchGroupFilterAdapter branchGroupFilterAdapter =
+        branchGroupFilterAdapter =
                 new BranchGroupFilterAdapter(branchGroupFilterModelList, getContext(),
                         filter);
         rvBranchGroupFilterModel.setAdapter(branchGroupFilterAdapter);

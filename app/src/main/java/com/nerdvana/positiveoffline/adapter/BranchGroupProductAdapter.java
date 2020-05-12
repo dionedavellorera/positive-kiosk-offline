@@ -63,7 +63,7 @@ public class BranchGroupProductAdapter extends RecyclerView.Adapter<RecyclerView
                 .placeholder(R.drawable.pos_logo_edited)
                 .into(((BranchGroupProductAdapter.ViewHolder)holder).ivImage);
 
-        ((BranchGroupProductAdapter.ViewHolder)holder).tvName.setText(model.getProduct());
+        ((BranchGroupProductAdapter.ViewHolder)holder).tvName.setText(String.format("%s %s", model.getProduct(), String.valueOf(model.getPrice())));
 
         ((BranchGroupProductAdapter.ViewHolder)holder).row.setOnClickListener(new View.OnClickListener() {
             @Override

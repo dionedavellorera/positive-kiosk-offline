@@ -58,7 +58,7 @@ public class AlacartAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 .placeholder(R.drawable.pos_logo_edited)
                 .into(((ViewHolder)holder).ivImage);
 
-        ((ViewHolder)holder).tvName.setText(model.getProduct());
+        ((ViewHolder)holder).tvName.setText(String.format("%s %s", model.getProduct(), String.valueOf(model.getPrice())));
 
 
 

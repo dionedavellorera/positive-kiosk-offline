@@ -1943,7 +1943,7 @@ Log.d("RECEIPTDATA", printModel.getType());
     @Subscribe
     public void shiftUpdate(ShiftUpdateModel shiftUpdateModel) {
         try {
-            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 2.0.3");
+            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 2.0.4");
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {

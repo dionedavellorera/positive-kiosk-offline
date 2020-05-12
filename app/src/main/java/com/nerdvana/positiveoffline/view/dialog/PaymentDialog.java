@@ -368,7 +368,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             mobilePaymentAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
 
             if (Utils.roundedOffTwoDecimal(tendered) >= Utils.roundedOffTwoDecimal(amountDue)) {
-                pay.setBackgroundResource(R.drawable.button_selector);
+                pay.setBackgroundResource(R.drawable.button_selector_green);
+//                pay.setBackgroundResource(R.drawable.button_selector);
 //                pay.setEnabled(true);
             } else {
                 pay.setBackgroundResource(R.drawable.button_selector_disabled);

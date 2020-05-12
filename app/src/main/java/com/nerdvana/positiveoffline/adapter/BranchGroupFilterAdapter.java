@@ -51,7 +51,7 @@ public class BranchGroupFilterAdapter extends RecyclerView.Adapter<RecyclerView.
 
         final BranchGroupFilterModel model = branchGroupFilterModelList.get(holder.getAdapterPosition());
 
-        ((ViewHolder)holder).name.setText(String.format("%s(%s)", model.getBranch_group_name(), String.valueOf(model.getBranch_qty())));
+        ((ViewHolder)holder).name.setText(String.format("%s(%s)", model.getBranch_group_name(), String.valueOf(model.getBranch_qty() - model.getSelected_qty_in_branch())));
         ((ViewHolder)holder).name.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
