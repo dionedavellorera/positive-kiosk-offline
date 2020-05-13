@@ -173,6 +173,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
 
     private String transactionId = "";
+    private String pTransactionId = "";
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -269,7 +270,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
         transactionsViewModel.transactionLiveData().observe(this, new Observer<List<Transactions>>() {
             @Override
             public void onChanged(List<Transactions> transactions) {
-
+                Log.d("TRACING", "HAS TRIGGERED CHANGE TRANS");
 
                 if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
                     lin00.setVisibility(View.GONE);
@@ -289,8 +290,22 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                     if (!TextUtils.isEmpty(transactionId)) {
                         if (selectedTable != null) {
                             if (transactions.size() > 0) {
-                                transactionId = String.valueOf(transactions.get(transactions.size() - 1).getId());
-                                selectedTable.setTransaction_id(transactionId);
+                                Log.d("TRACING ", "TR BEFORE SET > " + transactionId);
+                                Log.d("TRACING ", "P TRANS ID " + pTransactionId);
+                                if (!TextUtils.isEmpty(pTransactionId)) {
+                                    transactionId = pTransactionId;
+//                                    pTransactionId = "";
+                                } else {
+                                    transactionId = String.valueOf(transactions.get(transactions.size() - 1).getId());
+                                }
+
+                                Log.d("TRACING ", "TR TO SET > " + transactionId);
+                                if (TextUtils.isEmpty(selectedTable.getTransaction_id())) {
+                                    selectedTable.setTransaction_id(transactionId);
+                                }
+
+
+
                                 if (selectedTable.getCheck_in_time().isEmpty()) {
                                     selectedTable.setCheck_in_time(Utils.getDateTimeToday());
                                 }
@@ -434,8 +449,14 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
         transactionsViewModel.ordersLiveData().observe(this, new Observer<List<Orders>>() {
             @Override
             public void onChanged(List<Orders> orders) {
-
+                Log.d("TRACING", "HAS TRIGGERED ORDERS");
                 try {
+                    Log.d("TRACING ", "P ORDERS TRANS ID " + pTransactionId);
+                    if (!TextUtils.isEmpty(pTransactionId)) {
+                        transactionId = pTransactionId;
+//                        pTransactionId = "";
+                    }
+
                     setOrderAdapter(transactionsViewModel.orderList(transactionId));
 
                     transactionsViewModel.recomputeTransaction(transactionsViewModel.orderList(transactionId), transactionId);
@@ -1735,6 +1756,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     private void doItemVoidFunction() {
         try {
 
+            BusProvider.getInstance().post(new PrintModel("PRINT_ITEM_CANCELLED", GsonHelper.getGson().toJson(getEditingOrderList())));
             int incrementalId = 0;
             for (Orders order : getEditingOrderList()) {
                 order.setIs_sent_to_server(0);
@@ -1816,28 +1838,20 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
                                     //DIoNE
 
-                                    final Handler handler = new Handler();
-                                    handler.postDelayed(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            try {
-                                                defaults();
-                                                if (transactionsList().size() > 0) {
-//                                                    selectedTable = null;
-                                                    transactionId = String.valueOf(transactionsList().get(0).getId());
-                                                    setOrderAdapter(transactionsViewModel.orderList(transactionId));
-                                                }
-//                                                else {
-//                                                    defaults();
-//                                                }
-                                            } catch (ExecutionException e) {
-                                                e.printStackTrace();
-                                            } catch (InterruptedException e) {
-                                                e.printStackTrace();
+                                    defaults();
+                                    try {
+                                        if (transactionsList().size() > 0) {
+                                            if (!TextUtils.isEmpty(transactionsList().get(0).getRoom_number())) {
+                                                tvRoomTableNumber.setText("TABLE:" + transactionsList().get(0).getRoom_number() +"-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), transactionsList().get(0).getCheck_in_time()));
                                             }
 
+                                            transactionId = String.valueOf(transactionsList().get(0).getId());
+                                            setOrderAdapter(transactionsViewModel.orderList(transactionId));
                                         }
-                                    }, 300);
+                                    } catch (Exception e) {
+
+                                    }
+
 
 
                                 }
@@ -2151,10 +2165,12 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
         switch (requestCode) {
             case ROOM_SELECTED_RETURN:
                 if (resultCode == Activity.RESULT_OK) {
+                    Log.d("TRACING", data.getExtras().getString("type"));
                     switch (data.getExtras().getString("type")) {
                         case "table":
                             Rooms mSelectedRoom = GsonHelper.getGson().fromJson(data.getExtras().getString("selected_room"), Rooms.class);
                             selectedTable = mSelectedRoom;
+                            Log.d("TRACING", data.getExtras().getString("case"));
                             switch (data.getExtras().getString("case")) {
                                 case "transfer_table":
                                     selectedTable.setTransaction_id(transactionId);
@@ -2181,27 +2197,25 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                     break;
                                 case "load_existing_data":
                                     try {
-                                        transactionId = mSelectedRoom.getTransaction_id();
-
-                                        if (roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)) != null) {
-                                            if (!TextUtils.isEmpty(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time())) {
-                                                tvRoomTableNumber.setText("TABLE:" + roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time()));
+                                        pTransactionId = mSelectedRoom.getTransaction_id();
+                                        Log.d("TRACING", pTransactionId);
+                                        if (roomsViewModel.getRoomViaTransactionId(Integer.valueOf(pTransactionId)) != null) {
+                                            if (!TextUtils.isEmpty(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(pTransactionId)).getCheck_in_time())) {
+                                                tvRoomTableNumber.setText("TABLE:" + roomsViewModel.getRoomViaTransactionId(Integer.valueOf(pTransactionId)).getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), roomsViewModel.getRoomViaTransactionId(Integer.valueOf(pTransactionId)).getCheck_in_time()));
                                             } else {
                                                 tvRoomTableNumber.setText("TABLE:NA");
                                             }
-
                                         } else {
                                             tvRoomTableNumber.setText("TABLE:" + "NA");
                                         }
-
-                                        setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                                        setOrderAdapter(transactionsViewModel.orderList(pTransactionId));
                                     }catch (Exception e) {
 
                                     }
 
                                     break;
                                 case "new_trans_with_room":
-
+                                    pTransactionId = "";
                                     String controlNumber = "";
                                     try {
                                         if (transactionsViewModel.lastTransactionId() == null) {
@@ -2382,6 +2396,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     }
 
     private void defaults() {
+        pTransactionId = "";
         selectedTable = null;
         transactionId = "";
         tvRoomTableNumber.setText("TABLE:NA");
@@ -2451,6 +2466,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                     myTrans.setTransaction_type("TAKEOUT");
                                                     tr.add(myTrans);
                                                     transactionsViewModel.insert(tr);
+
 
 
                                                 }
@@ -3188,9 +3204,12 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
             }
         }
 
-
+        Log.d("TRACING", "ONRESUME CALLED");
         try {
             if (transactionsList().size() > 0) {
+                if (!TextUtils.isEmpty(pTransactionId)) {
+                    transactionId = pTransactionId;
+                }
                 setOrderAdapter(transactionsViewModel.orderList(transactionId));
             }
         } catch (ExecutionException e) {

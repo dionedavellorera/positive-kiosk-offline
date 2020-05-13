@@ -302,6 +302,7 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
             final Rooms rooms = roomsViewModel.getRoomViaId(room_id);
             if (isTransfer.equalsIgnoreCase("y")) {
                 if (rooms.getStatus_id() == 1) {
+                    Log.d("CHECKDATA-R", "TRANSFER");
                     Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(transactionId);
 
                     changeRoomStatus(tmpRm, 1, true);
@@ -316,15 +317,15 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
                     finish();
                 }
             } else {
+                Log.d("CHECKDATA-R", "NOT TRANSFER");
                 if (transactionId != 0) {
+                    Log.d("CHECKDATA-R", "WITH TRANS ID");
+                    Log.d("CHECKDATA-R", String.valueOf(transactionId));
                     //CHECK IF TRANSACTION IS ALREADY EXISTING ON OTHER ROOM
                     //IF NOT EXISTING ATTACH IT TO ROOM
                     //ELSE PROMT THAT IT IS ALREADY ATTACHED TO THIS ROOM
                     Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(transactionId);
-
                     if (tmpRm == null) {
-
-                        Log.d("CHECKDATA", "WITWIT");
 
                         if (rooms.getStatus_id() == 1 || rooms.getStatus_id() == 12) {
                             Log.d("CHECKDATA", "WITH TRANSACTION ATTACH TO ROOM");
@@ -354,6 +355,7 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
                         Log.d("CHECKDATA", "WITHOUT TRANSACTION ");
                         if (rooms.getRoom_name().equalsIgnoreCase(tmpRm.getRoom_name())) {
                             Log.d("CHECKDATA", "LOAD EXIST ");
+                            Log.d("CHECKDATA", "TR ID " + rooms.getTransaction_id());
                             Intent intent = new Intent();
                             intent.putExtra("type", "table");
                             intent.putExtra("case", "load_existing_data");
@@ -374,6 +376,7 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
                             } else {
                                 if (rooms.getStatus_id() == 2) {
                                     Log.d("CHECKDATA", "WITHOUT TRANSACTION BUT LOAD DATA OF SELECTED ROOM");
+                                    Log.d("CHECKDATA", "TR ID 2--" + rooms.getTransaction_id());
                                     Intent intent = new Intent();
                                     intent.putExtra("type", "table");
                                     intent.putExtra("case", "load_existing_data");

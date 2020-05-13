@@ -78,6 +78,28 @@ public class RoomsRepository {
         new RoomsRepository.updateAsyncTask(roomsDao, rooms).execute();
     }
 
+    public int updateRoomLong(Rooms rooms) throws ExecutionException, InterruptedException {
+        return new RoomsRepository.updateLongAsyncTask(roomsDao, rooms).execute().get();
+    }
+
+
+    private static class updateLongAsyncTask extends AsyncTask<Rooms, Void, Integer> {
+
+        private RoomsDao mAsyncTaskDao;
+
+        private Rooms roomsData;
+        updateLongAsyncTask(RoomsDao dao, Rooms rooms) {
+            mAsyncTaskDao = dao;
+            this.roomsData = rooms;
+        }
+
+        @Override
+        protected Integer doInBackground(final Rooms... params) {
+
+            return mAsyncTaskDao.updateLong(roomsData);
+        }
+
+    }
 
     private static class updateAsyncTask extends AsyncTask<Rooms, Void, Void> {
 

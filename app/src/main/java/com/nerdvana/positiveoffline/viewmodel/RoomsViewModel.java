@@ -61,4 +61,8 @@ public class RoomsViewModel extends AndroidViewModel {
         roomsRepository.updateRoom(rooms);
     }
 
+    public Integer updateLong(Rooms rooms) throws ExecutionException, InterruptedException {
+        return roomsRepository.updateRoomLong(rooms);
+    }
+
 }

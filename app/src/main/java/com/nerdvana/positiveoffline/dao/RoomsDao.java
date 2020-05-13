@@ -21,6 +21,9 @@ public interface RoomsDao {
     @Update()
     void update(Rooms room);
 
+    @Update()
+    Integer updateLong(Rooms room);
+
     @Query("SELECT * FROM Rooms ")
     List<RoomWithRates> roomWithRatesList();
 

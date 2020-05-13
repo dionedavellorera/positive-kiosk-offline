@@ -1065,13 +1065,14 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
 
                             transactions.setHas_special(tmp.getHas_special());
-                            transactionsViewModel.update(transactions);
-                            dismiss();
+                            int isFinished = transactionsViewModel.updateLong(transactions);
+
 
                             RoomStatus roomStatus = roomsViewModel.getRoomStatusViaId(1);
-
+                            Log.d("TRACING", "TRANS TO LOGOUT " + transactionId);
                             Rooms rooms = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
                             if (rooms != null) {
+                                Log.d("TRACING", "RROOMS IS NOT NULL");
                                 rooms.setStatus_id(roomStatus.getCore_id());
                                 rooms.setHex_color(roomStatus.getHex_color());
                                 rooms.setStatus_description(roomStatus.getRoom_status());
@@ -1081,10 +1082,22 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                 rooms.setTime_reservation_made("");
                                 rooms.setReservation_time("");
                                 rooms.setReservation_name("");
-                                roomsViewModel.update(rooms);
+                                int isRoomFinished = roomsViewModel.updateLong(rooms);
+                                if (isFinished > 0 && isRoomFinished > 0) {
+                                    completed(receiptNumber);
+                                    pay.stopLoading(pay);
+                                    dismiss();
+                                }
+                                Log.d("TRACING", "ROOMS UPDATED TO CLEAN");
+                            } else {
+                                if (isFinished > 0) {
+                                    completed(receiptNumber);
+                                    pay.stopLoading(pay);
+                                    dismiss();
+                                }
                             }
-                            completed(receiptNumber);
-                            pay.stopLoading(pay);
+
+
                         }
 
                     } else {

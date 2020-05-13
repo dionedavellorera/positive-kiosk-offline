@@ -94,6 +94,7 @@ import com.nerdvana.positiveoffline.printer.SPrinter;
 import com.nerdvana.positiveoffline.printer.SStarPort;
 import com.nerdvana.positiveoffline.printjobasync.CutOffAsync;
 import com.nerdvana.positiveoffline.printjobasync.EndOfDayAsync;
+import com.nerdvana.positiveoffline.printjobasync.PrintItemCancelledAsync;
 import com.nerdvana.positiveoffline.printjobasync.PrintReceiptAsync;
 import com.nerdvana.positiveoffline.printjobasync.ShortOverAsync;
 import com.nerdvana.positiveoffline.printjobasync.SoaAsync;
@@ -1180,6 +1181,11 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         String finalString = "";
         try {
             switch (printModel.getType()) {
+                case "PRINT_ITEM_CANCELLED":
+                    TypeToken<List<Orders>> token = new TypeToken<List<Orders>>() {};
+                    List<Orders> ordersList = GsonHelper.getGson().fromJson(printModel.getData(), token.getType());
+                    finalString = EJFileCreator.itemCancelledString(ordersList, MainActivity.this);
+                    break;
                 case "PRINT_PAYOUT":
                     Payout payoutDetails = GsonHelper.getGson().fromJson(printModel.getData(), Payout.class);
                     finalString = EJFileCreator.payoutString(payoutDetails, MainActivity.this);
@@ -1226,6 +1232,12 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     public void print(PrintModel printModel) {
 
         switch (printModel.getType()) {
+            case "PRINT_ITEM_CANCELLED":
+                saveEjFile(printModel);
+                addAsync(new PrintItemCancelledAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "print_item_cancelled");
+                break;
             case "PRINT_PAYOUT":
                 saveEjFile(printModel);
                 addAsync(new PayoutAsync(printModel, MainActivity.this,
@@ -1625,6 +1637,10 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     private void runTask(String taskName, AsyncTask asyncTask) {
 
         switch (taskName) {
+            case "print_item_cancelled":
+                PrintItemCancelledAsync printItemCancelledAsync = (PrintItemCancelledAsync) asyncTask;
+                printItemCancelledAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                break;
             case "print_payout":
                 PayoutAsync payoutAsync = (PayoutAsync) asyncTask;
                 payoutAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
@@ -1946,7 +1962,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void shiftUpdate(ShiftUpdateModel shiftUpdateModel) {
         try {
-            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 2.0.4");
+            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 2.1.0");
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {

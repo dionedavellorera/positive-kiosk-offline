@@ -85,7 +85,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString("", "", context, true);
 
-        finalString += PrinterUtils.receiptString("POSTING DATE:", cutOff.getTreg(), context, true);
+        finalString += PrinterUtils.receiptString("POSTING DATE:", cutOff.getTreg(), context, false);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
         finalString += PrinterUtils.receiptString("DESCRIPTION               VALUE", "", context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
@@ -242,7 +242,7 @@ public class EJFileCreator {
                 "POSTING DATE:",
                 endOfDay.getTreg(),
                 context,
-                true);
+                false);
         finalString += PrinterUtils.receiptString(
                 new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"),
                 endOfDay.getTreg(),
@@ -1200,6 +1200,24 @@ public class EJFileCreator {
                 context,
                 true);
         return finalString;
+    }
+
+    public static String itemCancelledString(List<Orders> ordersList, Context context) {
+
+
+        String finalString = "";
+        finalString += PrinterUtils.receiptString("", "", context, true);
+        finalString += PrinterUtils.receiptString("ITEM CANCELLED", "", context, true);
+
+        for (Orders orders : ordersList) {
+
+            finalString += PrinterUtils.receiptString(orders.getName(), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getAmount())), context, false);
+
+        }
+
+        finalString += PrinterUtils.receiptString("", "", context, true);
+        return finalString;
+
     }
 
     public static String payoutString(Payout payout, Context context) {
