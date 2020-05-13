@@ -345,6 +345,7 @@ public class RoomsActivity extends AppCompatActivity implements RoomContract {
                             intent.putExtra("case", "load_existing_data");
                             intent.putExtra("selected_room", GsonHelper.getGson().toJson(rooms));
                             setResult(RESULT_OK, intent);
+                            finish();
                             //LOAD DETAILS OF SELECTED ROOM
                         } else {
                             Log.d("CHECKDATA", "WITH TRANSACTION BUT ROOM IS IN USE");
