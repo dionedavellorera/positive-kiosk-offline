@@ -1,39 +1,46 @@
 package com.nerdvana.positiveoffline.view;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.text.InputType;
 import android.util.AttributeSet;
-import android.view.View;
-import android.widget.EditText;
 
-import androidx.appcompat.widget.AppCompatEditText;
-
-public class HidingEditText extends AppCompatEditText {
+public class HidingEditText extends androidx.appcompat.widget.AppCompatEditText {
 
 
     public HidingEditText(Context context) {
         super(context);
         hideKeyboard();
+        init();
     }
 
     public HidingEditText(Context context, AttributeSet attrs) {
         super(context, attrs);
         hideKeyboard();
+        init();
     }
 
     public HidingEditText(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         hideKeyboard();
+        init();
+    }
+
+    private void init() {
+//        this.setCustomSelectionActionModeCallback(new ActionModeCallbackInterceptor());
+        this.setLongClickable(false);
+    }
+
+    @Override
+    public boolean isSuggestionsEnabled() {
+        return false;
     }
 
     private void hideKeyboard() {
-        setTextIsSelectable(true);
+        setTextIsSelectable(false);
     }
 
 //    @Override
 //    public boolean onCheckIsTextEditor() {
 //        return false;
 //    }
-
 }
+

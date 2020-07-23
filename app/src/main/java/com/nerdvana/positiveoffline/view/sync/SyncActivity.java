@@ -493,6 +493,7 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 dataSyncViewModel.updateIsSynced(syncModelList.get(1));
                 break;
             case "payment types":
+                dataSyncViewModel.truncatePaymentTypes();
                 syncModelList.get(2).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(2));
                 break;
@@ -505,6 +506,7 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
                 dataSyncViewModel.updateIsSynced(syncModelList.get(4));
                 break;
             case "discount with settings":
+                dataSyncViewModel.truncateDiscounts();
                 syncModelList.get(5).setSynced(false);
                 dataSyncViewModel.updateIsSynced(syncModelList.get(5));
                 break;

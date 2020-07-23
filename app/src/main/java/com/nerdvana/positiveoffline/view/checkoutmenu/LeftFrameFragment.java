@@ -1,8 +1,10 @@
 package com.nerdvana.positiveoffline.view.checkoutmenu;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -36,13 +38,29 @@ import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
+import com.nerdvana.positiveoffline.IUsers;
+import com.nerdvana.positiveoffline.MainActivity;
+import com.nerdvana.positiveoffline.PosClient;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
+import com.nerdvana.positiveoffline.SocketManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.CheckoutAdapter;
+import com.nerdvana.positiveoffline.apirequests.AddOrderDiscountsOfflineRequest;
+import com.nerdvana.positiveoffline.apirequests.AddOrdersOfflineRequest;
+import com.nerdvana.positiveoffline.apirequests.AddPostedDiscountsOfflineRequest;
+import com.nerdvana.positiveoffline.apirequests.AddTransactionsOfflineRequest;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
+import com.nerdvana.positiveoffline.dao.OrderDiscountsDao;
+import com.nerdvana.positiveoffline.dao.OrdersDao;
+import com.nerdvana.positiveoffline.dao.PostedDiscountsDao;
+import com.nerdvana.positiveoffline.dao.SerialNumbersDao;
+import com.nerdvana.positiveoffline.dao.TransactionsDao;
+import com.nerdvana.positiveoffline.database.DatabaseHelper;
+import com.nerdvana.positiveoffline.database.PosDatabase;
 import com.nerdvana.positiveoffline.entities.BranchGroup;
 import com.nerdvana.positiveoffline.entities.CutOff;
+import com.nerdvana.positiveoffline.entities.OrderDiscounts;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.Payout;
@@ -56,6 +74,7 @@ import com.nerdvana.positiveoffline.entities.SerialNumbers;
 import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
+import com.nerdvana.positiveoffline.intf.AsyncSaveContract;
 import com.nerdvana.positiveoffline.intf.OrdersContract;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
@@ -93,15 +112,25 @@ import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 import com.squareup.otto.Subscribe;
 
 import org.joda.time.DateTime;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LeftFrameFragment extends Fragment implements OrdersContract, View.OnClickListener {
 
+    private ProgressDialog progressDialog;
+//    private AsyncSaveContract asyncSaveContract;
     private List<ProductAlacart> mAlacartList = new ArrayList<>();
-    private int mQty = 1;
+    private double mQty = 1;
     private List<BranchGroup> mBranchGroupList = new ArrayList<>();
 
     private boolean isDarkMode = false;
@@ -135,6 +164,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     //endregion
 
     private final int RESUME_TRANS_RETURN = 100;
+    private final int RESUME_TRANS_RETURN_2 = 103;
     private final int ROOM_SELECTED_RETURN = 101;
 
     private Products selectedProduct;
@@ -179,11 +209,15 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_left_frame, container, false);
         BusProvider.getInstance().register(this);
+
         initViews(view);
         return view;
     }
 
     private void initViews(View view) {
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setTitle("Saving data to server");
+        progressDialog.setCancelable(false);
         btnRemoveForDelivery = view.findViewById(R.id.btnRemoveForDelivery);
         btnRemoveForDelivery.setOnClickListener(this);
         btnRemoveRoomTable = view.findViewById(R.id.btnRemoveRoomTable);
@@ -211,6 +245,16 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
         discountLabel = view.findViewById(R.id.discountLabel);
         subTotalLabel = view.findViewById(R.id.subTotalLabel);
         totalLabel = view.findViewById(R.id.totalLabel);
+
+//        asyncSaveContract = new AsyncSaveContract() {
+//            @Override
+//            public void saved() {
+//                defaults();
+//                if (progressDialog != null) {
+//                    if (progressDialog.isShowing()) progressDialog.dismiss();
+//                }
+//            }
+//        };
 
     }
 
@@ -267,94 +311,66 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     }
 
     private void initTransactionsViewModelListener() {
-        transactionsViewModel.transactionLiveData().observe(this, new Observer<List<Transactions>>() {
-            @Override
-            public void onChanged(List<Transactions> transactions) {
-                Log.d("TRACING", "HAS TRIGGERED CHANGE TRANS");
 
-                if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
-                    lin00.setVisibility(View.GONE);
-                } else {
-                    if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+        if (SharedPreferenceManager
+                .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                .equalsIgnoreCase("to")) {
+            Log.d("TRACING", "TEL OPER");
+            transactionsViewModel.transactionLiveDataTo().observe(this, new Observer<List<Transactions>>() {
+                @Override
+                public void onChanged(List<Transactions> transactions) {
+                    Log.d("TRACING", "HAS TRIGGERED CHANGE TRANS FOR TO");
+                    Log.d("TRACING", "TRANSID---==" + transactionId);
+
+                    if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
                         lin00.setVisibility(View.GONE);
-                    } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
-                        lin00.setVisibility(View.VISIBLE);
-                    } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
-                        lin00.setVisibility(View.VISIBLE);
-                    }
-                }
-
-
-
-                try {
-                    if (!TextUtils.isEmpty(transactionId)) {
-                        if (selectedTable != null) {
-                            if (transactions.size() > 0) {
-                                Log.d("TRACING ", "TR BEFORE SET > " + transactionId);
-                                Log.d("TRACING ", "P TRANS ID " + pTransactionId);
-                                if (!TextUtils.isEmpty(pTransactionId)) {
-                                    transactionId = pTransactionId;
-//                                    pTransactionId = "";
-                                } else {
-                                    transactionId = String.valueOf(transactions.get(transactions.size() - 1).getId());
-                                }
-
-                                Log.d("TRACING ", "TR TO SET > " + transactionId);
-                                if (TextUtils.isEmpty(selectedTable.getTransaction_id())) {
-                                    selectedTable.setTransaction_id(transactionId);
-                                }
-
-
-
-                                if (selectedTable.getCheck_in_time().isEmpty()) {
-                                    selectedTable.setCheck_in_time(Utils.getDateTimeToday());
-                                }
-
-                                roomsViewModel.update(selectedTable);
-                            }
-
-                            if (!TextUtils.isEmpty(selectedTable.getCheck_in_time())) {
-                                tvRoomTableNumber.setText("TABLE:" + selectedTable.getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), selectedTable.getCheck_in_time()));
-                            } else {
-                                tvRoomTableNumber.setText("TABLE:NA");
-                            }
-
-                        } else {
-                            if (roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)) != null) {
-                                if (!TextUtils.isEmpty(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time())) {
-                                    tvRoomTableNumber.setText("TABLE:" + roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time()));
-                                } else {
-                                    tvRoomTableNumber.setText("TABLE:" + "NA");
-                                }
-
-                            } else {
-                                tvRoomTableNumber.setText("TABLE:" + "NA");
-                            }
-
-                        }
-                        setOrderAdapter(transactionsViewModel.orderList(transactionId));
                     } else {
-
-                        if (transactions.size() > 0) {
-                        
-                            transactionId = String.valueOf(transactions.get(0).getId());
-
-                            if (!TextUtils.isEmpty(transactions.get(0).getCheck_in_time())) {
-                                tvRoomTableNumber.setText("TABLE:" + transactions.get(0).getRoom_number() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), transactions.get(0).getCheck_in_time()));
-                            } else {
-                                tvRoomTableNumber.setText("TABLE:NA");
-                            }
+                        if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+                            lin00.setVisibility(View.GONE);
+                        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                            lin00.setVisibility(View.VISIBLE);
+                        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+                            lin00.setVisibility(View.VISIBLE);
+                        }
+                    }
 
 
+
+                    try {
+                        if (!TextUtils.isEmpty(transactionId)) {
                             if (selectedTable != null) {
-                                selectedTable.setTransaction_id(transactionId);
-                                if (selectedTable.getCheck_in_time().isEmpty()) {
-                                    selectedTable.setCheck_in_time(Utils.getDateTimeToday());
+                                if (transactions.size() > 0) {
+                                    Log.d("TRACING ", "TR BEFORE SET > " + transactionId);
+                                    Log.d("TRACING ", "P TRANS ID " + pTransactionId);
+                                    if (!TextUtils.isEmpty(pTransactionId)) {
+                                        transactionId = pTransactionId;
+//                                    pTransactionId = "";
+                                    } else {
+                                        transactionId = String.valueOf(transactions.get(transactions.size() - 1).getId());
+                                    }
+
+                                    Log.d("TRACING ", "TR TO SET > " + transactionId);
+                                    if (TextUtils.isEmpty(selectedTable.getTransaction_id())) {
+                                        selectedTable.setTransaction_id(transactionId);
+                                    }
+
+
+
+                                    if (selectedTable.getCheck_in_time().isEmpty()) {
+                                        selectedTable.setCheck_in_time(Utils.getDateTimeToday());
+                                    }
+
+                                    roomsViewModel.update(selectedTable);
                                 }
-                                roomsViewModel.update(selectedTable);
+
+                                if (!TextUtils.isEmpty(selectedTable.getCheck_in_time())) {
+                                    tvRoomTableNumber.setText("TABLE:" + selectedTable.getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), selectedTable.getCheck_in_time()));
+                                } else {
+                                    tvRoomTableNumber.setText("TABLE:NA");
+                                }
+
                             } else {
                                 if (roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)) != null) {
-
                                     if (!TextUtils.isEmpty(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time())) {
                                         tvRoomTableNumber.setText("TABLE:" + roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time()));
                                     } else {
@@ -364,69 +380,268 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                 } else {
                                     tvRoomTableNumber.setText("TABLE:" + "NA");
                                 }
-                            }
-
-                            if (selectedProduct != null) {
-                                insertSelectedOrder();
-                                selectedProduct = null;
-                            }
-
-                            if (selectedRoomRate != null) {
-
-                                Rooms rooms = roomsViewModel.getRoomViaId(selectedRoomRate.getRoom_id());
-                                rooms.setTransaction_id(transactionId);
-                                roomsViewModel.update(rooms);
-
-
-                                Transactions tmpTr = transactionsViewModel.loadedTransactionList(String.valueOf(transactionId)).get(0);
-                                tmpTr.setId(Integer.valueOf(transactionId));
-                                tmpTr.setRoom_id(rooms.getRoom_id());
-                                tmpTr.setRoom_number(rooms.getRoom_name());
-                                tmpTr.setIs_sent_to_server(0);
-
-                                tmpTr.setCheck_in_time(Utils.getDateTimeToday());
-
-                                transactionsViewModel.update(tmpTr);
-
-                                insertSelectedRoomRate();
 
                             }
                             setOrderAdapter(transactionsViewModel.orderList(transactionId));
                         } else {
-                            defaults();
-                        }
-                    }
+
+                            if (transactions.size() > 0) {
+
+                                transactionId = String.valueOf(transactions.get(0).getId());
+
+                                if (!TextUtils.isEmpty(transactions.get(0).getCheck_in_time())) {
+                                    tvRoomTableNumber.setText("TABLE:" + transactions.get(0).getRoom_number() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), transactions.get(0).getCheck_in_time()));
+                                } else {
+                                    tvRoomTableNumber.setText("TABLE:NA");
+                                }
 
 
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                                if (selectedTable != null) {
+                                    selectedTable.setTransaction_id(transactionId);
+                                    if (selectedTable.getCheck_in_time().isEmpty()) {
+                                        selectedTable.setCheck_in_time(Utils.getDateTimeToday());
+                                    }
+                                    roomsViewModel.update(selectedTable);
+                                } else {
+                                    if (roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)) != null) {
 
-                if (!TextUtils.isEmpty(transactionId)) {
-                    try {
-                        if (loadedTransactionsList(transactionId).size() > 0) {
-                            Transactions tr = loadedTransactionsList(transactionId).get(0);
-                            if (tr.getTransaction_type().equalsIgnoreCase("DELIVERY")) {
-                                lin11.setVisibility(View.VISIBLE);
-                                tvRoomTableNumber.setVisibility(View.GONE);
-                                btnRemoveRoomTable.setVisibility(View.GONE);
+                                        if (!TextUtils.isEmpty(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time())) {
+                                            tvRoomTableNumber.setText("TABLE:" + roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time()));
+                                        } else {
+                                            tvRoomTableNumber.setText("TABLE:" + "NA");
+                                        }
+
+                                    } else {
+                                        tvRoomTableNumber.setText("TABLE:" + "NA");
+                                    }
+                                }
+
+                                if (selectedProduct != null) {
+                                    insertSelectedOrder();
+                                    selectedProduct = null;
+                                }
+
+                                if (selectedRoomRate != null) {
+
+                                    Rooms rooms = roomsViewModel.getRoomViaId(selectedRoomRate.getRoom_id());
+                                    rooms.setTransaction_id(transactionId);
+                                    roomsViewModel.update(rooms);
+
+
+                                    Transactions tmpTr = transactionsViewModel.loadedTransactionList(String.valueOf(transactionId)).get(0);
+                                    tmpTr.setId(Integer.valueOf(transactionId));
+                                    tmpTr.setRoom_id(rooms.getRoom_id());
+                                    tmpTr.setRoom_number(rooms.getRoom_name());
+                                    tmpTr.setIs_sent_to_server(0);
+
+                                    tmpTr.setCheck_in_time(Utils.getDateTimeToday());
+
+                                    transactionsViewModel.update(tmpTr);
+
+                                    insertSelectedRoomRate();
+
+                                }
+                                setOrderAdapter(transactionsViewModel.orderList(transactionId));
                             } else {
-                                lin11.setVisibility(View.GONE);
-                                tvRoomTableNumber.setVisibility(View.VISIBLE);
-                                btnRemoveRoomTable.setVisibility(View.VISIBLE);
+                                defaults();
                             }
                         }
-                    } catch (Exception e) {
+
+
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (!TextUtils.isEmpty(transactionId)) {
+                        try {
+                            if (loadedTransactionsList(transactionId).size() > 0) {
+                                Transactions tr = loadedTransactionsList(transactionId).get(0);
+                                if (tr.getTransaction_type().equalsIgnoreCase("DELIVERY")) {
+                                    lin11.setVisibility(View.VISIBLE);
+                                    tvRoomTableNumber.setVisibility(View.GONE);
+                                    btnRemoveRoomTable.setVisibility(View.GONE);
+                                } else {
+                                    lin11.setVisibility(View.GONE);
+                                    tvRoomTableNumber.setVisibility(View.VISIBLE);
+                                    btnRemoveRoomTable.setVisibility(View.VISIBLE);
+                                }
+                            }
+                        } catch (Exception e) {
+
+                        }
 
                     }
 
+
                 }
+            });
+        } else {
+            Log.d("TRACING", "CASHIER");
+            transactionsViewModel.transactionLiveData().observe(this, new Observer<List<Transactions>>() {
+                @Override
+                public void onChanged(List<Transactions> transactions) {
+                    Log.d("TRACING", "HAS TRIGGERED CHANGE TRANS");
+
+                    if (TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE))) {
+                        lin00.setVisibility(View.GONE);
+                    } else {
+                        if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("QS")) {
+                            lin00.setVisibility(View.GONE);
+                        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel")) {
+                            lin00.setVisibility(View.VISIBLE);
+                        } else if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+                            lin00.setVisibility(View.VISIBLE);
+                        }
+                    }
 
 
-            }
-        });
+
+                    try {
+                        if (!TextUtils.isEmpty(transactionId)) {
+                            if (selectedTable != null) {
+                                if (transactions.size() > 0) {
+                                    Log.d("TRACING ", "TR BEFORE SET > " + transactionId);
+                                    Log.d("TRACING ", "P TRANS ID " + pTransactionId);
+                                    if (!TextUtils.isEmpty(pTransactionId)) {
+                                        transactionId = pTransactionId;
+//                                    pTransactionId = "";
+                                    } else {
+                                        transactionId = String.valueOf(transactions.get(transactions.size() - 1).getId());
+                                    }
+
+                                    Log.d("TRACING ", "TR TO SET > " + transactionId);
+                                    if (TextUtils.isEmpty(selectedTable.getTransaction_id())) {
+                                        selectedTable.setTransaction_id(transactionId);
+                                    }
+
+
+
+                                    if (selectedTable.getCheck_in_time().isEmpty()) {
+                                        selectedTable.setCheck_in_time(Utils.getDateTimeToday());
+                                    }
+
+                                    roomsViewModel.update(selectedTable);
+                                }
+
+                                if (!TextUtils.isEmpty(selectedTable.getCheck_in_time())) {
+                                    tvRoomTableNumber.setText("TABLE:" + selectedTable.getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), selectedTable.getCheck_in_time()));
+                                } else {
+                                    tvRoomTableNumber.setText("TABLE:NA");
+                                }
+
+                            } else {
+                                if (roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)) != null) {
+                                    if (!TextUtils.isEmpty(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time())) {
+                                        tvRoomTableNumber.setText("TABLE:" + roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time()));
+                                    } else {
+                                        tvRoomTableNumber.setText("TABLE:" + "NA");
+                                    }
+
+                                } else {
+                                    tvRoomTableNumber.setText("TABLE:" + "NA");
+                                }
+
+                            }
+                            setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                        } else {
+
+                            if (transactions.size() > 0) {
+
+                                transactionId = String.valueOf(transactions.get(0).getId());
+
+                                if (!TextUtils.isEmpty(transactions.get(0).getCheck_in_time())) {
+                                    tvRoomTableNumber.setText("TABLE:" + transactions.get(0).getRoom_number() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), transactions.get(0).getCheck_in_time()));
+                                } else {
+                                    tvRoomTableNumber.setText("TABLE:NA");
+                                }
+
+
+                                if (selectedTable != null) {
+                                    selectedTable.setTransaction_id(transactionId);
+                                    if (selectedTable.getCheck_in_time().isEmpty()) {
+                                        selectedTable.setCheck_in_time(Utils.getDateTimeToday());
+                                    }
+                                    roomsViewModel.update(selectedTable);
+                                } else {
+                                    if (roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)) != null) {
+
+                                        if (!TextUtils.isEmpty(roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time())) {
+                                            tvRoomTableNumber.setText("TABLE:" + roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getRoom_name() + "-" + Helper.durationOfStay(new DateTime().toString("yyyy-MM-dd HH:mm:ss"), roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId)).getCheck_in_time()));
+                                        } else {
+                                            tvRoomTableNumber.setText("TABLE:" + "NA");
+                                        }
+
+                                    } else {
+                                        tvRoomTableNumber.setText("TABLE:" + "NA");
+                                    }
+                                }
+
+                                if (selectedProduct != null) {
+                                    insertSelectedOrder();
+                                    selectedProduct = null;
+                                }
+
+                                if (selectedRoomRate != null) {
+
+                                    Rooms rooms = roomsViewModel.getRoomViaId(selectedRoomRate.getRoom_id());
+                                    rooms.setTransaction_id(transactionId);
+                                    roomsViewModel.update(rooms);
+
+
+                                    Transactions tmpTr = transactionsViewModel.loadedTransactionList(String.valueOf(transactionId)).get(0);
+                                    tmpTr.setId(Integer.valueOf(transactionId));
+                                    tmpTr.setRoom_id(rooms.getRoom_id());
+                                    tmpTr.setRoom_number(rooms.getRoom_name());
+                                    tmpTr.setIs_sent_to_server(0);
+
+                                    tmpTr.setCheck_in_time(Utils.getDateTimeToday());
+
+                                    transactionsViewModel.update(tmpTr);
+
+                                    insertSelectedRoomRate();
+
+                                }
+                                setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                            } else {
+                                defaults();
+                            }
+                        }
+
+
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (!TextUtils.isEmpty(transactionId)) {
+                        try {
+                            if (loadedTransactionsList(transactionId).size() > 0) {
+                                Transactions tr = loadedTransactionsList(transactionId).get(0);
+                                if (tr.getTransaction_type().equalsIgnoreCase("DELIVERY")) {
+                                    lin11.setVisibility(View.VISIBLE);
+                                    tvRoomTableNumber.setVisibility(View.GONE);
+                                    btnRemoveRoomTable.setVisibility(View.GONE);
+                                } else {
+                                    lin11.setVisibility(View.GONE);
+                                    tvRoomTableNumber.setVisibility(View.VISIBLE);
+                                    btnRemoveRoomTable.setVisibility(View.VISIBLE);
+                                }
+                            }
+                        } catch (Exception e) {
+
+                        }
+
+                    }
+
+
+                }
+            });
+        }
+
+
     }
 
 
@@ -435,7 +650,15 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     }
 
     private List<Transactions> transactionsList() throws ExecutionException, InterruptedException {
-        return transactionsViewModel.transactionList();
+        List<Transactions> tmpList = new ArrayList<>();
+        if (SharedPreferenceManager
+                .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                .equalsIgnoreCase("to")) {
+            tmpList = transactionsViewModel.transactionListFromTo();
+        } else {
+            tmpList = transactionsViewModel.transactionList();
+        }
+        return tmpList;
     }
 
     private List<Transactions> loadedTransactionsList(String transactionId) throws ExecutionException, InterruptedException {
@@ -539,7 +762,11 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                     transactions.getIs_backed_out_by(),
                     transactions.getIs_backed_out_at(),
                     transactions.getDelivery_to(),
-                    transactions.getDelivery_address()
+                    transactions.getDelivery_address(),
+                    transactions.getTo_id(),
+                    transactions.getIs_temp(),
+                    transactions.getTo_control_number(),
+                    transactions.getShift_number()
             );
             tr.setRoom_id(transactions.getRoom_id());
             tr.setRoom_number(transactions.getRoom_number());
@@ -584,6 +811,44 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     @Subscribe
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
         switch (buttonsModel.getId()) {
+            case 176://LOAD ORDERS FROM TO NEED CONNECTION
+                if (!TextUtils.isEmpty(SharedPreferenceManager.getString(getContext(), AppConstants.HAS_CONNECTION_TO_SERVER))) {
+                    Intent ordersIntent = new Intent(getContext(), OrdersActivity.class);
+                    startActivityForResult(ordersIntent, RESUME_TRANS_RETURN_2);
+//                    startActivity(ordersIntent);
+                } else {
+                    Helper.showDialogMessage(getActivity(), "No connection to server yet", "Info");
+                }
+                break;
+            case 175://SAVE ORDER TO SEND TO CASHIER
+                if (!TextUtils.isEmpty(SharedPreferenceManager.getString(getContext(), AppConstants.HAS_CONNECTION_TO_SERVER))) {
+                    if (!TextUtils.isEmpty(transactionId)) {
+                        if (transactionsViewModel.orderList(transactionId).size() > 0) {
+                            sendToDataToServer();
+
+                            List<Transactions> tr = transactionsViewModel.loadedTransactionList(transactionId);
+                            if (tr.size() > 0) {
+                                BusProvider.getInstance().post(new PrintModel("PRINT_FOS", GsonHelper.getGson().toJson(transactionsViewModel.orderList(transactionId)), tr.get(0).getControl_number()));
+                            }
+
+
+                            if (progressDialog != null) {
+                                if (progressDialog.isShowing()) progressDialog.dismiss();
+                            }
+
+                            defaults();
+
+
+                        } else {
+                            Helper.showDialogMessage(getActivity(), "No items ordered", "Info");
+                        }
+                    } else {
+                        Helper.showDialogMessage(getActivity(), "No items ordered", "Info");
+                    }
+                } else {
+                    Helper.showDialogMessage(getActivity(), "No connection to server yet", "Info");
+                }
+                break;
             case 172:
                 if (arRedeemingDialog == null) {
                     arRedeemingDialog = new ArRedeemingDialog(getActivity(), transactionsViewModel, userViewModel);
@@ -684,7 +949,18 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                             Utils.getDateTimeToday(),
                                                             0,
                                                             Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                                                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                                                            SharedPreferenceManager
+                                                                    .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                                                    .equalsIgnoreCase("to")
+                                                                    ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                                                    : 0,
+                                                            SharedPreferenceManager
+                                                                    .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                                                    .equalsIgnoreCase("to")
+                                                                    ? 1
+                                                                    : 0,
+                                                            String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
                                                     );
                                                     tr.setIs_shared(0);
                                                     tr.setIs_completed(true);
@@ -886,7 +1162,45 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                             mTmpTr.setIs_backed_out(true);
                             mTmpTr.setIs_backed_out_by(userViewModel.searchLoggedInUser().get(0).getUsername());
                             mTmpTr.setIs_backed_out_at(Utils.getDateTimeToday());
-                            transactionsViewModel.update(mTmpTr);
+                            if (transactionsViewModel.updateLong(mTmpTr) != 0) {
+                                final TransactionCompleteDetails tr = transactionsViewModel.getTransactionViaTransactionId(transactionId);
+                                BusProvider.getInstance().post(new PrintModel("BACKOUT", GsonHelper.getGson().toJson(tr)));
+                            }
+                            Log.d("TRACING", "HERE ONL");
+
+                            if (mTmpTr.getTo_transaction_id() > 0) {
+                                Log.d("TRACING", "HERE");
+//                                transactions.getTo_transaction_id()
+//                                transactions.getMachine_id()
+                                List<Transactions> tmpSend = new ArrayList<>();
+                                Transactions tmpTr = transactionsViewModel.existingToTransaction(String.valueOf(mTmpTr.getTo_transaction_id()), String.valueOf(mTmpTr.getMachine_id()));
+                                tmpTr.setId(mTmpTr.getTo_transaction_id());
+                                tmpTr.setIs_completed(true);
+                                tmpTr.setIs_completed_by(getUser().getUsername());
+                                tmpTr.setCompleted_at(Utils.getDateTimeToday());
+                                tmpSend.add(tmpTr);
+                                Map<String, String> transactionMap = new HashMap<>();
+                                transactionMap.put("transactions", GsonHelper.getGson().toJson(tmpSend));
+
+                                Map<String, Object> wholeData = new HashMap<>();
+                                wholeData.put("data", GsonHelper.getGson().toJson(transactionMap));
+                                AddTransactionsOfflineRequest req = new AddTransactionsOfflineRequest(wholeData);
+                                IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+                                Call<ResponseBody> call = iUsers.addTransactionsOffline(req.getMapValue());
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        String message = "";
+
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                            }
+
                         }
 
                         Rooms tmpRm = roomsViewModel.getRoomViaTransactionId(Integer.valueOf(transactionId));
@@ -897,16 +1211,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
                         changeRoomStatus(tmpRm, 1, true);
 
-                        final TransactionCompleteDetails tr = transactionsViewModel.getTransactionViaTransactionId(transactionId);
 
-                        final Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                BusProvider.getInstance().post(new PrintModel("BACKOUT", GsonHelper.getGson().toJson(tr)));
 
-                            }
-                        }, 300);
 
                     } catch (ExecutionException e) {
                         e.printStackTrace();
@@ -1059,7 +1365,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                         0,
                                         Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
                                         Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
-                                        0.00
+                                        0.00,
+                                        0.00,
+                                        String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
                                 );
                                 cutOff.setId(996699);
                                         /*
@@ -1106,6 +1414,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                 String begOrNo = "";
                                 String endOrNo = "";
 
+                                Double discountAmount = 0.00;
+
 
                                 if (transactionsList.size() > 0) {
                                     begOrNo = transactionsList.get(0).getReceipt_number();
@@ -1121,6 +1431,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                             vat_exempt_sales += tr.getVat_exempt_sales();
                                             vat_amount += tr.getVat_amount();
                                             total_change += tr.getChange();
+                                            discountAmount += tr.getDiscount_amount();
                                         }
                                         number_of_transaction += 1;
 
@@ -1189,6 +1500,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
                                 cutOff.setBegOrNo(begOrNo);
                                 cutOff.setEndOrNo(endOrNo);
+
+                                cutOff.setDiscount_amount(discountAmount);
 
                                 BusProvider.getInstance().post(new PrintModel("PRINT_SPOT_AUDIT", GsonHelper.getGson().toJson(cutOff)));
 
@@ -1353,6 +1666,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                 passwordDialog = null;
                             }
                         });
+
+                        passwordDialog.show();
                     }
                 } else {
                     Intent intent = new Intent(getContext(), SettingsActivity.class);
@@ -1515,7 +1830,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                     if (changeQtyDialog == null) {
                         changeQtyDialog = new ChangeQtyDialog(getActivity(), getEditingOrderList().get(0).getQty()) {
                             @Override
-                            public void success(int newQty) {
+                            public void success(double newQty) {
                                 try {
                                     for (Orders order : getEditingOrderList()) {
 
@@ -1538,10 +1853,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                 } else {
                                                     Toast.makeText(getContext(), "Cannot subtract quantity from a fixed asset as it has serial number, void the item instead", Toast.LENGTH_LONG).show();
                                                 }
-
                                             }
-
-
                                         }
                                         order.setIs_editing(false);
                                         transactionsViewModel.updateOrder(order);
@@ -1644,6 +1956,103 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
         }
     }
 
+    private void sendToDataToServer() {
+        //new logic to update data from local to completed
+        //update data of transactions per table via transaction id
+        if (progressDialog != null) {
+            if (!progressDialog.isShowing()) progressDialog.show();
+        }
+
+        final PosDatabase posDatabase = DatabaseHelper.getDatabase(getContext());
+        new AsyncTask<Void,Void,Void>() {
+            List<Transactions> unsyncedTransactions = new ArrayList<>();
+            List<PostedDiscounts> unsyncedPostedDiscounts = new ArrayList<>();
+            List<Orders> unsyncedOrders = new ArrayList<>();
+            List<OrderDiscounts> unsyncedOrderDiscounts = new ArrayList<>();
+            List<SerialNumbers> unsyncedSerialNumbers = new ArrayList<>();
+
+            TransactionsDao transactionsDao;
+            PostedDiscountsDao postedDiscountsDao;
+            OrdersDao ordersDao;
+            OrderDiscountsDao orderDiscountsDao;
+            SerialNumbersDao serialNumbersDao;
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                transactionsDao = posDatabase.transactionsDao();
+                postedDiscountsDao = posDatabase.postedDiscountsDao();
+                ordersDao = posDatabase.ordersDao();
+                orderDiscountsDao = posDatabase.orderDiscountsDao();
+                serialNumbersDao = posDatabase.serialNumbersDao();
+
+                unsyncedTransactions = transactionsDao.loadedTransactionList(transactionId);
+                unsyncedPostedDiscounts = postedDiscountsDao.getLastPostedDiscount(Integer.valueOf(transactionId));
+                unsyncedOrders = ordersDao.orderList(transactionId);
+                unsyncedOrderDiscounts = orderDiscountsDao.odiscountTransId(Integer.valueOf(transactionId));
+                unsyncedSerialNumbers = serialNumbersDao.serialNumbersList(transactionId);
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+
+
+                Map<String, String> dataMap = new HashMap<>();
+
+                dataMap.put("posted_discounts", GsonHelper.getGson().toJson(unsyncedPostedDiscounts));
+                dataMap.put("orders", GsonHelper.getGson().toJson(unsyncedOrders));
+                dataMap.put("transactions", GsonHelper.getGson().toJson(unsyncedTransactions));
+                dataMap.put("order_discounts", GsonHelper.getGson().toJson(unsyncedOrderDiscounts));
+                dataMap.put("serial_numbers", GsonHelper.getGson().toJson(unsyncedSerialNumbers));
+
+                Map<String, Object> wholeData = new HashMap<>();
+                wholeData.put("data", GsonHelper.getGson().toJson(dataMap));
+                AddPostedDiscountsOfflineRequest req = new AddPostedDiscountsOfflineRequest(wholeData);
+
+                IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+
+                Call<ResponseBody> call = iUsers.addPOSTOTransactionsOffline(req.getMapValue());
+                call.enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+
+                        if (SocketManager.getInstance() != null) {
+                            try {
+                                SocketManager.emitToServer(getContext());
+                            } catch (Exception e) {
+
+                            }
+
+                        }
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                    }
+                });
+
+
+            };
+        }.execute();
+
+
+
+
+
+        try {
+            transactionsViewModel.updateTransactionDataToSent(transactionId);
+            transactionsViewModel.updateOrdersDataToSent(transactionId);
+            transactionsViewModel.updateOrderDiscountsDataToSent(transactionId);
+            transactionsViewModel.updatePostedDataToSent(transactionId);
+            transactionsViewModel.updateSerialNumbersToSent(transactionId);
+        } catch (Exception e) {
+            Log.d("ERRORSAVEORDER", e.getMessage());
+        }
+    }
+
     private String generatedReceiptNumber() throws ExecutionException, InterruptedException {
         String receiptNumber = "";
         if (transactionsViewModel.lastOrNumber() == null) {
@@ -1686,8 +2095,12 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
     private void diDiscountExempt(List<Orders> ordersList, boolean willDiscountExempt) {
         for (Orders orders : ordersList) {
-            if (willDiscountExempt) {
-                orders.setIs_discount_exempt(1);
+            if (orders.getIs_discount_exempt() == 0) {
+                if (orders.getDiscountAmount() <= 0) {
+                    orders.setIs_discount_exempt(1);
+                } else {
+                    Toast.makeText(getContext(), orders.getName() + " IS ALREADY DISCOUNTED", Toast.LENGTH_LONG).show();
+                }
             } else {
                 orders.setIs_discount_exempt(0);
             }
@@ -1706,43 +2119,56 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     private void doSaveTransactionFunction() {
         try {
             if (transactionsList().size() > 0) {
-                if (inputDialog == null) {
-                    inputDialog = new InputDialog(getActivity(), "Enter name of guest" , "") {
-                        @Override
-                        public void confirm(String str) {
+                try {
+                    if (transactionsList().get(0).getTo_transaction_id() > 0) {
+                        Helper.showDialogMessage(getActivity(), "Cannot pause transaction from TO", "Info");
+                    } else {
+                        if (inputDialog == null) {
+                            inputDialog = new InputDialog(getActivity(), "Enter name of guest" , "") {
+                                @Override
+                                public void confirm(String str) {
 
-                            try {
-                                saveTransaction(transactionsList().get(0), str);
-                            } catch (ExecutionException e) {
-                                e.printStackTrace();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    };
-                    inputDialog.show();
+                                    try {
+                                        saveTransaction(transactionsList().get(0), str);
+                                    } catch (ExecutionException e) {
+                                        e.printStackTrace();
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            };
+                            inputDialog.show();
 
-                    inputDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialogInterface) {
-                            inputDialog = null;
-                        }
-                    });
+                            inputDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialogInterface) {
+                                    inputDialog = null;
+                                }
+                            });
 
-                    inputDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialogInterface) {
-                            inputDialog = null;
+                            inputDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+                                    inputDialog = null;
+                                }
+                            });
                         }
-                    });
+                    }
+                } catch (Exception e) {
+
                 }
+
+
 
 
             } else {
                 if (loadedTransactionsList(transactionId).size() > 0) {
 
-                    saveTransaction(loadedTransactionsList(transactionId).get(0), "");
-
+                    if (loadedTransactionsList(transactionId).get(0).getTo_transaction_id() > 0) {
+                        Helper.showDialogMessage(getActivity(), "Cannot pause transaction from TO", "Info");
+                    } else {
+                        saveTransaction(loadedTransactionsList(transactionId).get(0), "");
+                    }
                 }
             }
         } catch (ExecutionException e) {
@@ -1992,7 +2418,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                     getContext().getString(R.string.title_completed_transactions),
                     transactionsViewModel,
                     userViewModel,
-                    true);
+                    true,
+                    discountViewModel);
             transactionDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                 @Override
                 public void onCancel(DialogInterface dialogInterface) {
@@ -2082,7 +2509,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                     getContext().getString(R.string.title_reprint_transactions),
                     transactionsViewModel,
                     userViewModel,
-                    false);
+                    false,
+                    discountViewModel);
             transactionDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                 @Override
                 public void onCancel(DialogInterface dialogInterface) {
@@ -2163,6 +2591,39 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
+            case RESUME_TRANS_RETURN_2: //LOAD ORDER FROM TO TRANSACTION ID DB
+                if (resultCode == Activity.RESULT_OK) {
+
+                    try {
+                        Transactions tmp = transactionsViewModel.getTransactionViaToTransactionId(data.getExtras().getString(AppConstants.TRANS_ID));
+
+                        if (tmp != null) {
+                            Log.d("PQPQPQ", String.valueOf(data.getExtras().getString(AppConstants.TRANS_ID)));
+                            Log.d("PQPQPQ", String.valueOf(tmp.getTo_transaction_id()));
+                            transactionId = String.valueOf(tmp.getId());
+                            setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                        }
+
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    try {
+                        if (transactionsList().size() > 0) {
+                            transactionId = String.valueOf(transactionsList().get(0).getId());
+                            setOrderAdapter(transactionsViewModel.orderList(transactionId));
+                        } else {
+                            defaults();
+                        }
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                break;
             case ROOM_SELECTED_RETURN:
                 if (resultCode == Activity.RESULT_OK) {
                     Log.d("TRACING", data.getExtras().getString("type"));
@@ -2244,7 +2705,18 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                 Utils.getDateTimeToday(),
                                                 0,
                                                 Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                                                SharedPreferenceManager
+                                                        .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                                        .equalsIgnoreCase("to")
+                                                        ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                                        : 0,
+                                                SharedPreferenceManager
+                                                        .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                                        .equalsIgnoreCase("to")
+                                                        ? 1
+                                                        : 0,
+                                                String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
                                         );
                                         trs.setTransaction_type("DINEIN");
                                         trs.setRoom_number(selectedTable.getRoom_name());
@@ -2344,7 +2816,18 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                 Utils.getDateTimeToday(),
                                                 0,
                                                 Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                                                SharedPreferenceManager
+                                                        .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                                        .equalsIgnoreCase("to")
+                                                        ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                                        : 0,
+                                                SharedPreferenceManager
+                                                        .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                                        .equalsIgnoreCase("to")
+                                                        ? 1
+                                                        : 0,
+                                                String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
                                         ));
 
                                         transactionsViewModel.insert(tr);
@@ -2415,7 +2898,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
                 ChangeQtyDialog changeQtyDialog = new ChangeQtyDialog(getActivity(), 1) {
                     @Override
-                    public void success(final int newQty) {
+                    public void success(final double newQty) {
                         BundleCompositionDialog bundleCompositionDialog =
                                 new BundleCompositionDialog(getActivity(), alacartList,
                                         branchGroupList, transactionsViewModel,
@@ -2461,7 +2944,18 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                             Utils.getDateTimeToday(),
                                                             0,
                                                             Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                                                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                                            Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                                                            SharedPreferenceManager
+                                                                    .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                                                    .equalsIgnoreCase("to")
+                                                                    ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                                                    : 0,
+                                                            SharedPreferenceManager
+                                                                    .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                                                    .equalsIgnoreCase("to")
+                                                                    ? 1
+                                                                    : 0,
+                                                            String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
                                                     );
                                                     myTrans.setTransaction_type("TAKEOUT");
                                                     tr.add(myTrans);
@@ -2489,7 +2983,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                 //show dialog for alacart confirmation
                 ChangeQtyDialog changeQtyDialog = new ChangeQtyDialog(getContext(), 1) {
                     @Override
-                    public void success(int newQty) {
+                    public void success(double newQty) {
                         mAlacartList = alacartList;
                         mQty = newQty;
                         AlacartCompositionDialog alacartCompositionDialog = new AlacartCompositionDialog(getActivity(), alacartList) {
@@ -2528,7 +3022,18 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                     Utils.getDateTimeToday(),
                                                     0,
                                                     Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                                                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                                    Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                                                    SharedPreferenceManager
+                                                            .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                                            .equalsIgnoreCase("to")
+                                                            ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                                            : 0,
+                                                    SharedPreferenceManager
+                                                            .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                                            .equalsIgnoreCase("to")
+                                                            ? 1
+                                                            : 0,
+                                                    String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
                                             );
                                             myTrans.setTransaction_type("TAKEOUT");
                                             tr.add(myTrans);
@@ -2579,7 +3084,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                 if (TextUtils.isEmpty(transactionsViewModel.lastTransactionId().getControl_number())) {
                                     controlNumber = Utils.getCtrlNumberFormat("1");
                                 } else {
-                                    controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().replaceFirst("0", "")) + 1));
+                                    controlNumber = Utils.getCtrlNumberFormat(String.valueOf(Integer.valueOf(transactionsViewModel.lastTransactionId().getControl_number().split("-")[0].replaceFirst("0", "")) + 1));
                                 }
 
                             }
@@ -2596,7 +3101,18 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                 Utils.getDateTimeToday(),
                                 0,
                                 Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
-                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID))
+                                Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                                SharedPreferenceManager
+                                        .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                        .equalsIgnoreCase("to")
+                                        ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                        : 0,
+                                SharedPreferenceManager
+                                        .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                        .equalsIgnoreCase("to")
+                                        ? 1
+                                        : 0,
+                                String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
                         );
                         myTrans.setTransaction_type("TAKEOUT");
                         tr.add(myTrans);
@@ -2624,18 +3140,18 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
             e.printStackTrace();
         }
 
-        if (productsModel.getProducts().getIs_fixed_asset() == 1) {
-            if (!TextUtils.isEmpty(transactionId)) {
-                SerialNumbersDialog serialNumbersDialog = new SerialNumbersDialog(getContext(), transactionsViewModel, transactionId) {
-                    @Override
-                    public void submitted() {
-
-                    }
-                };
-                serialNumbersDialog.show();
-            }
-
-        }
+//        if (productsModel.getProducts().getIs_fixed_asset() == 1) {
+//            if (!TextUtils.isEmpty(transactionId)) {
+//                SerialNumbersDialog serialNumbersDialog = new SerialNumbersDialog(getContext(), transactionsViewModel, transactionId) {
+//                    @Override
+//                    public void submitted() {
+//
+//                    }
+//                };
+//                serialNumbersDialog.show();
+//            }
+//
+//        }
     }
 
     private void insertSelectedRoomRate() {
@@ -2664,7 +3180,13 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         1,
                         "",
                         0,
-                        0
+                        0,
+                        SharedPreferenceManager
+                                .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                .equalsIgnoreCase("to")
+                                ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                : 0,
+                        ""
                 ));
                 transactionsViewModel.insertOrder(orderList);
             }
@@ -2750,15 +3272,31 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         0,
                         "",
                         is_to,
-                        selectedProduct.getIs_fixed_asset()
+                        selectedProduct.getIs_fixed_asset(),
+                        SharedPreferenceManager
+                                .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                .equalsIgnoreCase("to")
+                                ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                : 0,
+                        selectedProduct.getProduct_initial()
                 );
 //                orders.setIs_editing(true);
                 orderList.add(orders);
+
                 transactionsViewModel.insertOrder(orderList);
 
+                if (selectedProduct.getIs_fixed_asset() == 1) {
+                    if (!TextUtils.isEmpty(transactionId)) {
+                        SerialNumbersDialog serialNumbersDialog = new SerialNumbersDialog(getContext(), transactionsViewModel, transactionId) {
+                            @Override
+                            public void submitted() {
 
-//                transactionsViewModel.updateEditingOrderList(transactionId);
+                            }
+                        };
+                        serialNumbersDialog.show();
+                    }
 
+                }
 
             }
 
@@ -2806,7 +3344,13 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                     0,
                                     "",
                                     finalIs_to,
-                                    0
+                                    0,
+                                    SharedPreferenceManager
+                                            .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                            .equalsIgnoreCase("to")
+                                            ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                            : 0,
+                                    palac.getProduct_initial()
                             );
                             orders.setProduct_alacart_id(palac.getProduct_alacart_id());
                             orders.setIs_editing(false);
@@ -2872,7 +3416,13 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                     0,
                                     "",
                                     finalIs_to1,
-                                    0
+                                    0,
+                                    SharedPreferenceManager
+                                            .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                            .equalsIgnoreCase("to")
+                                            ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                            : 0,
+                                    palac.getProduct_initial()
                             );
                             orders.setProduct_alacart_id(palac.getProduct_group_id());
                             orders.setIs_editing(false);
@@ -3205,7 +3755,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
         }
 
         Log.d("TRACING", "ONRESUME CALLED");
+
         try {
+            Log.d("TRACINGPTRANS", String.valueOf(transactionsList().size()));
             if (transactionsList().size() > 0) {
                 if (!TextUtils.isEmpty(pTransactionId)) {
                     transactionId = pTransactionId;

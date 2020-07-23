@@ -150,9 +150,18 @@ public class TransactionsServerDataResponse {
         @SerializedName("is_shared")
         @Expose
         private Integer isShared;
+        @SerializedName("to_id")
+        @Expose
+        private Integer toId;
         @SerializedName("saved_at")
         @Expose
         private Object savedAt;
+        @SerializedName("delivery_to")
+        @Expose
+        private String deliveryTo;
+        @SerializedName("delivery_address")
+        @Expose
+        private String deliveryAddress;
         @SerializedName("treg")
         @Expose
         private String treg;
@@ -165,6 +174,54 @@ public class TransactionsServerDataResponse {
         @SerializedName("deleted_at")
         @Expose
         private Object deletedAt;
+
+        @SerializedName("to_transaction_id")
+        @Expose
+        private Integer toTransactionId;
+
+        @SerializedName("is_temp")
+        @Expose
+        private Integer isTemp;
+
+        public Integer getToTransactionId() {
+            return toTransactionId;
+        }
+
+        public void setToTransactionId(Integer toTransactionId) {
+            this.toTransactionId = toTransactionId;
+        }
+
+        public Integer getIsTemp() {
+            return isTemp;
+        }
+
+        public void setIsTemp(Integer isTemp) {
+            this.isTemp = isTemp;
+        }
+
+        public Integer getToId() {
+            return toId;
+        }
+
+        public void setToId(Integer toId) {
+            this.toId = toId;
+        }
+
+        public String getDeliveryTo() {
+            return deliveryTo;
+        }
+
+        public void setDeliveryTo(String deliveryTo) {
+            this.deliveryTo = deliveryTo;
+        }
+
+        public String getDeliveryAddress() {
+            return deliveryAddress;
+        }
+
+        public void setDeliveryAddress(String deliveryAddress) {
+            this.deliveryAddress = deliveryAddress;
+        }
 
         public Integer getMyId() {
             return myId;

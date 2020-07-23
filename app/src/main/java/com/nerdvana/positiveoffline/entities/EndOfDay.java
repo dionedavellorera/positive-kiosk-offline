@@ -54,6 +54,8 @@ public class EndOfDay {
     private Double cash_redeemed_from_prev_ar = 0.00;
     private Double card_redeemed_from_prev_ar = 0.00;
 
+    private Double discount_amount = 0.00;
+
     @Ignore
     public EndOfDay() {}
 
@@ -64,7 +66,9 @@ public class EndOfDay {
                     String treg, String begOrNo, String endOrNo,
                     Double begSales, Double endSales,
                     int is_sent_to_server, int machine_id,
-                    int branch_id, Double total_service_charge) {
+                    int branch_id, Double total_service_charge,
+                    double discount_amount) {
+        this.discount_amount = discount_amount;
         this.total_service_charge = total_service_charge;
         this.branch_id = branch_id;
         this.machine_id = machine_id;
@@ -82,6 +86,14 @@ public class EndOfDay {
         this.treg = treg;
         this.begOrNo = begOrNo;
         this.endOrNo = endOrNo;
+    }
+
+    public Double getDiscount_amount() {
+        return discount_amount;
+    }
+
+    public void setDiscount_amount(Double discount_amount) {
+        this.discount_amount = discount_amount;
     }
 
     public Double getCash_redeemed_from_prev_ar() {

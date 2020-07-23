@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="190dp"
+    android:layout_height="80dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardElevation="5dp"
+    android:id="@+id/rootView"
+    android:layout_margin="5dp"
+
+    >
+    <RelativeLayout
+        android:id="@+id/rel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:background="@drawable/text_scrim"
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:padding="10dp"
+            android:text="Product Name"
+            android:textColor="@color/colorBlack"
+            android:textStyle="bold"
+            android:textSize="21sp" />
+
+        <TextView
+            android:visibility="gone"
+            android:gravity="center"
+            android:layout_below="@id/name"
+            android:background="@drawable/text_scrim"
+            android:layout_centerInParent="true"
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:padding="10dp"
+            android:text="-------"
+            android:textColor="@color/colorBlack"
+            android:textStyle="bold"
+            android:textSize="15sp" />
+
+        <TextView
+            android:visibility="gone"
+            android:gravity="center"
+            android:layout_below="@id/status"
+            android:background="@drawable/text_scrim"
+            android:layout_centerInParent="true"
+            android:id="@+id/duration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:padding="5dp"
+            android:text="Duration"
+            android:textColor="@color/colorBlack"
+            android:textStyle="bold"
+            android:textSize="13sp" />
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

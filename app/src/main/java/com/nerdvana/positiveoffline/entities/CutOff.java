@@ -24,7 +24,7 @@ public class CutOff {
     private Double total_online_payments = 0.00;
     private Double total_ar_payments = 0.00;
     private Double total_mobile_payments = 0.00;
-    private Double total_change;
+    private Double total_change = 0.00;
     private int z_read_id = 0;
     private String treg;
     private int seniorCount = 0;
@@ -46,7 +46,9 @@ public class CutOff {
     private Double card_redeemed_from_prev_ar = 0.00;
 
     private Double total_service_charge = 0.00;
+    private Double discount_amount = 0.00;
 
+    private String shift_number = "";
     @Ignore
     public CutOff() {}
 
@@ -57,7 +59,10 @@ public class CutOff {
                   int z_read_id, String treg,
                   String begOrNo, String endOrNo,
                   int is_sent_to_server, int machine_id,
-                  int branch_id, Double total_service_charge) {
+                  int branch_id, Double total_service_charge,
+                  Double discount_amount, String shift_number) {
+        this.shift_number = shift_number;
+        this.discount_amount = discount_amount;
         this.branch_id = branch_id;
         this.is_sent_to_server = is_sent_to_server;
         this.machine_id = machine_id;
@@ -74,6 +79,22 @@ public class CutOff {
         this.begOrNo = begOrNo;
         this.endOrNo = endOrNo;
         this.total_service_charge = total_service_charge;
+    }
+
+    public String getShift_number() {
+        return shift_number;
+    }
+
+    public void setShift_number(String shift_number) {
+        this.shift_number = shift_number;
+    }
+
+    public Double getDiscount_amount() {
+        return discount_amount;
+    }
+
+    public void setDiscount_amount(Double discount_amount) {
+        this.discount_amount = discount_amount;
     }
 
     public Double getCash_redeemed_from_prev_ar() {

@@ -19,7 +19,7 @@ public class Orders {
     @NonNull
     private int core_id;
     @NonNull
-    private int qty;
+    private double qty;
     @NonNull
     private Double amount;
     @NonNull
@@ -62,11 +62,15 @@ public class Orders {
 
     private int is_fixed_asset = 0;
 
+    private int to_id = 0;
+
+    private String name_initials;
+
     @Ignore
     public Orders() {}
 
     public Orders(int transaction_id, int core_id,
-                  int qty, @NonNull Double amount,
+                  double qty, @NonNull Double amount,
                   @NonNull Double original_amount,
                   @NonNull String name, int departmentId,
                   Double vatAmount, Double vatable,
@@ -76,7 +80,10 @@ public class Orders {
                   int machine_id, int branch_id,
                   String treg, int is_room_rate,
                   String notes, int is_take_out,
-                  int is_fixed_asset) {
+                  int is_fixed_asset, int to_id,
+                  String name_initials) {
+        this.name_initials = name_initials;
+        this.to_id = to_id;
         this.is_fixed_asset = is_fixed_asset;
         this.is_take_out = is_take_out;
         this.notes = notes;
@@ -99,6 +106,23 @@ public class Orders {
         this.vatable = vatable;
         this.vatExempt = vatExempt;
         this.discountAmount = discountAmount;
+    }
+
+    @NonNull
+    public String getName_initials() {
+        return name_initials;
+    }
+
+    public void setName_initials(@NonNull String name_initials) {
+        this.name_initials = name_initials;
+    }
+
+    public int getTo_id() {
+        return to_id;
+    }
+
+    public void setTo_id(int to_id) {
+        this.to_id = to_id;
     }
 
     public String getSerial_number() {
@@ -293,11 +317,11 @@ public class Orders {
         this.core_id = core_id;
     }
 
-    public int getQty() {
+    public double getQty() {
         return qty;
     }
 
-    public void setQty(int qty) {
+    public void setQty(double qty) {
         this.qty = qty;
     }
 

@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import me.everything.android.ui.overscroll.OverScrollDecoratorHelper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -131,6 +132,8 @@ public class BottomFrameFragment extends Fragment implements ButtonsContract, As
         listButtons.setLayoutManager(new GridLayoutManager(getContext(),2,  GridLayoutManager.HORIZONTAL, false));
 //        listButtons.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.HORIZONTAL));
         listButtons.setAdapter(buttonsAdapter);
+
+        OverScrollDecoratorHelper.setUpOverScroll(listButtons, OverScrollDecoratorHelper.ORIENTATION_HORIZONTAL);
         new ButtonsAsync(BottomFrameFragment.this, getContext(), userViewModel).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
 

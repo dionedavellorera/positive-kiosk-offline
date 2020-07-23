@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <usb-device class="2"/>
     <usb-device class="255" subclass="66" protocol="1" />
     <usb-device vendor-id="1305" product-id="0001" />   <!--IFBD-HU05/06, IFBD-HU07/08 - printerClass-->
     <usb-device vendor-id="1305" product-id="0002" />   <!--IFBD-HU05/06, IFBD-HU07/08 - vendorClass-->

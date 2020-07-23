@@ -53,7 +53,7 @@ public class Transactions {
 
     private String tin_number = "";
 
-    private int is_sent_to_server;
+    private int is_sent_to_server = 0;
     private int machine_id;
     private int branch_id;
 
@@ -73,10 +73,21 @@ public class Transactions {
     private String delivery_to = "";
     private String delivery_address = "";
 
+    private int to_id = 0;
+    private int to_transaction_id = 0;
+    private int is_temp = 0;
+    private String to_control_number = "";
+    private String shift_number = "";
+
     public Transactions(@NonNull String control_number,
                         String user_id, String treg,
                         int is_sent_to_server,
-                        int machine_id, int branch_id) {
+                        int machine_id, int branch_id,
+                        int to_id, int is_temp,
+                        String shift_number) {
+        this.shift_number = shift_number;
+        this.is_temp = is_temp;
+        this.to_id = to_id;
         this.control_number = control_number;
         this.user_id = user_id;
         this.treg = treg;
@@ -105,7 +116,13 @@ public class Transactions {
                         Boolean is_cancelled, String is_cancelled_by, String is_cancelled_at,
                         String tin_number,
                         Boolean is_backed_out, String is_backed_out_by, String is_backed_out_at,
-                        String delivery_to, String delivery_address) {
+                        String delivery_to, String delivery_address,
+                        int to_id, int is_temp,
+                        String to_control_number, String shift_number) {
+        this.shift_number = shift_number;
+        this.to_control_number = to_control_number;
+        this.is_temp = is_temp;
+        this.to_id = to_id;
         this.delivery_to = delivery_to;
         this.delivery_address = delivery_address;
         this.is_backed_out_by = is_backed_out_by;
@@ -140,6 +157,38 @@ public class Transactions {
         this.vat_amount = vat_amount;
         this.discount_amount = discountAmount;
         this.change = change;
+    }
+
+    public String getShift_number() {
+        return shift_number;
+    }
+
+    public void setShift_number(String shift_number) {
+        this.shift_number = shift_number;
+    }
+
+    public String getTo_control_number() {
+        return to_control_number;
+    }
+
+    public void setTo_control_number(String to_control_number) {
+        this.to_control_number = to_control_number;
+    }
+
+    public int getIs_temp() {
+        return is_temp;
+    }
+
+    public void setIs_temp(int is_temp) {
+        this.is_temp = is_temp;
+    }
+
+    public int getTo_id() {
+        return to_id;
+    }
+
+    public void setTo_id(int to_id) {
+        this.to_id = to_id;
     }
 
     public String getDelivery_to() {
@@ -518,5 +567,13 @@ public class Transactions {
 
     public void setTransaction_type(String transaction_type) {
         this.transaction_type = transaction_type;
+    }
+
+    public int getTo_transaction_id() {
+        return to_transaction_id;
+    }
+
+    public void setTo_transaction_id(int to_transaction_id) {
+        this.to_transaction_id = to_transaction_id;
     }
 }

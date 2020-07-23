@@ -2,27 +2,22 @@ package com.nerdvana.positiveoffline.viewmodel;
 
 import android.app.Application;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.MutableLiveData;
 
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
-import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.entities.DiscountSettings;
 import com.nerdvana.positiveoffline.entities.OrderDiscounts;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
-import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.model.DiscountWithSettings;
 import com.nerdvana.positiveoffline.model.OrderWithDiscounts;
 import com.nerdvana.positiveoffline.model.SpecialDiscountInfo;
 import com.nerdvana.positiveoffline.model.TransactionWithDiscounts;
 import com.nerdvana.positiveoffline.repository.DiscountsRepository;
-import com.nerdvana.positiveoffline.repository.ProductsRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,6 +80,7 @@ public class DiscountViewModel extends AndroidViewModel {
         discountsRepository.insertOrderDiscount(orderDiscountsList);
     }
 
+
     public void updatePostedDiscount(PostedDiscounts postedDiscounts) {
         discountsRepository.updatedPostedDiscount(postedDiscounts);
     }
@@ -101,6 +97,7 @@ public class DiscountViewModel extends AndroidViewModel {
             try {
                 if (orders.getIs_discount_exempt() == 0) {
                     if (orders.getIs_editing()) {
+
                         PostedDiscounts postedDiscounts = new PostedDiscounts(
                                 Integer.valueOf(transactionId),
                                 discountId,
@@ -114,7 +111,13 @@ public class DiscountViewModel extends AndroidViewModel {
                                 0,
                                 Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
                                 Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
-                                Utils.getDateTimeToday()
+                                Utils.getDateTimeToday(),
+                                SharedPreferenceManager
+                                        .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                        .equalsIgnoreCase("to")
+                                        ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                        : 0,
+                                orders.getQty()
                         );
                         if (last_inserted_id == 0) {
                             last_inserted_id = insertPostedDiscount(postedDiscounts);
@@ -135,7 +138,13 @@ public class DiscountViewModel extends AndroidViewModel {
                                 0,
                                 Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
                                 Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
-                                Utils.getDateTimeToday()));
+                                Utils.getDateTimeToday(),
+                                SharedPreferenceManager
+                                        .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                        .equalsIgnoreCase("to")
+                                        ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                        : 0,
+                                0));
 
                         insertOrderDiscount(orderDiscountsList);
                     }
@@ -155,6 +164,7 @@ public class DiscountViewModel extends AndroidViewModel {
 
     public void insertDiscount(List<Orders> ordersList, DiscountWithSettings discountWithSettings,
                                String transactionId, SpecialDiscountInfo specialDiscountInfo) {
+
         long last_inserted_id = 0;
         for (Orders orders : ordersList) {
             if (orders.getIs_discount_exempt() == 0) {
@@ -203,7 +213,13 @@ public class DiscountViewModel extends AndroidViewModel {
                                         0,
                                         Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
                                         Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
-                                        Utils.getDateTimeToday()
+                                        Utils.getDateTimeToday(),
+                                        SharedPreferenceManager
+                                                .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                                .equalsIgnoreCase("to")
+                                                ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                                : 0,
+                                        orders.getQty()
 
                                 );
 
@@ -222,7 +238,13 @@ public class DiscountViewModel extends AndroidViewModel {
                                     0,
                                     Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
                                     Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
-                                    Utils.getDateTimeToday()));
+                                    Utils.getDateTimeToday(),
+                                    SharedPreferenceManager
+                                            .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                            .equalsIgnoreCase("to")
+                                            ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                            : 0,
+                                    discountWithSettings.discounts.getIs_special()));
                             insertOrderDiscount(orderDiscountsList);
                         } catch (ExecutionException e) {
                             e.printStackTrace();

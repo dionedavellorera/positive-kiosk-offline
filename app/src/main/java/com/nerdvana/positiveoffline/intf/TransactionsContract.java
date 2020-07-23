@@ -7,5 +7,4 @@ public interface TransactionsContract {
     void clicked(Transactions transactions);
     void remove(Transactions transactions);
     void clicked(TransactionWithOrders transactionWithOrders);
-
 }

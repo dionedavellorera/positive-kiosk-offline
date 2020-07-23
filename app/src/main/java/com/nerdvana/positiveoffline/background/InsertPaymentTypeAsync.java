@@ -18,6 +18,7 @@ import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.PaymentTypes;
 import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.intf.SyncCallback;
+import com.nerdvana.positiveoffline.model.PaymentSelectionModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.ProductsViewModel;
 
@@ -49,31 +50,63 @@ public class InsertPaymentTypeAsync extends AsyncTask<Void, Void, Void> {
         List<PaymentTypes> paymentList = new ArrayList<>();
         for (final FetchPaymentTypeResponse.Result r : list) {
             PaymentTypes paymentType = null;
-            if (r.getCoreId().equalsIgnoreCase("3")) { //ONLINE
-                paymentType = new PaymentTypes(
-                        Integer.valueOf(r.getCoreId()),
-                        r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
-                        r.getPaymentType(),
-                        GsonHelper.getGson().toJson(r.getOnlinePaymentList()));
-            } else if (r.getCoreId().equalsIgnoreCase("8")) {
-                paymentType = new PaymentTypes(
-                        Integer.valueOf(r.getCoreId()),
-                        r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
-                        r.getPaymentType(),
-                        GsonHelper.getGson().toJson(r.getAccountReceivableList()));
-            } else if (r.getCoreId().equalsIgnoreCase("9")) {
-                paymentType = new PaymentTypes(
-                        Integer.valueOf(r.getCoreId()),
-                        r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
-                        r.getPaymentType(),
-                        GsonHelper.getGson().toJson(r.getMobilePaymentList()));
-            } else {
-                paymentType = new PaymentTypes(
-                        Integer.valueOf(r.getCoreId()),
-                        r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
-                        r.getPaymentType(),
-                        GsonHelper.getGson().toJson(new ArrayList<>()));
+
+            List<PaymentSelectionModel> selectionModelList = new ArrayList<>();
+
+            for (FetchPaymentTypeResponse.OnlinePayment op : r.getOnlinePaymentList()) {
+                selectionModelList.add(new PaymentSelectionModel(
+                        op.getPaymentId(), op.getOnlinePaymentId(),
+                        op.getOnlinePayment(), op.getImageFile()));
             }
+
+            for (FetchPaymentTypeResponse.AccountReceivable ar : r.getAccountReceivableList()) {
+                selectionModelList.add(new PaymentSelectionModel(
+                        ar.getPaymentId(), ar.getArPaymentId(),
+                        ar.getAccountReceivablePayment(), ar.getImageFile()));
+            }
+
+            for (FetchPaymentTypeResponse.MobilePayment mp : r.getMobilePaymentList()) {
+                selectionModelList.add(new PaymentSelectionModel(
+                        mp.getPaymentId(), mp.getMobilePaymentId(),
+                        mp.getMobilePayment(), mp.getImageFile()));
+            }
+
+            Log.d("PAYMENTSELEC", r.getPaymentType() + "-"+String.valueOf(selectionModelList.size()) + "-"  +r.getCoreId() + "-" + String.valueOf(r.getId()));
+            Log.d("PAYMENTSELEC-MP", r.getPaymentType() + "-"+String.valueOf(r.getMobilePaymentList().size()));
+            Log.d("PAYMENTSELEC-AR", r.getPaymentType() + "-"+String.valueOf(r.getAccountReceivableList().size()));
+            Log.d("PAYMENTSELEC-OL", r.getPaymentType() + "-"+String.valueOf(r.getOnlinePaymentList().size()));
+
+            paymentType = new PaymentTypes(
+                    Integer.valueOf(r.getCoreId()),
+                    r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
+                    r.getPaymentType(),
+                    GsonHelper.getGson().toJson(selectionModelList));
+
+//            if (r.getCoreId().equalsIgnoreCase("3")) { //ONLINE
+//                paymentType = new PaymentTypes(
+//                        Integer.valueOf(r.getCoreId()),
+//                        r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
+//                        r.getPaymentType(),
+//                        GsonHelper.getGson().toJson(r.getOnlinePaymentList()));
+//            } else if (r.getCoreId().equalsIgnoreCase("8")) {
+//                paymentType = new PaymentTypes(
+//                        Integer.valueOf(r.getCoreId()),
+//                        r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
+//                        r.getPaymentType(),
+//                        GsonHelper.getGson().toJson(r.getAccountReceivableList()));
+//            } else if (r.getCoreId().equalsIgnoreCase("9")) {
+//                paymentType = new PaymentTypes(
+//                        Integer.valueOf(r.getCoreId()),
+//                        r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
+//                        r.getPaymentType(),
+//                        GsonHelper.getGson().toJson(r.getMobilePaymentList()));
+//            } else {
+//                paymentType = new PaymentTypes(
+//                        Integer.valueOf(r.getCoreId()),
+//                        r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",
+//                        r.getPaymentType(),
+//                        GsonHelper.getGson().toJson(new ArrayList<>()));
+//            }
 
             if (r.getMobilePaymentList().size() > 0) {
                 for (FetchPaymentTypeResponse.MobilePayment mobilePayment : r.getMobilePaymentList()) {

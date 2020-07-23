@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">POSitive-Offline</string>
+    <string name="app_name">POSitive-Retail</string>
 
     <string name="app_setup">KIOSK SETUP</string>
     <string name="label_host_name">HOST NAME</string>
@@ -111,4 +111,6 @@
     <string name="hint_enter_name">Enter name</string>
     <string name="hint_enter_username">Enter username</string>
     <string name="hint_enter_password">Enter password</string>
+    <string name="title_activity_orders">Orders</string>
+    <string name="hint_node_http_url">Node http url</string>
 </resources>

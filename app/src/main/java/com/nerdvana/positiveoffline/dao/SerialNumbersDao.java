@@ -33,5 +33,8 @@ public interface SerialNumbersDao {
     @Update()
     void update(SerialNumbers serialNumbers);
 
+    @Query("UPDATE SerialNumbers set is_sent_to_server = 1 where transaction_id = :transaction_id")
+    int updateSentToServer(String transaction_id);
+
 
 }

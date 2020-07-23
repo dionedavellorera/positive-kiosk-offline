@@ -1,7 +1,9 @@
 package com.nerdvana.positiveoffline.adapter;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.os.Environment;
+import android.text.Html;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -92,13 +94,15 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
 
         if (productsModel.getProduct_alacart_id() != 0 || productsModel.getProduct_group_id() != 0) {
-            ((CheckoutAdapter.ViewHolder)holder).listItemName.setText("  " +productsModel.getName());
+            ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(Html.fromHtml("  " +productsModel.getName()));
 //            ((CheckoutAdapter.ViewHolder)holder).listItemPrice.setText(Utils.digitsWithComma(0.00));
         } else {
             if (productsModel.getIs_discount_exempt() == 1) {
-                ((CheckoutAdapter.ViewHolder)holder).listItemName.setText("(DE)" +productsModel.getName());
+                ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(Html.fromHtml(productsModel.getName()));
+                ((CheckoutAdapter.ViewHolder)holder).listItemName.setTypeface(null, Typeface.BOLD_ITALIC);
             } else {
-                ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(productsModel.getName());
+                ((CheckoutAdapter.ViewHolder)holder).listItemName.setText(Html.fromHtml(productsModel.getName()));
+                ((CheckoutAdapter.ViewHolder)holder).listItemName.setTypeface(null, Typeface.NORMAL);
             }
 
         }

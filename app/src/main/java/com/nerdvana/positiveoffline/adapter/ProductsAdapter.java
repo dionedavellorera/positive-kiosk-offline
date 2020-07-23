@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Environment;
+import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -135,7 +136,8 @@ public class ProductsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 productsContract.productClicked(productsModel);
             }
         });
-        ((ProductsViewHolder)holder).name.setText(productsModel.getProduct());
+//        ((ProductsViewHolder)holder).name.setText(productsModel.getProduct());
+        ((ProductsViewHolder)holder).name.setText(Html.fromHtml(productsModel.getProduct()));
 
         ((ProductsViewHolder)holder).price.setText(Utils.digitsWithComma(productsModel.getAmount()));
 

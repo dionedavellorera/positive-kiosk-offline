@@ -2,6 +2,7 @@ package com.nerdvana.positiveoffline.printjobasync;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.text.Html;
 import android.text.TextUtils;
 
 import com.epson.epos2.Epos2Exception;
@@ -11,7 +12,10 @@ import com.epson.epos2.printer.ReceiveListener;
 import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.GsonHelper;
+import com.nerdvana.positiveoffline.MainActivity;
+import com.nerdvana.positiveoffline.PrinterPresenter;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
+import com.nerdvana.positiveoffline.ThreadPoolManager;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.OrdersServerDataResponse;
 import com.nerdvana.positiveoffline.entities.Orders;
@@ -21,12 +25,18 @@ import com.nerdvana.positiveoffline.intf.AsyncFinishCallBack;
 import com.nerdvana.positiveoffline.localizereceipts.ILocalizeReceipts;
 import com.nerdvana.positiveoffline.model.OtherPrinterModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
+import com.nerdvana.positiveoffline.model.PrintingListModel;
+import com.nerdvana.positiveoffline.model.SunmiPrinterModel;
 import com.nerdvana.positiveoffline.printer.EJFileCreator;
 import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
 import com.starmicronics.starioextension.StarIoExt;
+import com.sunmi.devicemanager.cons.Cons;
+import com.sunmi.devicemanager.device.Device;
+import com.sunmi.devicesdk.core.PrinterManager;
+import com.sunmi.peripheral.printer.SunmiPrinterService;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -47,12 +57,16 @@ public class PrintItemCancelledAsync extends AsyncTask<Void, Void, Void> {
 
     private boolean isReprint = false;
 
+    private PrinterPresenter printerPresenter;
+    private SunmiPrinterService mSunmiPrintService;
+
 
     public PrintItemCancelledAsync(PrintModel printModel, Context context,
                        AsyncFinishCallBack asyncFinishCallBack,
                        DataSyncViewModel dataSyncViewModel,
                        ILocalizeReceipts iLocalizeReceipts,
-                       StarIOPort starIOPort, boolean isReprint) {
+                       StarIOPort starIOPort, boolean isReprint,
+                       PrinterPresenter printerPresenter, SunmiPrinterService mSunmiPrintService) {
         this.context = context;
         this.printModel = printModel;
         this.asyncFinishCallBack = asyncFinishCallBack;
@@ -60,6 +74,8 @@ public class PrintItemCancelledAsync extends AsyncTask<Void, Void, Void> {
         this.iLocalizeReceipts = iLocalizeReceipts;
         this.port = starIOPort;
         this.isReprint = isReprint;
+        this.printerPresenter = printerPresenter;
+        this.mSunmiPrintService = mSunmiPrintService;
     }
 
 
@@ -150,13 +166,38 @@ public class PrintItemCancelledAsync extends AsyncTask<Void, Void, Void> {
             addPrinterSpace(1, printer);
 
             for (Orders orders : ordersList) {
-                addTextToPrinter(printer, twoColumns(
-                        orders.getName(),
-                        PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getAmount())),
-                        40,
-                        2,
-                        context)
-                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+                if (!orders.getIs_void()) {
+                    String qty = "";
+
+                    qty += orders.getQty();
+
+                    if (String.valueOf(orders.getQty()).length() < 4) {
+                        for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
+                            qty += " ";
+                        }
+                    }
+
+                    if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+                        addTextToPrinter(printer, twoColumns(
+                                qty +  "  " + Html.fromHtml(orders.getName()),
+                                PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+                                40,
+                                2,
+                                context)
+                                ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+                    } else {
+                        addTextToPrinter(printer, twoColumns(
+                                qty +  " " + Html.fromHtml(orders.getName()),
+                                PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+                                40,
+                                2,
+                                context)
+                                ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+                    }
+                }
+            }
+            for (Orders orders : ordersList) {
+
             }
 
 
@@ -214,6 +255,48 @@ public class PrintItemCancelledAsync extends AsyncTask<Void, Void, Void> {
                 asyncFinishCallBack.doneProcessing();
                 asyncFinishCallBack.error("PRINTER NOT CONNECTED");
             }
+        } else if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY).equalsIgnoreCase("sunmi")) {
+            if (printerPresenter == null) {
+                printerPresenter = new PrinterPresenter(context, mSunmiPrintService);
+            }
+            String finalString = "";
+
+            finalString = EJFileCreator.itemCancelledString(ordersList, context);
+
+            TypeToken<List<PrintingListModel>> myToken = new TypeToken<List<PrintingListModel>>() {};
+            List<PrintingListModel> pOutList = GsonHelper.getGson().fromJson(SharedPreferenceManager.getString(context, AppConstants.PRINTER_PREFS), myToken.getType());
+            PrintingListModel tmpLstModel = null;
+            for (PrintingListModel list : pOutList) {
+                if (list.getType().equalsIgnoreCase(printModel.getType())) {
+                    String finalString1 = finalString;
+                    ThreadPoolManager.getsInstance().execute(() -> {
+                        for (PrintingListModel.SelectedPrinterData data : list.getSelectedPrinterList()) {
+                            if (data.getId().equalsIgnoreCase(SunmiPrinterModel.PRINTER_BUILT_IN)) {
+                                printerPresenter.printNormal(finalString1);
+                            }
+                        }
+                        List<Device> deviceList = PrinterManager.getInstance().getPrinterDevice();
+                        if (deviceList == null || deviceList.isEmpty()) return;
+                        for (Device device : deviceList) {
+                            if (device.type == Cons.Type.PRINT && device.connectType == Cons.ConT.INNER) {
+                                continue;
+                            }
+                            if (list.getSelectedPrinterList().size() > 0) {
+                                for (PrintingListModel.SelectedPrinterData data : list.getSelectedPrinterList()) {
+                                    if (data.getId().equalsIgnoreCase(device.getId())) {
+                                        printerPresenter.printByDeviceManager(device, finalString1);
+                                    }
+                                }
+
+                            }
+
+                        }
+                    });
+                }
+            }
+
+            asyncFinishCallBack.doneProcessing();
+
         }
 
 

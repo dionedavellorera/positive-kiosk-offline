@@ -37,12 +37,16 @@ import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.intf.AsyncContract;
 import com.nerdvana.positiveoffline.intf.ProductsContract;
+import com.nerdvana.positiveoffline.model.CloseInputDialogModel;
+import com.nerdvana.positiveoffline.model.ItemScannedModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
 import com.nerdvana.positiveoffline.view.HidingEditText;
+import com.nerdvana.positiveoffline.view.dialog.InputDialog;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.nerdvana.positiveoffline.viewmodel.ProductsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
+import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,7 +127,13 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
                 if (search.length() > 0) {
                     if (actionId == 0) {
                         try {
-                            Products searchedProduct = productsViewModel.findProductViaBarcode(search.getText().toString());
+                            String textToSearch = "";
+                            if (search.getText().toString().contains("\n")) {
+                                textToSearch = search.getText().toString().replaceAll("\n", "");
+                            } else {
+                                textToSearch = search.getText().toString();
+                            }
+                            Products searchedProduct = productsViewModel.findProductViaBarcode(textToSearch);
                             if (searchedProduct != null) {
                                 BusProvider.getInstance().post(new ProductToCheckout(searchedProduct));
                             } else {
@@ -289,7 +299,13 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
                                 0,
                                 "",
                                 0,
-                                products.getIs_fixed_asset()
+                                products.getIs_fixed_asset(),
+                                SharedPreferenceManager
+                                        .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                        .equalsIgnoreCase("to")
+                                        ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                        : 0,
+                                products.getProduct_initial()
                         ));
                         transactionsViewModel.insertOrder(orderList);
                     }
@@ -365,6 +381,36 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
             }
 
         });
+    }
+
+
+    @Subscribe
+    public void itemScanned(ItemScannedModel itemScannedModel) {
+        if (!InputDialog.IS_SHOWN) { //auto punch item
+            Products scannedProduct = null;
+            try {
+                scannedProduct = productsViewModel.findProductViaBarcode(itemScannedModel.getProductBarcode());
+            } catch (Exception e) {
+
+            }
+
+            boolean isExisting = false;
+            if (scannedProduct!=null) {
+                isExisting = true;
+            }
+
+            if (!isExisting) {
+                Helper.showDialogMessage(getActivity(), "Item not found", "Information");
+            } else {
+                search.setText("");
+                BusProvider.getInstance().post(new ProductToCheckout(scannedProduct));
+            }
+
+
+        } else { //search only
+            BusProvider.getInstance().post(new CloseInputDialogModel("11"));
+            search.setText(itemScannedModel.getProductBarcode());
+        }
     }
 
 }

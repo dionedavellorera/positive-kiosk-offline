@@ -218,7 +218,8 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
                             Utils.getDateTimeToday(),
                             1,
                             getUser().getUsername(),
-                            Utils.getDateTimeToday());
+                            Utils.getDateTimeToday(),
+                            0); //bug to fix later on
                     p.setOther_data("");
 
                     stPaymentsList.get(position).getPaymentsList().add(p);
@@ -250,7 +251,8 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
                             Utils.getDateTimeToday(),
                             1,
                             getUser().getUsername(),
-                            Utils.getDateTimeToday());
+                            Utils.getDateTimeToday(),
+                            0); //bug to fix later on
                     p.setOther_data(cardJsonData);
 
 
@@ -329,7 +331,9 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
                                 tmpOrder.getIs_room_rate(),
                                 tmpOrder.getNotes(),
                                 tmpOrder.getIs_take_out(),
-                                tmpOrder.getIs_fixed_asset()
+                                tmpOrder.getIs_fixed_asset(),
+                                tmpOrder.getTo_id(),
+                                tmpOrder.getName_initials()
                         );
 
 
@@ -384,7 +388,9 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
                         tmpOrder.getIs_room_rate(),
                         tmpOrder.getNotes(),
                         tmpOrder.getIs_take_out(),
-                        tmpOrder.getIs_fixed_asset()
+                        tmpOrder.getIs_fixed_asset(),
+                        tmpOrder.getTo_id(),
+                        tmpOrder.getName_initials()
 
                 );
 

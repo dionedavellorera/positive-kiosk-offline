@@ -18,7 +18,7 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         >
         <com.nerdvana.positiveoffline.view.HidingEditText
-            android:inputType="number"
+            android:inputType="numberDecimal"
             android:id="@+id/etQuantity"
             android:padding="10dp"
             android:layout_width="match_parent"

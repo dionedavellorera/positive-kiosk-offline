@@ -95,7 +95,7 @@ public class Utils {
     }
 
     public static String getCtrlNumberFormat(String value) {
-        String str = String.format("%12s",value);
+        String str = String.format("%9s-%s",value, SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID));
         return str.replace(' ','0');
     }
 

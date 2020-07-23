@@ -45,4 +45,41 @@
             android:layout_height="wrap_content"
             android:text="RESTAURANT"/>
     </RadioGroup>
+
+    <TextView
+        android:id="@+id/secondLabel"
+        android:textSize="17sp"
+        android:layout_margin="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SYSTEM MODE SELECTION"/>
+
+    <View
+        android:id="@+id/secondTopSeparator"
+        android:layout_marginLeft="10dp"
+        android:layout_below="@id/firstLabel"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorLtGrey" />
+
+    <RadioGroup
+        android:id="@+id/rgSystemMode"
+        android:layout_margin="5dp"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <RadioButton
+            android:layout_margin="5dp"
+            android:id="@+id/rbCashier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CASHIER"/>
+        <RadioButton
+            android:layout_margin="5dp"
+            android:id="@+id/rbTakeOrder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TAKE ORDER"/>
+    </RadioGroup>
+
 </LinearLayout>

@@ -10,10 +10,14 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.IUsers;
+import com.nerdvana.positiveoffline.MainActivity;
 import com.nerdvana.positiveoffline.PosClient;
+import com.nerdvana.positiveoffline.PosClientCompany;
+import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.apirequests.AddCutOffOfflineRequest;
 import com.nerdvana.positiveoffline.apirequests.AddEndOfDayOfflineRequest;
@@ -23,6 +27,8 @@ import com.nerdvana.positiveoffline.apirequests.AddOrdersOfflineRequest;
 import com.nerdvana.positiveoffline.apirequests.AddPaymentsOfflineRequest;
 import com.nerdvana.positiveoffline.apirequests.AddPostedDiscountsOfflineRequest;
 import com.nerdvana.positiveoffline.apirequests.AddTransactionsOfflineRequest;
+import com.nerdvana.positiveoffline.apirequests.ServerDataRequest;
+import com.nerdvana.positiveoffline.apiresponses.PayoutServerDataResponse;
 import com.nerdvana.positiveoffline.dao.CutOffDao;
 import com.nerdvana.positiveoffline.dao.EndOfDayDao;
 import com.nerdvana.positiveoffline.dao.OrDetailsDao;
@@ -71,6 +77,8 @@ public class TimerService extends Service {
     private static String currentDate = "";
 
     CountDownTimer countUpTimer;
+
+    Call<ResponseBody> cutOffCall;
     @Override
     public void onCreate() {
         super.onCreate();
@@ -96,10 +104,13 @@ public class TimerService extends Service {
                 if (secsOfDate % 99999999 == 0) {
                     BusProvider.getInstance().post(new ReprintReceiptData(""));
                 }
-
                 boolean willSubmitToServer = true;
+                if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_MODE).equalsIgnoreCase("to")) {
+                    willSubmitToServer = false;
+                }
+
                 if (willSubmitToServer) {
-                    if (secsOfDate % 10 == 0) { //process sending of data to server
+                    if (secsOfDate % 30 == 0) { //process sending of data to server
                         final PosDatabase posDatabase = DatabaseHelper.getDatabase(TimerService.this);
                         new AsyncTask<Void, Void, Void>() {
 
@@ -344,8 +355,10 @@ public class TimerService extends Service {
                             /*
                                 CUTOFF TESTED OKAY
                              */
+                                Log.d("TIMERTRA", String.valueOf(unsyncedCutOff.size()));
                                 //region cutoff
                                 if (unsyncedCutOff.size() > 0) {
+                                    Log.d("TIMERTRA", "SEND CUT OFF");
                                     Map<String, String> cutOffMap = new HashMap<>();
                                     cutOffMap.put("cut_off", GsonHelper.getGson().toJson(unsyncedCutOff));
 
@@ -353,10 +366,13 @@ public class TimerService extends Service {
                                     wholeData.put("data", GsonHelper.getGson().toJson(cutOffMap));
                                     AddCutOffOfflineRequest req = new AddCutOffOfflineRequest(wholeData);
 
-                                    Call<ResponseBody> call = iUsers.addCutOffOffline(req.getMapValue());
-                                    call.enqueue(new Callback<ResponseBody>() {
+
+                                    Log.d("TIMERTRA", "SENDING CUT OFF");
+                                    cutOffCall = iUsers.addCutOffOffline(req.getMapValue());
+                                    cutOffCall.enqueue(new Callback<ResponseBody>() {
                                         @Override
                                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                            Log.d("TIMERTRA", "SENDING CUT OFF RESPONSE");
                                             String message = "";
                                             for (final CutOff cutOff : unsyncedCutOff) {
                                                 message += "CUTOFF ID - " + cutOff.getId() + "PROCESSED\n";
@@ -370,54 +386,122 @@ public class TimerService extends Service {
                                             }
                                             saveToTextFile(message);
                                             message = "";
+
+                                            //region transactions
+                                            if (unsyncedTransactions.size() > 0) {
+                                                Log.d("TIMERTRA", "TRANS REQ");
+                                                Map<String, String> transactionMap = new HashMap<>();
+                                                transactionMap.put("transactions", GsonHelper.getGson().toJson(unsyncedTransactions));
+
+                                                Map<String, Object> wholeData = new HashMap<>();
+                                                wholeData.put("data", GsonHelper.getGson().toJson(transactionMap));
+                                                AddTransactionsOfflineRequest req = new AddTransactionsOfflineRequest(wholeData);
+
+                                                Call<ResponseBody> call2 = iUsers.addTransactionsOffline(req.getMapValue());
+                                                call2.enqueue(new Callback<ResponseBody>() {
+                                                    @Override
+                                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                                        String message = "";
+                                                        for (final Transactions transactions : unsyncedTransactions) {
+                                                            Log.d("TIMERTRA", "TRANS RESP");
+                                                            message += "TRANSACTIONS ID - " + transactions.getId() + "PROCESSED\n";
+                                                            AsyncTask.execute(new Runnable() {
+                                                                @Override
+                                                                public void run() {
+                                                                    transactions.setIs_sent_to_server(1);
+                                                                    transactionsDao.update(transactions);
+                                                                }
+                                                            });
+                                                        }
+                                                        saveToTextFile(message);
+                                                        message = "";
+
+                                                        //region orders
+                                                        if (unsyncedOrders.size() > 0) {
+                                                            Log.d("TIMERTRA", "ORDERS REQ");
+                                                            Map<String, String> ordersMap = new HashMap<>();
+                                                            ordersMap.put("orders", GsonHelper.getGson().toJson(unsyncedOrders));
+
+                                                            Map<String, Object> wholeData = new HashMap<>();
+                                                            wholeData.put("data", GsonHelper.getGson().toJson(ordersMap));
+                                                            AddOrdersOfflineRequest req = new AddOrdersOfflineRequest(wholeData);
+
+                                                            Call<ResponseBody> call3 = iUsers.addOrdersOffline(req.getMapValue());
+                                                            call3.enqueue(new Callback<ResponseBody>() {
+                                                                @Override
+                                                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+
+                                                                    Log.d("TIMERTRA", "ORDERS RESP");
+//                                                                    cutOffCall = null;
+
+                                                                    String message = "";
+                                                                    for (final Orders orders : unsyncedOrders) {
+                                                                        message += "ORDERS ID - " + orders.getId() + "PROCESSED\n";
+                                                                        AsyncTask.execute(new Runnable() {
+                                                                            @Override
+                                                                            public void run() {
+                                                                                orders.setIs_sent_to_server(1);
+                                                                                ordersDao.update(orders);
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                    saveToTextFile(message);
+
+                                                                    IUsers iUsers = PosClientCompany.mRestAdapter.create(IUsers.class);
+                                                                    Map<String, String> dataMap = new HashMap<>();
+                                                                    dataMap.put("company_code", SharedPreferenceManager.getString(TimerService.this, AppConstants.BRANCH));
+                                                                    dataMap.put("branch_code", SharedPreferenceManager.getString(TimerService.this, AppConstants.CODE));
+                                                                    dataMap.put("machine_id", SharedPreferenceManager.getString(TimerService.this, AppConstants.MACHINE_ID));
+                                                                    ServerDataRequest data = new ServerDataRequest(dataMap);
+                                                                    Call<ResponseBody> request = iUsers.cutoffInventorySubtractRequest(data.getMapValue());
+                                                                    request.enqueue(new Callback<ResponseBody>() {
+                                                                        @Override
+                                                                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                                                            Log.d("INVETORUDED", "SUCC");
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                                                            Log.d("INVETORUDED", "FAILED-" + t.getMessage());
+                                                                        }
+                                                                    });
+
+                                                                    message = "";
+                                                                }
+
+                                                                @Override
+                                                                public void onFailure(Call<ResponseBody> call, Throwable t) {
+//                                                                    cutOffCall = null;
+                                                                }
+                                                            });
+                                                        }
+                                                        //endregion
+                                                    }
+
+                                                    @Override
+                                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+//                                                        cutOffCall = null;
+                                                    }
+                                                });
+                                            }
+                                            //endregion
                                         }
 
                                         @Override
                                         public void onFailure(Call<ResponseBody> call, Throwable t) {
-
+//                                            cutOffCall = null;
                                         }
                                     });
+
+
+
                                 }
                                 //endregion
 
                             /*
                                 TRANSACTIONS TESTED OKAY
                              */
-                                //region transactions
-                                if (unsyncedTransactions.size() > 0) {
-                                    Map<String, String> transactionMap = new HashMap<>();
-                                    transactionMap.put("transactions", GsonHelper.getGson().toJson(unsyncedTransactions));
 
-                                    Map<String, Object> wholeData = new HashMap<>();
-                                    wholeData.put("data", GsonHelper.getGson().toJson(transactionMap));
-                                    AddTransactionsOfflineRequest req = new AddTransactionsOfflineRequest(wholeData);
-
-                                    Call<ResponseBody> call = iUsers.addTransactionsOffline(req.getMapValue());
-                                    call.enqueue(new Callback<ResponseBody>() {
-                                        @Override
-                                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                            String message = "";
-                                            for (final Transactions transactions : unsyncedTransactions) {
-                                                message += "TRANSACTIONS ID - " + transactions.getId() + "PROCESSED\n";
-                                                AsyncTask.execute(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        transactions.setIs_sent_to_server(1);
-                                                        transactionsDao.update(transactions);
-                                                    }
-                                                });
-                                            }
-                                            saveToTextFile(message);
-                                            message = "";
-                                        }
-
-                                        @Override
-                                        public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                                        }
-                                    });
-                                }
-                                //endregion
 
 
                             /*
@@ -501,41 +585,7 @@ public class TimerService extends Service {
                             /*
                                 ORDERS FOR TESTING
                              */
-                                //region orders
-                                if (unsyncedOrders.size() > 0) {
-                                    Map<String, String> ordersMap = new HashMap<>();
-                                    ordersMap.put("orders", GsonHelper.getGson().toJson(unsyncedOrders));
 
-                                    Map<String, Object> wholeData = new HashMap<>();
-                                    wholeData.put("data", GsonHelper.getGson().toJson(ordersMap));
-                                    AddOrdersOfflineRequest req = new AddOrdersOfflineRequest(wholeData);
-
-                                    Call<ResponseBody> call = iUsers.addOrdersOffline(req.getMapValue());
-                                    call.enqueue(new Callback<ResponseBody>() {
-                                        @Override
-                                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                            String message = "";
-                                            for (final Orders orders : unsyncedOrders) {
-                                                message += "ORDERS ID - " + orders.getId() + "PROCESSED\n";
-                                                AsyncTask.execute(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        orders.setIs_sent_to_server(1);
-                                                        ordersDao.update(orders);
-                                                    }
-                                                });
-                                            }
-                                            saveToTextFile(message);
-                                            message = "";
-                                        }
-
-                                        @Override
-                                        public void onFailure(Call<ResponseBody> call, Throwable t) {
-
-                                        }
-                                    });
-                                }
-                                //endregion
 
                             /*
                                 ORDER DISCOUNTS TESTED

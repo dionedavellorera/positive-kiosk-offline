@@ -2,26 +2,23 @@ package com.nerdvana.positiveoffline.repository;
 
 import android.app.Application;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
-import com.nerdvana.positiveoffline.dao.DataSyncDao;
-import com.nerdvana.positiveoffline.dao.EndOfDayDao;
 import com.nerdvana.positiveoffline.dao.OrDetailsDao;
+import com.nerdvana.positiveoffline.dao.OrderDiscountsDao;
 import com.nerdvana.positiveoffline.dao.OrdersDao;
 import com.nerdvana.positiveoffline.dao.PaymentsDao;
 import com.nerdvana.positiveoffline.dao.PayoutDao;
+import com.nerdvana.positiveoffline.dao.PostedDiscountsDao;
 import com.nerdvana.positiveoffline.dao.ProductsDao;
 import com.nerdvana.positiveoffline.dao.SerialNumbersDao;
 import com.nerdvana.positiveoffline.dao.TransactionsDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
 import com.nerdvana.positiveoffline.entities.BranchGroup;
-import com.nerdvana.positiveoffline.entities.DataSync;
-import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
@@ -29,6 +26,7 @@ import com.nerdvana.positiveoffline.entities.Payout;
 import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.SerialNumbers;
 import com.nerdvana.positiveoffline.entities.Transactions;
+import com.nerdvana.positiveoffline.intf.AsyncSaveContract;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 
@@ -39,7 +37,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public class TransactionsRepository {
-
+    private PostedDiscountsDao postedDiscountsDao;
+    private OrderDiscountsDao orderDiscountsDao;
     private TransactionsDao transactionsDao;
     private OrdersDao ordersDao;
     private PaymentsDao paymentsDao;
@@ -59,8 +58,17 @@ public class TransactionsRepository {
         payoutDao = posDatabase.payoutDao();
         serialNumbersDao = posDatabase.serialNumbersDao();
 
+        postedDiscountsDao = posDatabase.postedDiscountsDao();
+        orderDiscountsDao = posDatabase.orderDiscountsDao();
+
 
     }
+
+
+    public LiveData<List<Transactions>> getTransactionsTo() {
+        return transactionsDao.ldTransactionsListTo();
+    }
+
 
     public LiveData<List<Transactions>> getTransactions() {
         return transactionsDao.ldTransactionsList();
@@ -200,6 +208,19 @@ public class TransactionsRepository {
         return future.get();
     }
 
+
+
+    public Transactions getExistingToTransaction(String to_transaction_id, String machine_id) throws ExecutionException, InterruptedException {
+        Callable<Transactions> callable = new Callable<Transactions>() {
+            @Override
+            public Transactions call() throws Exception {
+                return transactionsDao.getExistingToTransaction(to_transaction_id, machine_id);
+            }
+        };
+
+        Future<Transactions> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
 
 
     public Transactions getLastOrNumber() throws ExecutionException, InterruptedException {
@@ -457,6 +478,49 @@ public class TransactionsRepository {
         new TransactionsRepository.updateAsyncTask(transactionsDao, transactions).execute();
     }
 
+    public Integer updateTransactionDataToSent(String transactionId) throws ExecutionException, InterruptedException {
+        return new TransactionsRepository
+                .updateTransactionDataToSentAsync(
+                        transactionsDao,
+                        transactionId
+        ).execute().get();
+    }
+
+    public Integer updateOrdersDataToSent(String transactionId) throws ExecutionException, InterruptedException {
+        return new TransactionsRepository
+                .updateOrdersDataToSentAsync(
+                ordersDao,
+                transactionId
+        ).execute().get();
+    }
+
+    public Integer updateOrderDiscountsDataToSent(String transactionId) throws ExecutionException, InterruptedException {
+        return new TransactionsRepository
+                .updateOrderDiscountsDataToSentAsync(
+                orderDiscountsDao,
+                transactionId
+        ).execute().get();
+    }
+
+
+
+    public Integer updateSerialNumbersToSent(String transactionId) throws ExecutionException, InterruptedException {
+        return new TransactionsRepository
+                .updateSerialNumbersToSentAsync(
+                serialNumbersDao,
+                transactionId
+        ).execute().get();
+    }
+
+    public Integer updatePostedDataToSent(String transactionId) throws ExecutionException, InterruptedException {
+        return new TransactionsRepository
+                .updatePostedDataToSentAsync(
+                postedDiscountsDao,
+                transactionId
+        ).execute().get();
+    }
+
+
     public Integer updateLong(Transactions transactions) throws ExecutionException, InterruptedException {
         return new TransactionsRepository.updateLongAsyncTask(transactionsDao, transactions).execute().get();
     }
@@ -492,6 +556,8 @@ public class TransactionsRepository {
     public void insertOrder(List<Orders> order) {
         new TransactionsRepository.insertAsyncTaskOrder(ordersDao).execute(order);
     }
+
+
 
     public void updatePayment(Payments payments) {
         new TransactionsRepository.updatePaymentAsyncTask(paymentsDao, payments).execute();
@@ -537,6 +603,18 @@ public class TransactionsRepository {
     }
 
 
+    public List<Transactions> transactionListFromTo() throws ExecutionException, InterruptedException {
+        Callable<List<Transactions>> callable = new Callable<List<Transactions>>() {
+            @Override
+            public List<Transactions> call() throws Exception {
+                return transactionsDao.transactionListFromTo();
+            }
+        };
+
+        Future<List<Transactions>> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
 
     public List<Transactions> getAllTransactions() throws ExecutionException, InterruptedException {
         Callable<List<Transactions>> callable = new Callable<List<Transactions>>() {
@@ -563,6 +641,18 @@ public class TransactionsRepository {
     }
 
 
+    public Transactions getTransactionViaTransactionIdOnly(final String transaction_id) throws ExecutionException, InterruptedException {
+        Callable<Transactions> callable = new Callable<Transactions>() {
+            @Override
+            public Transactions call() throws Exception {
+                return transactionsDao.getTransactionViaTransactionIdOnly(transaction_id);
+            }
+        };
+
+        Future<Transactions> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
     public TransactionCompleteDetails getTransactionViaTransactionId(final String transaction_id) throws ExecutionException, InterruptedException {
         Callable<TransactionCompleteDetails> callable = new Callable<TransactionCompleteDetails>() {
             @Override
@@ -574,6 +664,20 @@ public class TransactionsRepository {
         Future<TransactionCompleteDetails> future = Executors.newSingleThreadExecutor().submit(callable);
         return future.get();
     }
+
+    public Transactions getTransactionViaToTransactionId(final String transaction_id) throws ExecutionException, InterruptedException {
+        Callable<Transactions> callable = new Callable<Transactions>() {
+            @Override
+            public Transactions call() throws Exception {
+                return transactionsDao.getTransactionViaToTransactionId(transaction_id);
+            }
+        };
+
+        Future<Transactions> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+    }
+
+
 
 
     public TransactionCompleteDetails getTransaction(final String receiptNumber) throws ExecutionException, InterruptedException {
@@ -727,6 +831,108 @@ public class TransactionsRepository {
     }
 
 
+    private static class updateTransactionDataToSentAsync extends AsyncTask<Void, Void, Integer> {
+
+        private TransactionsDao transactionsDao;
+        private String transactionId;
+        updateTransactionDataToSentAsync(TransactionsDao transactionsDao, String transactionId) {
+            this.transactionsDao = transactionsDao;
+            this.transactionId = transactionId;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... voids) {
+            return transactionsDao.updateSentToServer(transactionId);
+        }
+
+        @Override
+        protected void onPostExecute(Integer aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+//2
+    private static class updateOrdersDataToSentAsync extends AsyncTask<Void, Void, Integer> {
+
+        private OrdersDao ordersDao;
+        private String transactionId;
+    updateOrdersDataToSentAsync(OrdersDao ordersDao, String transactionId) {
+            this.ordersDao = ordersDao;
+            this.transactionId = transactionId;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... voids) {
+            return ordersDao.updateSentToServer(transactionId);
+        }
+
+        @Override
+        protected void onPostExecute(Integer aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+    //3
+    private static class updateOrderDiscountsDataToSentAsync extends AsyncTask<Void, Void, Integer> {
+
+        private OrderDiscountsDao orderDiscountsDao;
+        private String transactionId;
+        updateOrderDiscountsDataToSentAsync(OrderDiscountsDao orderDiscountsDao, String transactionId) {
+            this.orderDiscountsDao = orderDiscountsDao;
+            this.transactionId = transactionId;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... voids) {
+            return orderDiscountsDao.updateSentToServer(transactionId);
+        }
+
+        @Override
+        protected void onPostExecute(Integer aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+    //4
+    private static class updatePostedDataToSentAsync extends AsyncTask<Void, Void, Integer> {
+
+        private PostedDiscountsDao postedDiscountsDao;
+        private String transactionId;
+        updatePostedDataToSentAsync(PostedDiscountsDao postedDiscountsDao, String transactionId) {
+            this.postedDiscountsDao = postedDiscountsDao;
+            this.transactionId = transactionId;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... voids) {
+            return postedDiscountsDao.updateSentToServer(transactionId);
+        }
+
+        @Override
+        protected void onPostExecute(Integer aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+    //5
+    private static class updateSerialNumbersToSentAsync extends AsyncTask<Void, Void, Integer> {
+
+        private SerialNumbersDao serialNumbersDao;
+        private String transactionId;
+        updateSerialNumbersToSentAsync(SerialNumbersDao serialNumbersDao, String transactionId) {
+            this.serialNumbersDao = serialNumbersDao;
+            this.transactionId = transactionId;
+        }
+
+        @Override
+        protected Integer doInBackground(Void... voids) {
+            return serialNumbersDao.updateSentToServer(transactionId);
+        }
+
+        @Override
+        protected void onPostExecute(Integer aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+
+
+
 
     private static class insertPayoutAsyncTask extends AsyncTask<Payout, Void, Void> {
 
@@ -808,6 +1014,9 @@ public class TransactionsRepository {
     }
 
 
+
+
+
     private static class insertAsyncTaskWaitData extends AsyncTask<Transactions, Void, Long> {
         private TransactionsDao mAsyncTaskDao;
 
@@ -835,6 +1044,11 @@ public class TransactionsRepository {
             return null;
         }
     }
+
+
+
+
+
 
     private static class insertAsyncTaskOrder extends AsyncTask<List<Orders>, Void, Void> {
 

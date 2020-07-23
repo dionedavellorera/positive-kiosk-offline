@@ -369,6 +369,17 @@ public class DataSyncRepository {
         new DataSyncRepository.truncatePrinterSeriesAsyncTask(printerSeriesDao).execute();
     }
 
+
+
+    public void truncateDiscounts() {
+        new DataSyncRepository.truncateDiscountsAsyncTask(discountSettingsDao).execute();
+    }
+
+
+    public void truncatePaymentTypes() {
+        new DataSyncRepository.truncatePaymentTypesAsyncTask(paymentTypeDao).execute();
+    }
+
     public void truncateProducts() {
         new DataSyncRepository.truncateProductsAsyncTask(productsDao).execute();
     }
@@ -869,6 +880,50 @@ public class DataSyncRepository {
 
     }
 
+
+
+    private static class truncateDiscountsAsyncTask extends AsyncTask<List<Void>, Void, Void> {
+
+        private DiscountSettingsDao mAsyncTaskDao;
+
+        truncateDiscountsAsyncTask(DiscountSettingsDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(List<Void>... lists) {
+
+            mAsyncTaskDao.truncateDiscounts();
+            mAsyncTaskDao.truncateDiscountSettings();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
+
+
+    private static class truncatePaymentTypesAsyncTask extends AsyncTask<List<Void>, Void, Void> {
+
+        private PaymentTypeDao mAsyncTaskDao;
+
+        truncatePaymentTypesAsyncTask(PaymentTypeDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(List<Void>... lists) {
+            mAsyncTaskDao.truncatePaymentTypes();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+        }
+    }
 
     private static class truncateProductsAsyncTask extends AsyncTask<List<Void>, Void, Void> {
 

@@ -20,7 +20,12 @@ public class EndOfDayServerDataResponse {
     }
 
     public class EndOfDay {
-
+        @SerializedName("card_redeemed_from_prev_ar")
+        @Expose
+        private Double cardRedeemedFromPrevAr;
+        @SerializedName("cash_redeemed_from_prev_ar")
+        @Expose
+        private Double cashRedeemedFromPrevAr;
         @SerializedName("my_id")
         @Expose
         private Integer myId;
@@ -117,6 +122,23 @@ public class EndOfDayServerDataResponse {
         @SerializedName("deleted_at")
         @Expose
         private Object deletedAt;
+
+
+        public Double getCardRedeemedFromPrevAr() {
+            return cardRedeemedFromPrevAr;
+        }
+
+        public void setCardRedeemedFromPrevAr(Double cardRedeemedFromPrevAr) {
+            this.cardRedeemedFromPrevAr = cardRedeemedFromPrevAr;
+        }
+
+        public Double getCashRedeemedFromPrevAr() {
+            return cashRedeemedFromPrevAr;
+        }
+
+        public void setCashRedeemedFromPrevAr(Double cashRedeemedFromPrevAr) {
+            this.cashRedeemedFromPrevAr = cashRedeemedFromPrevAr;
+        }
 
         public Integer getMyId() {
             return myId;

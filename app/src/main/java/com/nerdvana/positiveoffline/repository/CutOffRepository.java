@@ -7,6 +7,7 @@ import com.nerdvana.positiveoffline.dao.CutOffDao;
 import com.nerdvana.positiveoffline.dao.EndOfDayDao;
 import com.nerdvana.positiveoffline.dao.PaymentsDao;
 import com.nerdvana.positiveoffline.dao.PayoutDao;
+import com.nerdvana.positiveoffline.dao.PostedDiscountsDao;
 import com.nerdvana.positiveoffline.database.DatabaseHelper;
 import com.nerdvana.positiveoffline.database.PosDatabase;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
@@ -14,6 +15,7 @@ import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.entities.EndOfDay;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.Payout;
+import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -26,12 +28,14 @@ public class CutOffRepository {
     private EndOfDayDao endOfDayDao;
     private PaymentsDao paymentsDao;
     private PayoutDao payoutDao;
+    private PostedDiscountsDao postedDiscountDao;
     public CutOffRepository(Application application) {
         PosDatabase posDatabase = DatabaseHelper.getDatabase(application);
         cutOffDao = posDatabase.cutOffDao();
         endOfDayDao = posDatabase.endOfDayDao();
         paymentsDao = posDatabase.paymentsDao();
         payoutDao = posDatabase.payoutDao();
+        postedDiscountDao = posDatabase.postedDiscountsDao();
 
     }
 
@@ -49,6 +53,10 @@ public class CutOffRepository {
 
     public void update(Payout payout) throws ExecutionException, InterruptedException {
         new CutOffRepository.updatePayoutAsyncTask(payoutDao).execute(payout);
+    }
+
+    public void update(PostedDiscounts postedDiscounts) throws ExecutionException, InterruptedException {
+        new CutOffRepository.updatePostedDiscountAsyncTask(postedDiscountDao).execute(postedDiscounts);
     }
 
 
@@ -90,6 +98,23 @@ public class CutOffRepository {
             return null;
         }
     }
+
+
+    private static class updatePostedDiscountAsyncTask extends AsyncTask<PostedDiscounts, Void, Void> {
+
+        private PostedDiscountsDao mAsyncTaskDao;
+
+        updatePostedDiscountAsyncTask(PostedDiscountsDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final PostedDiscounts... params) {
+            mAsyncTaskDao.update(params[0]);
+            return null;
+        }
+    }
+
 
     private static class updatePayoutAsyncTask extends AsyncTask<Payout, Void, Void> {
 

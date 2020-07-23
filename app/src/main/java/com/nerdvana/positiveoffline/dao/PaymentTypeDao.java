@@ -20,6 +20,10 @@ public interface PaymentTypeDao {
 
     @Query("SELECT * FROM PaymentTypes")
     List<PaymentTypes> paymentTypeList();
+
+
+    @Query("DELETE FROM PaymentTypes")
+    void truncatePaymentTypes();
 //
 //    @Query("SELECT * FROM DataSync WHERE isSynced = '0'")
 //    List<DataSync> unsyncList();

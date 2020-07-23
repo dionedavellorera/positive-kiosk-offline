@@ -1,6 +1,7 @@
 package com.nerdvana.positiveoffline.printer;
 
 import android.content.Context;
+import android.text.Html;
 import android.text.TextUtils;
 
 import androidx.core.content.ContextCompat;
@@ -30,6 +31,8 @@ import org.joda.time.DateTime;
 import org.joda.time.Minutes;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,15 +93,17 @@ public class EJFileCreator {
         finalString += PrinterUtils.receiptString("DESCRIPTION               VALUE", "", context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
 
-        finalString += PrinterUtils.receiptString("GROSS SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getGross_sales())), context, false);
-        finalString += PrinterUtils.receiptString("NET SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getNet_sales())), context, false);
+        finalString += PrinterUtils.receiptString("GROSS SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getGross_sales() + cutOff.getDiscount_amount())), context, false);
+        finalString += PrinterUtils.receiptString("NET SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getNet_sales() + cutOff.getDiscount_amount())), context, false);
         finalString += PrinterUtils.receiptString("VATABLE SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getVatable_sales())), context, false);
         finalString += PrinterUtils.receiptString("VAT EXEMPT SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getVat_exempt_sales())), context, false);
         finalString += PrinterUtils.receiptString("VAT DISCOUNT", "0.00", context, false);
         finalString += PrinterUtils.receiptString("VAT AMOUNT", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getVat_amount())), context, false);
         finalString += PrinterUtils.receiptString("ZERO RATED SALES", "0.00", context, false);
-        finalString += PrinterUtils.receiptString("CASH SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_cash_payments())), context, false);
+        finalString += PrinterUtils.receiptString("CASH SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_cash_payments() - cutOff.getTotal_change())), context, false);
         finalString += PrinterUtils.receiptString("CARD SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_card_payments())), context, false);
+        finalString += PrinterUtils.receiptString("ONLINE SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_online_payments())), context, false);
+        finalString += PrinterUtils.receiptString("MOBILE SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_mobile_payments())), context, false);
         finalString += PrinterUtils.receiptString("VOID", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getVoid_amount())), context, false);
         finalString += PrinterUtils.receiptString("SENIOR", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getSeniorAmount())), context, false);
         finalString += PrinterUtils.receiptString("SENIOR(COUNT)", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getSeniorCount())), context, false);
@@ -112,9 +117,9 @@ public class EJFileCreator {
             finalString += PrinterUtils.receiptString("PAYOUT", "0.00", context, false);
         }
 
-        finalString += PrinterUtils.receiptString("SALES REFLECTED BELOW ARE AR FROM PREVIOUS SHIFT", "", context, true);
-        finalString += PrinterUtils.receiptString("AR CASH SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCash_redeemed_from_prev_ar())), context, false);
-        finalString += PrinterUtils.receiptString("AR CARD SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCard_redeemed_from_prev_ar())), context, false);
+//        finalString += PrinterUtils.receiptString("SALES REFLECTED BELOW ARE AR FROM PREVIOUS SHIFT", "", context, true);
+//        finalString += PrinterUtils.receiptString("AR CASH SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCash_redeemed_from_prev_ar())), context, false);
+//        finalString += PrinterUtils.receiptString("AR CARD SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCard_redeemed_from_prev_ar())), context, false);
 
         finalString += PrinterUtils.receiptString("", "", context, true);
 
@@ -139,44 +144,44 @@ public class EJFileCreator {
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "ACCRED NO:**********************",
+                "ACCRED NO:" + SharedPreferenceManager.getString(context, AppConstants.ACCRED_NO),
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "DATE ISSUED : " + "TODAY",
+                "DATE ISSUED : " + cutOff.getTreg().split(" ")[0],
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "VALID UNTIL : " + "TODAY",
+                "VALID UNTIL : " + PrinterUtils.yearPlusFive(cutOff.getTreg()).split(" ")[0],
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "PERMIT NO: ********-***-*******-*****",
-                "",
-                context,
-                true);
-
-        finalString += PrinterUtils.receiptString(
-                "DATE ISSUED : " + "TODAY",
-                "",
-                context,
-                true);
-        finalString += PrinterUtils.receiptString(
-                "VALID UNTIL : " + "TODAY",
-                "",
-                context,
-                true);
-        finalString += PrinterUtils.receiptString(
-                "",
+                "PERMIT NO:" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_NO),
                 "",
                 context,
                 true);
 
         finalString += PrinterUtils.receiptString(
-                "THIS RECEIPT SHALL BE VALID FOR",
+                "DATE ISSUED : " + SharedPreferenceManager.getString(null, AppConstants.PERMIT_ISSUED),
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VALID UNTIL : " + SharedPreferenceManager.getString(null, AppConstants.PERMIT_VALIDITY),
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "THIS INVOICE/RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
                 true);
@@ -261,13 +266,13 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "GROSS SALES",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getGross_sales())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getGross_sales() + endOfDay.getDiscount_amount())),
                 context,
                 false);
 
         finalString += PrinterUtils.receiptString(
                 "NET SALES",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getNet_sales())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getNet_sales() + endOfDay.getDiscount_amount())),
                 context,
                 false);
 
@@ -305,7 +310,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "CASH SALES",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getTotal_cash_payments())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getTotal_cash_payments() - endOfDay.getTotal_change())),
                 context,
                 false);
 
@@ -318,20 +323,33 @@ public class EJFileCreator {
                 false);
 
         finalString += PrinterUtils.receiptString(
+                "ONLINE SALES",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getTotal_online_payments())),
+                context,
+                false);
+
+        finalString += PrinterUtils.receiptString(
+                "MOBILE SALES",
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getTotal_mobile_payments())),
+                context,
+                false);
+
+
+        finalString += PrinterUtils.receiptString(
                 "VOID",
                 PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getVoid_amount())),
                 context,
                 false);
-        finalString += PrinterUtils.receiptString(
-                "LATE CASH REDEEM",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getCash_redeemed_from_prev_ar())),
-                context,
-                false);
-        finalString += PrinterUtils.receiptString(
-                "LATE CARD REDEEM",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getCard_redeemed_from_prev_ar())),
-                context,
-                false);
+//        finalString += PrinterUtils.receiptString(
+//                "LATE CASH REDEEM",
+//                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getCash_redeemed_from_prev_ar())),
+//                context,
+//                false);
+//        finalString += PrinterUtils.receiptString(
+//                "LATE CARD REDEEM",
+//                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getCard_redeemed_from_prev_ar())),
+//                context,
+//                false);
 
 
         finalString += PrinterUtils.receiptString(
@@ -444,44 +462,44 @@ public class EJFileCreator {
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "ACCRED NO:**********************",
+                "ACCRED NO:" + SharedPreferenceManager.getString(context, AppConstants.ACCRED_NO),
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "DATE ISSUED : " + "TODAY",
+                "DATE ISSUED : " + endOfDay.getTreg().split(" ")[0],
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "VALID UNTIL : " + "TODAY",
+                "VALID UNTIL : " + PrinterUtils.yearPlusFive(endOfDay.getTreg()).split(" ")[0],
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "PERMIT NO: ********-***-*******-*****",
-                "",
-                context,
-                true);
-
-        finalString += PrinterUtils.receiptString(
-                "DATE ISSUED : " + "TODAY",
-                "",
-                context,
-                true);
-        finalString += PrinterUtils.receiptString(
-                "VALID UNTIL : " + "TODAY",
-                "",
-                context,
-                true);
-        finalString += PrinterUtils.receiptString(
-                "",
+                "PERMIT NO:" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_NO),
                 "",
                 context,
                 true);
 
         finalString += PrinterUtils.receiptString(
-                "THIS RECEIPT SHALL BE VALID FOR",
+                "DATE ISSUED :" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_ISSUED),
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VALID UNTIL :" +SharedPreferenceManager.getString(null, AppConstants.PERMIT_VALIDITY),
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "THIS INVOICE/RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
                 true);
@@ -539,15 +557,24 @@ public class EJFileCreator {
             }
         }
 
-        if (transactionCompleteDetails.transactions.getTransaction_type().equalsIgnoreCase("takeout")) {
-            finalString += PrinterUtils.receiptString("TAKEOUT", "", context, true);
-        } else if (transactionCompleteDetails.transactions.getTransaction_type().equalsIgnoreCase("delivery")) {
-            finalString += PrinterUtils.receiptString("DELIVERY", "", context, true);
-        } else {
-            finalString += PrinterUtils.receiptString("DINE IN", "", context, true);
+
+        if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
+            if (transactionCompleteDetails.transactions.getTransaction_type().equalsIgnoreCase("takeout")) {
+                finalString += PrinterUtils.receiptString("TAKEOUT", "", context, true);
+            } else if (transactionCompleteDetails.transactions.getTransaction_type().equalsIgnoreCase("delivery")) {
+                finalString += PrinterUtils.receiptString("DELIVERY", "", context, true);
+            } else {
+                finalString += PrinterUtils.receiptString("DINE IN", "", context, true);
+            }
         }
 
+
+
+
         finalString += PrinterUtils.receiptString("", "", context, true);
+        if (!TextUtils.isEmpty(transactionCompleteDetails.transactions.getTo_control_number())) {
+            finalString += PrinterUtils.receiptString("TO CTRL NO", transactionCompleteDetails.transactions.getTo_control_number(), context, false);
+        }
         finalString += PrinterUtils.receiptString("OR NO", transactionCompleteDetails.transactions.getReceipt_number(), context, false);
         finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
         finalString += PrinterUtils.receiptString("", "", context, true);
@@ -567,23 +594,57 @@ public class EJFileCreator {
                         qty += " ";
                     }
                 }
+                String myString = "";
 
-                if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
-                    finalString += PrinterUtils.receiptString(qty +  "  " + orders.getName(), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())), context, false);
-                } else {
-                    finalString += PrinterUtils.receiptString(qty +  " " + orders.getName(), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())), context, false);
-                }
+
 
                 if (orders.getDiscountAmount() > 0) {
-                     finalString += PrinterUtils.receiptString("LESS", PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getDiscountAmount())), context, false);
-                }
-
-
-                if (orders.getVatExempt() <= 0) {
-                    amountDue += orders.getOriginal_amount()  * orders.getQty();
+                    if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+                        myString = "("+qty.trim()+")" +  "  " + Html.fromHtml(orders.getName_initials());
+                    } else {
+                        myString = "("+qty.trim()+")" +  " " + Html.fromHtml(orders.getName_initials());
+                    }
                 } else {
-                    amountDue += orders.getAmount()  * orders.getQty();
+                    if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+                        myString = qty +  "  " + Html.fromHtml(orders.getName_initials());
+                    } else {
+                        myString = qty +  " " + Html.fromHtml(orders.getName_initials());
+                    }
                 }
+
+                finalString += PrinterUtils.receiptString(
+                        myString,
+                        PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+                        context, false);
+
+
+//                if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+//                    finalString += PrinterUtils.receiptString(
+//                            myString,
+//                            PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+//                            context, false);
+//                } else {
+//                    finalString += PrinterUtils.receiptString(
+//                            myString,
+//                            PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+//                            context, false);
+//                }
+
+                if (orders.getQty() > 1) {
+                    finalString += PrinterUtils.receiptString("("+String.valueOf(Utils.roundedOffTwoDecimal(orders.getOriginal_amount())) + ")", "", context, false);
+                }
+
+//                if (orders.getDiscountAmount() > 0) {
+//                     finalString += PrinterUtils.receiptString("LESS", "-" +PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getDiscountAmount())), context, false);
+//                }
+
+                amountDue += orders.getOriginal_amount()  * orders.getQty();
+
+//                if (orders.getVatExempt() > 0) {
+//                    amountDue += orders.getOriginal_amount()  * orders.getQty();
+//                } else {
+//                    amountDue += orders.getAmount()  * orders.getQty();
+//                }
             }
 
         }
@@ -601,6 +662,42 @@ public class EJFileCreator {
                             postedDiscounts.getCard_number(),
                             context,
                             false);
+
+                    if (postedDiscounts.getDiscount_name().equalsIgnoreCase("PWD") ||
+                            postedDiscounts.getDiscount_name().equalsIgnoreCase("SENIOR CITIZEN")) {
+
+                        finalString += PrinterUtils.receiptString(
+                                "NAME:___________________________",
+                                "",
+                                context,
+                                true);
+
+                        finalString += PrinterUtils.receiptString(
+                                "ADDRESS:________________________",
+                                "",
+                                context,
+                                true);
+
+                        finalString += PrinterUtils.receiptString(
+                                "SIGNATURE:________________________",
+                                "",
+                                context,
+                                true);
+
+                    }
+
+
+                    finalString += PrinterUtils.receiptString(
+                            "LESS",
+                            "",
+                            context,
+                            false);
+                    finalString += PrinterUtils.receiptString(
+                            (postedDiscounts.getIs_percentage() ? postedDiscounts.getDiscount_value() + "%" : String.valueOf((Utils.roundedOffTwoDecimal(postedDiscounts.getDiscount_value())))),
+                            String.valueOf((Utils.roundedOffTwoDecimal(postedDiscounts.getAmount()))),
+                            context,
+                            false);
+
                 }
             }
 
@@ -666,6 +763,9 @@ public class EJFileCreator {
                                 ) +
                                 Utils.roundedOffTwoDecimal(
                                         transactionCompleteDetails.transactions.getService_charge_value()
+                                ) +
+                                Utils.roundedOffTwoDecimal(
+                                        transactionCompleteDetails.transactions.getDiscount_amount()
                                 )
                         )),
                 context,
@@ -673,7 +773,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "AMOUNT DUE",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue)
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue - transactionCompleteDetails.transactions.getDiscount_amount())
                         +
                         Utils.roundedOffTwoDecimal(
                                 transactionCompleteDetails.transactions.getService_charge_value()
@@ -684,12 +784,40 @@ public class EJFileCreator {
         Double payments = 0.00;
         List<Integer> tmpArray = new ArrayList<>();
         String pymntType = "";
+        String cardType = "";
+        String cardNumber = "";
         for (Payments pym : transactionCompleteDetails.paymentsList) {
-            if (!tmpArray.contains(pym.getCore_id())) {
-                tmpArray.add(pym.getCore_id());
-                pymntType = pym.getName();
+            if (!pym.getIs_void()) {
+                if (!tmpArray.contains(pym.getCore_id())) {
+                    tmpArray.add(pym.getCore_id());
+                    pymntType = pym.getName();
+                }
+
+                if (pym.getCore_id() != 2) {
+                    payments += Utils.roundedOffTwoDecimal(pym.getAmount());
+                }
+
+                if (pym.getCore_id() == 2) {
+                    try {
+                        JSONObject jsonObject = new JSONObject(pym.getOther_data());
+                        cardType = jsonObject.getString("card_type");
+                        cardNumber = jsonObject.getString("card_number");
+
+                        int starCount = 0;
+                        if (cardNumber.length() < 3) {
+                            cardNumber = jsonObject.getString("card_number");
+                        } else {
+                            starCount = cardNumber.length() - 3;
+                            String starString = new String(new char[starCount]).replace("\0", "*");
+                            cardNumber = cardNumber.substring(0, cardNumber.length() - starCount) + starString;
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
             }
-            payments += Utils.roundedOffTwoDecimal(pym.getAmount());
         }
 
         finalString += PrinterUtils.receiptString(
@@ -708,11 +836,29 @@ public class EJFileCreator {
                 "",
                 context,
                 false);
-        finalString += PrinterUtils.receiptString(
-                "PAYMENT TYPE",
-                tmpArray.size() > 1 ? "MULTIPLE" : pymntType,
-                context,
-                false);
+        if (tmpArray.size() > 1) {
+            finalString += PrinterUtils.receiptString(
+                    "PAYMENT TYPE",
+                    "MULTIPLE",
+                    context,
+                    false);
+        } else {
+            finalString += PrinterUtils.receiptString(
+                    "PAYMENT TYPE",
+                    pymntType,
+                    context,
+                    false);
+            if (pymntType.equalsIgnoreCase("card")) {
+                finalString += PrinterUtils.receiptString(
+                        cardType,
+                        cardNumber,
+                        context,
+                        false);
+            }
+
+
+        }
+
         finalString += PrinterUtils.receiptString(
                 "",
                 "",
@@ -852,44 +998,44 @@ public class EJFileCreator {
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "ACCRED NO:**********************",
+                "ACCRED NO:" + SharedPreferenceManager.getString(context, AppConstants.ACCRED_NO),
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "DATE ISSUED : " + "TODAY",
+                "DATE ISSUED : " + transactionCompleteDetails.transactions.getTreg().split(" ")[0],
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "VALID UNTIL : " + "TODAY",
+                "VALID UNTIL : " + PrinterUtils.yearPlusFive(transactionCompleteDetails.transactions.getTreg()).split(" ")[0],
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "PERMIT NO: ********-***-*******-*****",
-                "",
-                context,
-                true);
-
-        finalString += PrinterUtils.receiptString(
-                "DATE ISSUED : " + "TODAY",
-                "",
-                context,
-                true);
-        finalString += PrinterUtils.receiptString(
-                "VALID UNTIL : " + "TODAY",
-                "",
-                context,
-                true);
-        finalString += PrinterUtils.receiptString(
-                "",
+                "PERMIT NO:" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_NO),
                 "",
                 context,
                 true);
 
         finalString += PrinterUtils.receiptString(
-                "THIS RECEIPT SHALL BE VALID FOR",
+                "DATE ISSUED :" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_ISSUED),
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VALID UNTIL :" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_VALIDITY),
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "THIS INVOICE/RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
                 true);
@@ -1143,44 +1289,44 @@ public class EJFileCreator {
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "ACCRED NO:**********************",
+                "ACCRED NO:" + SharedPreferenceManager.getString(context, AppConstants.ACCRED_NO),
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "DATE ISSUED : " + "TODAY",
+                "DATE ISSUED : " + transactionCompleteDetails.transactions.getTreg().split(" ")[0],
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "VALID UNTIL : " + "TODAY",
+                "VALID UNTIL : " + PrinterUtils.yearPlusFive(transactionCompleteDetails.transactions.getTreg()).split(" ")[0],
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "PERMIT NO: ********-***-*******-*****",
-                "",
-                context,
-                true);
-
-        finalString += PrinterUtils.receiptString(
-                "DATE ISSUED : " + "TODAY",
-                "",
-                context,
-                true);
-        finalString += PrinterUtils.receiptString(
-                "VALID UNTIL : " + "TODAY",
-                "",
-                context,
-                true);
-        finalString += PrinterUtils.receiptString(
-                "",
+                "PERMIT NO:" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_NO),
                 "",
                 context,
                 true);
 
         finalString += PrinterUtils.receiptString(
-                "THIS RECEIPT SHALL BE VALID FOR",
+                "DATE ISSUED :" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_VALIDITY),
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VALID UNTIL :" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_ISSUED),
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "THIS INVOICE/RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
                 true);
@@ -1210,10 +1356,126 @@ public class EJFileCreator {
         finalString += PrinterUtils.receiptString("ITEM CANCELLED", "", context, true);
 
         for (Orders orders : ordersList) {
+            if (!orders.getIs_void()) {
+                String qty = "";
 
-            finalString += PrinterUtils.receiptString(orders.getName(), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getAmount())), context, false);
+                qty += orders.getQty();
 
+                if (String.valueOf(orders.getQty()).length() < 4) {
+                    for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
+                        qty += " ";
+                    }
+                }
+
+                if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+                    finalString += PrinterUtils.receiptString(qty +  "  " + Html.fromHtml(orders.getName()), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())), context, false);
+                } else {
+                    finalString += PrinterUtils.receiptString(qty +  " " + Html.fromHtml(orders.getName()), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())), context, false);
+                }
+            }
         }
+
+        finalString += PrinterUtils.receiptString("", "", context, true);
+        return finalString;
+
+    }
+
+    public static String fosString(List<Orders> ordersList, Context context, String controlNumber) {
+
+
+        String finalString = "";
+        finalString += PrinterUtils.receiptString("", "", context, true);
+        finalString += PrinterUtils.receiptString("ORDER SLIP", "", context, true);
+
+        finalString += PrinterUtils.receiptString(controlNumber, "", context, true);
+
+
+        double totalAmount = 0.00;
+
+        finalString += PrinterUtils.receiptString("QTY  DESCRIPTION          AMOUNT", "", context, true);
+        finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
+
+
+        for (Orders orders : ordersList) {
+            if (!orders.getIs_void()) {
+                String qty = "";
+
+                qty += orders.getQty();
+
+                if (String.valueOf(orders.getQty()).length() < 4) {
+                    for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
+                        qty += " ";
+                    }
+                }
+                String myString = "";
+
+
+
+                if (orders.getDiscountAmount() > 0) {
+                    if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+                        myString = "("+qty.trim()+")" +  "  " + Html.fromHtml(orders.getName());
+                    } else {
+                        myString = "("+qty.trim()+")" +  " " + Html.fromHtml(orders.getName());
+                    }
+                } else {
+                    if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+                        myString = qty +  "  " + Html.fromHtml(orders.getName());
+                    } else {
+                        myString = qty +  " " + Html.fromHtml(orders.getName());
+                    }
+                }
+
+                finalString += PrinterUtils.receiptString(
+                        myString,
+                        PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+                        context, false);
+
+
+                if (orders.getQty() > 1) {
+                    finalString += PrinterUtils.receiptString("("+String.valueOf(Utils.roundedOffTwoDecimal(orders.getOriginal_amount())) + ")", "", context, false);
+                }
+
+
+                totalAmount += orders.getOriginal_amount()  * orders.getQty();
+
+
+            }
+//            if (!orders.getIs_void()) {
+//                totalAmount += orders.getQty() * orders.getAmount();
+//                String qty = "";
+//
+//                qty += orders.getQty();
+//
+//                if (String.valueOf(orders.getQty()).length() < 4) {
+//                    for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
+//                        qty += " ";
+//                    }
+//                }
+//
+//                if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+//                    finalString += PrinterUtils.receiptString(qty +  "  " + Html.fromHtml(orders.getName()), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())), context, false);
+//                } else {
+//                    finalString += PrinterUtils.receiptString(qty +  " " + Html.fromHtml(orders.getName()), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())), context, false);
+//                }
+//
+//                if (orders.getQty() > 1) {
+//                    finalString += PrinterUtils.receiptString("("+String.valueOf(Utils.roundedOffTwoDecimal(orders.getAmount())) + ")", "", context, false);
+//                }
+//
+//
+//                if (orders.getDiscountAmount() > 0) {
+//                    finalString += PrinterUtils.receiptString("LESS", PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getDiscountAmount() )), context, false);
+//
+//                }
+//
+//
+//            }
+        }
+
+        finalString += PrinterUtils.receiptString("", "", context, true);
+        finalString += PrinterUtils.receiptString("TOTAL", PrinterUtils.returnWithTwoDecimal(String.valueOf(totalAmount)), context, false);
+
+        finalString += PrinterUtils.receiptString("PRINTED DATE", Utils.getDateTimeToday(), context, false);
 
         finalString += PrinterUtils.receiptString("", "", context, true);
         return finalString;
@@ -1271,6 +1533,9 @@ public class EJFileCreator {
         }
 
         finalString += PrinterUtils.receiptString("", "", context, true);
+        if (!TextUtils.isEmpty(transactionCompleteDetails.transactions.getTo_control_number())) {
+            finalString += PrinterUtils.receiptString("TO CTRL NO", transactionCompleteDetails.transactions.getTo_control_number(), context, false);
+        }
         finalString += PrinterUtils.receiptString("OR NO", transactionCompleteDetails.transactions.getReceipt_number(), context, false);
         finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
         finalString += PrinterUtils.receiptString("", "", context, true);
@@ -1280,25 +1545,69 @@ public class EJFileCreator {
 
         Double amountDue = 0.00;
         for (Orders orders : transactionCompleteDetails.ordersList) {
+            if (!orders.getIs_void()) {
+                String qty = "";
 
-            String qty = "";
+                qty += orders.getQty();
 
-            qty += orders.getQty();
-
-            if (String.valueOf(orders.getQty()).length() < 4) {
-                for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
-                    qty += " ";
+                if (String.valueOf(orders.getQty()).length() < 4) {
+                    for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
+                        qty += " ";
+                    }
                 }
+                String myString = "";
+
+
+
+                if (orders.getDiscountAmount() > 0) {
+                    if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+                        myString = "("+qty.trim()+")" +  "  " + Html.fromHtml(orders.getName_initials());
+                    } else {
+                        myString = "("+qty.trim()+")" +  " " + Html.fromHtml(orders.getName_initials());
+                    }
+                } else {
+                    if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+                        myString = qty +  "  " + Html.fromHtml(orders.getName_initials());
+                    } else {
+                        myString = qty +  " " + Html.fromHtml(orders.getName_initials());
+                    }
+                }
+
+                finalString += PrinterUtils.receiptString(
+                        myString,
+                        PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+                        context, false);
+
+
+//                if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+//                    finalString += PrinterUtils.receiptString(
+//                            myString,
+//                            PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+//                            context, false);
+//                } else {
+//                    finalString += PrinterUtils.receiptString(
+//                            myString,
+//                            PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+//                            context, false);
+//                }
+
+                if (orders.getQty() > 1) {
+                    finalString += PrinterUtils.receiptString("("+String.valueOf(Utils.roundedOffTwoDecimal(orders.getOriginal_amount())) + ")", "", context, false);
+                }
+
+//                if (orders.getDiscountAmount() > 0) {
+//                     finalString += PrinterUtils.receiptString("LESS", "-" +PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getDiscountAmount())), context, false);
+//                }
+
+                amountDue += orders.getOriginal_amount()  * orders.getQty();
+
+//                if (orders.getVatExempt() > 0) {
+//                    amountDue += orders.getOriginal_amount()  * orders.getQty();
+//                } else {
+//                    amountDue += orders.getAmount()  * orders.getQty();
+//                }
             }
 
-            finalString += PrinterUtils.receiptString(qty +  " " + orders.getName(), PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount())), context, false);
-
-
-            if (orders.getVatExempt() <= 0) {
-                amountDue += orders.getOriginal_amount();
-            } else {
-                amountDue += orders.getAmount();
-            }
         }
 
 
@@ -1314,6 +1623,42 @@ public class EJFileCreator {
                             postedDiscounts.getCard_number(),
                             context,
                             false);
+
+                    if (postedDiscounts.getDiscount_name().equalsIgnoreCase("PWD") ||
+                            postedDiscounts.getDiscount_name().equalsIgnoreCase("SENIOR CITIZEN")) {
+
+                        finalString += PrinterUtils.receiptString(
+                                "NAME:___________________________",
+                                "",
+                                context,
+                                true);
+
+                        finalString += PrinterUtils.receiptString(
+                                "ADDRESS:________________________",
+                                "",
+                                context,
+                                true);
+
+                        finalString += PrinterUtils.receiptString(
+                                "SIGNATURE:________________________",
+                                "",
+                                context,
+                                true);
+
+                    }
+
+
+                    finalString += PrinterUtils.receiptString(
+                            "LESS",
+                            "",
+                            context,
+                            false);
+                    finalString += PrinterUtils.receiptString(
+                            (postedDiscounts.getIs_percentage() ? postedDiscounts.getDiscount_value() + "%" : String.valueOf((Utils.roundedOffTwoDecimal(postedDiscounts.getDiscount_value())))),
+                            String.valueOf((Utils.roundedOffTwoDecimal(postedDiscounts.getAmount()))),
+                            context,
+                            false);
+
                 }
             }
 
@@ -1349,6 +1694,20 @@ public class EJFileCreator {
                 "0.00",
                 context,
                 false);
+        if (transactionCompleteDetails.transactions.getService_charge_value() > 0) {
+            finalString += PrinterUtils.receiptString(
+                    "SERVICE CHARGE",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(transactionCompleteDetails.transactions.getService_charge_value())),
+                    context,
+                    false);
+        } else {
+            finalString += PrinterUtils.receiptString(
+                    "SERVICE CHARGE",
+                    "0.00",
+                    context,
+                    false);
+        }
+
 
         finalString += PrinterUtils.receiptString(
                 "",
@@ -1358,25 +1717,68 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "SUB TOTAL",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getGross_sales()))),
+                PrinterUtils.returnWithTwoDecimal(
+                        String.valueOf(
+                                Utils.roundedOffTwoDecimal(
+                                        transactionCompleteDetails.transactions.getGross_sales()
+                                ) +
+                                        Utils.roundedOffTwoDecimal(
+                                                transactionCompleteDetails.transactions.getService_charge_value()
+                                        ) +
+                                        Utils.roundedOffTwoDecimal(
+                                                transactionCompleteDetails.transactions.getDiscount_amount()
+                                        )
+                        )),
                 context,
                 false);
 
         finalString += PrinterUtils.receiptString(
                 "AMOUNT DUE",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue)),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue - transactionCompleteDetails.transactions.getDiscount_amount())
+                        +
+                        Utils.roundedOffTwoDecimal(
+                                transactionCompleteDetails.transactions.getService_charge_value()
+                        )),
                 context,
                 false);
 
         Double payments = 0.00;
         List<Integer> tmpArray = new ArrayList<>();
         String pymntType = "";
+        String cardType = "";
+        String cardNumber = "";
         for (Payments pym : transactionCompleteDetails.paymentsList) {
-            if (!tmpArray.contains(pym.getCore_id())) {
-                tmpArray.add(pym.getCore_id());
-                pymntType = pym.getName();
+            if (!pym.getIs_void()) {
+                if (!tmpArray.contains(pym.getCore_id())) {
+                    tmpArray.add(pym.getCore_id());
+                    pymntType = pym.getName();
+                }
+
+                if (pym.getCore_id() != 2) {
+                    payments += Utils.roundedOffTwoDecimal(pym.getAmount());
+                }
+
+                if (pym.getCore_id() == 2) {
+                    try {
+                        JSONObject jsonObject = new JSONObject(pym.getOther_data());
+                        cardType = jsonObject.getString("card_type");
+                        cardNumber = jsonObject.getString("card_number");
+
+                        int starCount = 0;
+                        if (cardNumber.length() < 3) {
+                            cardNumber = jsonObject.getString("card_number");
+                        } else {
+                            starCount = cardNumber.length() - 3;
+                            String starString = new String(new char[starCount]).replace("\0", "*");
+                            cardNumber = cardNumber.substring(0, cardNumber.length() - starCount) + starString;
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
             }
-            payments += Utils.roundedOffTwoDecimal(pym.getAmount());
         }
 
         finalString += PrinterUtils.receiptString(
@@ -1395,11 +1797,29 @@ public class EJFileCreator {
                 "",
                 context,
                 false);
-        finalString += PrinterUtils.receiptString(
-                "PAYMENT TYPE",
-                tmpArray.size() > 1 ? "MULTIPLE" : pymntType,
-                context,
-                false);
+        if (tmpArray.size() > 1) {
+            finalString += PrinterUtils.receiptString(
+                    "PAYMENT TYPE",
+                    "MULTIPLE",
+                    context,
+                    false);
+        } else {
+            finalString += PrinterUtils.receiptString(
+                    "PAYMENT TYPE",
+                    pymntType,
+                    context,
+                    false);
+            if (pymntType.equalsIgnoreCase("card")) {
+                finalString += PrinterUtils.receiptString(
+                        cardType,
+                        cardNumber,
+                        context,
+                        false);
+            }
+
+
+        }
+
         finalString += PrinterUtils.receiptString(
                 "",
                 "",
@@ -1459,6 +1879,40 @@ public class EJFileCreator {
                     true);
         }
 
+        if (transactionCompleteDetails.transactions.getTransaction_type().equalsIgnoreCase("delivery")) {
+            finalString += PrinterUtils.receiptString(
+                    "CONTROL#",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    transactionCompleteDetails.transactions.getControl_number(),
+                    "",
+                    context,
+                    true);
+
+            finalString += PrinterUtils.receiptString(
+                    "DELIVERY FOR",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    transactionCompleteDetails.transactions.getDelivery_to(),
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    "DELIVERY ADDRESS",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    transactionCompleteDetails.transactions.getDelivery_address(),
+                    "",
+                    context,
+                    true);
+        }
+
 
 
         finalString += PrinterUtils.receiptString(
@@ -1505,44 +1959,44 @@ public class EJFileCreator {
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "ACCRED NO:**********************",
+                "ACCRED NO:" + SharedPreferenceManager.getString(context, AppConstants.ACCRED_NO),
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "DATE ISSUED : " + "TODAY",
+                "DATE ISSUED : " + transactionCompleteDetails.transactions.getTreg().split(" ")[0],
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "VALID UNTIL : " + "TODAY",
+                "VALID UNTIL : " + PrinterUtils.yearPlusFive(transactionCompleteDetails.transactions.getTreg()).split(" ")[0],
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "PERMIT NO: ********-***-*******-*****",
-                "",
-                context,
-                true);
-
-        finalString += PrinterUtils.receiptString(
-                "DATE ISSUED : " + "TODAY",
-                "",
-                context,
-                true);
-        finalString += PrinterUtils.receiptString(
-                "VALID UNTIL : " + "TODAY",
-                "",
-                context,
-                true);
-        finalString += PrinterUtils.receiptString(
-                "",
+                "PERMIT NO:" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_NO),
                 "",
                 context,
                 true);
 
         finalString += PrinterUtils.receiptString(
-                "THIS RECEIPT SHALL BE VALID FOR",
+                "DATE ISSUED :" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_ISSUED),
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VALID UNTIL :" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_VALIDITY),
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "THIS INVOICE/RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
                 true);
@@ -1890,44 +2344,44 @@ public class EJFileCreator {
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "ACCRED NO:**********************",
+                "ACCRED NO:" + SharedPreferenceManager.getString(context, AppConstants.ACCRED_NO),
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "DATE ISSUED : " + "TODAY",
+                "DATE ISSUED : " + transactionCompleteDetails.transactions.getTreg().split(" ")[0],
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "VALID UNTIL : " + "TODAY",
+                "VALID UNTIL : " + PrinterUtils.yearPlusFive(transactionCompleteDetails.transactions.getTreg()).split(" ")[0],
                 "",
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
-                "PERMIT NO: ********-***-*******-*****",
-                "",
-                context,
-                true);
-
-        finalString += PrinterUtils.receiptString(
-                "DATE ISSUED : " + "TODAY",
-                "",
-                context,
-                true);
-        finalString += PrinterUtils.receiptString(
-                "VALID UNTIL : " + "TODAY",
-                "",
-                context,
-                true);
-        finalString += PrinterUtils.receiptString(
-                "",
+                "PERMIT NO:" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_NO),
                 "",
                 context,
                 true);
 
         finalString += PrinterUtils.receiptString(
-                "THIS RECEIPT SHALL BE VALID FOR",
+                "DATE ISSUED :" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_VALIDITY),
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "VALID UNTIL :" + SharedPreferenceManager.getString(null, AppConstants.PERMIT_ISSUED),
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "THIS INVOICE/RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
                 true);

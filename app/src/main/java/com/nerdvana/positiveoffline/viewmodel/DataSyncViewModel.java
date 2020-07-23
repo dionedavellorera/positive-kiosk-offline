@@ -66,9 +66,19 @@ public class DataSyncViewModel extends AndroidViewModel {
     }
 
 
+    public void truncatePaymentTypes() {
+        mRepository.truncatePaymentTypes();
+    }
+
     public void truncateProducts() {
         mRepository.truncateProducts();
     }
+
+    public void truncateDiscounts() {
+        mRepository.truncateDiscounts();
+    }
+
+
 
     public void truncatePrinterLanguage() {
         mRepository.truncatePrinterLanguage();

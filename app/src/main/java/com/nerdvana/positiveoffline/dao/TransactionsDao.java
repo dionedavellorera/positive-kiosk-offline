@@ -1,14 +1,13 @@
 package com.nerdvana.positiveoffline.dao;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Transaction;
 import androidx.room.Update;
 
-import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
@@ -27,8 +26,15 @@ public interface TransactionsDao {
     @Query("SELECT * FROM Transactions WHERE is_sent_to_server = 0")
     List<Transactions> unsyncedTransactions();
 
-    @Query("SELECT * FROM Transactions WHERE is_backed_out = 0 AND is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_shared = 0")
+    @Query("SELECT * FROM Transactions WHERE is_sent_to_server = 0 AND to_id != 0")
+    List<Transactions> unsyncedToTransactions();
+
+    @Query("SELECT * FROM Transactions WHERE is_backed_out = 0 AND is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_shared = 0 AND is_temp = 0")
     LiveData<List<Transactions>> ldTransactionsList();
+
+
+    @Query("SELECT * FROM Transactions WHERE is_backed_out = 0 AND is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_shared = 0 AND to_id != 0 AND is_sent_to_server = 0 AND is_temp = 1")
+    LiveData<List<Transactions>> ldTransactionsListTo();
 
     @Query("SELECT * FROM Transactions WHERE is_saved = 1 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0 AND is_shared = 0 ORDER BY DATE(saved_at) ASC")
     LiveData<List<Transactions>> ldSavedTransactionsList();
@@ -43,8 +49,11 @@ public interface TransactionsDao {
     @Query("SELECT * FROM Transactions WHERE room_number != '' AND is_completed = 0 AND is_void = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0 AND is_shared = 0")
     List<TransactionWithOrders> transactionListWithRoom();
 
-    @Query("SELECT * FROM Transactions WHERE is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0 AND is_shared = 0")
+    @Query("SELECT * FROM Transactions WHERE is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0 AND is_shared = 0 AND is_temp = 0")
     List<Transactions> transactionsList();
+
+    @Query("SELECT * FROM Transactions WHERE is_saved = 0 AND is_completed = 0 AND is_cut_off = 0 AND is_cancelled = 0 AND is_backed_out = 0 AND is_shared = 0 AND to_id != 0 AND is_sent_to_server = 0")
+    List<Transactions> transactionListFromTo();
 
     @Query("SELECT * FROM Transactions")
     List<Transactions> getAllTransactions();
@@ -58,7 +67,12 @@ public interface TransactionsDao {
     @Query("SELECT * FROM Transactions WHERE receipt_number != '' ORDER BY id DESC LIMIT 1 ")
     Transactions lastOrNumber();
 
-    @Query("SELECT * FROM Transactions WHERE is_cut_off = 0 AND is_shared = 0 AND (is_completed = 1 OR is_void = 1) AND (is_void_by = :user_id OR is_completed_by = :user_id)")
+    @Query("SELECT * FROM Transactions WHERE to_transaction_id = :to_transaction_id AND machine_id = :machine_id")
+    Transactions getExistingToTransaction(String to_transaction_id, String machine_id);
+
+
+    @Query("SELECT * FROM Transactions WHERE is_cut_off = 0 AND is_shared = 0 " +
+            "AND (is_completed = 1 OR is_void = 1) AND (is_void_by = :user_id OR is_completed_by = :user_id)")
     List<Transactions> unCutOffTransactionsByUser(String user_id);
 
     @Query("SELECT * FROM Transactions WHERE id = :transaction_id")
@@ -73,10 +87,22 @@ public interface TransactionsDao {
     @Query("SELECT * FROM Transactions t WHERE t.id = :transaction_id LIMIT 1")
     TransactionCompleteDetails getTransactionViaTransactionId(String transaction_id);
 
+    @Query("SELECT * FROM Transactions t WHERE t.id = :transaction_id LIMIT 1")
+    Transactions getTransactionViaTransactionIdOnly(String transaction_id);
+
+
+    @Query("SELECT * FROM Transactions t WHERE t.to_transaction_id = :transaction_id LIMIT 1")
+    Transactions getTransactionViaToTransactionId(String transaction_id);
+
+
     @Update()
     void update(Transactions transaction);
 
     @Update()
     Integer updateLong(Transactions transaction);
+
+    @Query("UPDATE Transactions set is_sent_to_server = 1 where id = :transaction_id")
+    int updateSentToServer(String transaction_id);
+
 
 }

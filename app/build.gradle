@@ -5,14 +5,19 @@ apply plugin: 'com.google.firebase.crashlytics'
 
 android {
     compileSdkVersion 29
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
     buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "com.nerdvana.positiveoffline"
-        minSdkVersion 18
+        minSdkVersion 19
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -78,4 +83,10 @@ dependencies {
     // Add the Firebase SDK for Crashlytics.
     implementation 'com.google.firebase:firebase-crashlytics:17.0.0'
 
+    implementation 'com.sunmi:printerlibrary:1.0.5'
+    implementation 'com.sunmi:DeviceManagerLibrary:1.0.17'
+
+    implementation 'com.github.nkzawa:socket.io-client:0.6.0'
+
+    implementation 'me.everything:overscroll-decor-android:1.1.0'
 }

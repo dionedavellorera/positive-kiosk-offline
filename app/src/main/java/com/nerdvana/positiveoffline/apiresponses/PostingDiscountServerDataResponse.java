@@ -19,7 +19,9 @@ public class PostingDiscountServerDataResponse {
     }
 
     public class PostingDiscount {
-
+        @SerializedName("to_id")
+        @Expose
+        private Integer toId;
         @SerializedName("my_id")
         @Expose
         private Integer myId;
@@ -83,6 +85,14 @@ public class PostingDiscountServerDataResponse {
         @SerializedName("deleted_at")
         @Expose
         private Object deletedAt;
+
+        public Integer getToId() {
+            return toId;
+        }
+
+        public void setToId(Integer toId) {
+            this.toId = toId;
+        }
 
         public Integer getMyId() {
             return myId;

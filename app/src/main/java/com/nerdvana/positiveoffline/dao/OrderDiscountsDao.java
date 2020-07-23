@@ -26,6 +26,9 @@ public interface OrderDiscountsDao {
     @Query("SELECT * FROM OrderDiscounts where is_sent_to_server = 0")
     List<OrderDiscounts> unsyncedOrderDiscounts();
 
+    @Query("SELECT * FROM OrderDiscounts where is_sent_to_server = 0 AND to_id != 0")
+    List<OrderDiscounts> unsyncedToOrderDiscounts();
+
     @Query("SELECT * FROM Orders where transaction_id = :transaction_id")
     List<OrderWithDiscounts> orderDiscountList(String transaction_id);
 
@@ -33,9 +36,15 @@ public interface OrderDiscountsDao {
     List<OrderDiscounts> discountList(int posted_discount_id);
 
     @Query("SELECT * FROM OrderDiscounts where transaction_id = :transaction_id")
+    List<OrderDiscounts> odiscountTransId(int transaction_id);
+
+    @Query("SELECT * FROM OrderDiscounts where transaction_id = :transaction_id")
     List<OdWithPd> odWithPd(int transaction_id);
 
     @Update
     void update(OrderDiscounts orderDiscounts);
+
+    @Query("UPDATE OrderDiscounts set is_sent_to_server = 1 where transaction_id = :transaction_id")
+    int updateSentToServer(String transaction_id);
 
 }

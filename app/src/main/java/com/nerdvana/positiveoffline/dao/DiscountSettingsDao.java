@@ -17,4 +17,10 @@ public interface DiscountSettingsDao {
 
     @Query("SELECT * FROM DiscountSettings")
     List<DiscountSettings> discountSettingsList();
+
+    @Query("DELETE FROM Discounts")
+    void truncateDiscounts();
+
+    @Query("DELETE FROM DiscountSettings")
+    void truncateDiscountSettings();
 }

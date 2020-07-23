@@ -45,6 +45,10 @@ public class CutOffViewModel extends AndroidViewModel {
         cutOffRepository.update(payout);
     }
 
+    public void update(PostedDiscounts postedDiscounts) throws ExecutionException, InterruptedException {
+        cutOffRepository.update(postedDiscounts);
+    }
+
     public void update(CutOff cutOff) throws ExecutionException, InterruptedException {
         cutOffRepository.update(cutOff);
     }

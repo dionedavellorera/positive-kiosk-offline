@@ -20,7 +20,12 @@ public class OrdersServerDataResponse {
     }
 
     public class Order {
-
+        @SerializedName("name_initials")
+        @Expose
+        private String name_initials;
+        @SerializedName("to_id")
+        @Expose
+        private Integer toId;
         @SerializedName("my_id")
         @Expose
         private Integer myId;
@@ -123,6 +128,22 @@ public class OrdersServerDataResponse {
         @SerializedName("deleted_at")
         @Expose
         private Object deletedAt;
+
+        public String getName_initials() {
+            return name_initials;
+        }
+
+        public void setName_initials(String name_initials) {
+            this.name_initials = name_initials;
+        }
+
+        public Integer getToId() {
+            return toId;
+        }
+
+        public void setToId(Integer toId) {
+            this.toId = toId;
+        }
 
         public Integer getMyId() {
             return myId;

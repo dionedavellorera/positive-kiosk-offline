@@ -33,6 +33,7 @@ import com.nerdvana.positiveoffline.printer.SStarPort;
 import com.starmicronics.stario.PortInfo;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
+import com.sunmi.devicesdk.core.DeviceManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +59,7 @@ public class PrinterConnectionFragment extends Fragment implements PrinterConnec
         activePrinter = view.findViewById(R.id.activePrinter);
         listOtherPrinter = view.findViewById(R.id.listOtherPrinter);
         otherPrinterModelList = new ArrayList<>();
-
+        otherPrinterModelList.add(new OtherPrinterModel("SUNMI", "SUNMI", OtherPrinterModel.SUNMI_PRINTER));
 
         otherPrinterAdapter = new OtherPrinterAdapter(otherPrinterModelList, this, getContext());
         LinearLayoutManager llm = new LinearLayoutManager(getContext());
@@ -78,7 +79,23 @@ public class PrinterConnectionFragment extends Fragment implements PrinterConnec
         }
 
         if (!SharedPreferenceManager.getString(getContext(), AppConstants.SELECTED_PRINTER_MANUALLY).isEmpty()) {
-            activePrinter.setText(SharedPreferenceManager.getString(getContext(), AppConstants.SELECTED_PRINTER_MANUALLY));
+            if (SharedPreferenceManager.getString(getContext(), AppConstants.SELECTED_PRINTER_MANUALLY).equalsIgnoreCase("sunmi")) {
+                activePrinter.setText(String.format("%s(press to enter device manager)",SharedPreferenceManager.getString(getContext(), AppConstants.SELECTED_PRINTER_MANUALLY)));
+                activePrinter.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (DeviceManager.getInstance() != null) {
+                            DeviceManager.getInstance().startSettingActivity();
+                        } else {
+                            Toast.makeText(getContext(), "No sunmi device manager installed", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            } else {
+                activePrinter.setText(SharedPreferenceManager.getString(getContext(), AppConstants.SELECTED_PRINTER_MANUALLY));
+            }
+
+//            activePrinter.setText(SharedPreferenceManager.getString(getContext(), AppConstants.SELECTED_PRINTER_MANUALLY));
         }
 
         try {
@@ -128,7 +145,23 @@ public class PrinterConnectionFragment extends Fragment implements PrinterConnec
             SStarPort.changePort(getContext());
         }
 
-        activePrinter.setText(otherPrinterModelList.get(position).getHead());
+        if (String.valueOf(otherPrinterModelList.get(position).getHead()).equalsIgnoreCase("sunmi")) {
+            activePrinter.setText(String.format("%s(press to enter device manager)",otherPrinterModelList.get(position).getPrinterModel()));
+            activePrinter.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (DeviceManager.getInstance() != null) {
+                        DeviceManager.getInstance().startSettingActivity();
+                    } else {
+                        Toast.makeText(getContext(), "No sunmi device manager installed", Toast.LENGTH_SHORT).show();
+                    }
+
+                }
+            });
+        } else {
+            activePrinter.setText(otherPrinterModelList.get(position).getHead());
+        }
+
 
         if (otherPrinterAdapter != null) otherPrinterAdapter.notifyDataSetChanged();
     }

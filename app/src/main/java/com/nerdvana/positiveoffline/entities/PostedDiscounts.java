@@ -36,6 +36,10 @@ public class PostedDiscounts {
 
     private String treg;
 
+    private int to_id = 0;
+
+    private double qty = 0.00;
+
     @Ignore
     public PostedDiscounts() {}
 
@@ -45,7 +49,10 @@ public class PostedDiscounts {
                            String address, Boolean is_percentage,
                            Double discount_value, int is_sent_to_server,
                            int machine_id, int branch_id,
-                           String treg) {
+                           String treg, int to_id,
+                           double qty) {
+        this.qty = qty;
+        this.to_id = to_id;
         this.treg = treg;
         this.is_sent_to_server = is_sent_to_server;
         this.machine_id = machine_id;
@@ -59,6 +66,22 @@ public class PostedDiscounts {
         this.address = address;
         this.is_percentage = is_percentage;
         this.discount_value = discount_value;
+    }
+
+    public double getQty() {
+        return qty;
+    }
+
+    public void setQty(double qty) {
+        this.qty = qty;
+    }
+
+    public int getTo_id() {
+        return to_id;
+    }
+
+    public void setTo_id(int to_id) {
+        this.to_id = to_id;
     }
 
     public String getTreg() {

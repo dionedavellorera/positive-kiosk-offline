@@ -13,6 +13,10 @@ import com.nerdvana.positiveoffline.model.PrintModel;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 public class PrinterUtils {
 
     public static void addTextToPrinter(Printer printer, String text,
@@ -137,20 +141,20 @@ public class PrinterUtils {
             addTextToPrinter(printer, "ADDRESS : 1 CANLEY ROAD BRGY", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
             addTextToPrinter(printer, "BAGONG ILOG PASIG CITY", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
             addTextToPrinter(printer, "VAT REG TIN: 009-772-500-00000", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "ACCRED NO:**********************", Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+            addTextToPrinter(printer, "ACCRED NO:" + SharedPreferenceManager.getString(null, AppConstants.ACCRED_NO), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
             addTextToPrinter(printer, "DATE ISSUED : " + Utils.getDateTimeToday(), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
             addTextToPrinter(printer, "VALID UNTIL : " + Utils.getDateTimeToday(), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
 //            addTextToPrinter(printer, "Date Issued : " + Utils.birDateTimeFormat(currentDate), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
 //            addTextToPrinter(printer, "Valid Until : " + Utils.birDateTimeFormat(currentDatePlus5), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
 
-            addTextToPrinter(printer, "PERMIT NO: ********-***-*******-*****" , Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1,1 ,1 );
-            addTextToPrinter(printer, "DATE ISSUED : " + Utils.getDateTimeToday(), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, "VALID UNTIL : " + Utils.getDateTimeToday(), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+            addTextToPrinter(printer, "PERMIT NO:" +SharedPreferenceManager.getString(null, AppConstants.PERMIT_NO) , Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1,1 ,1 );
+            addTextToPrinter(printer, "DATE ISSUED : " + SharedPreferenceManager.getString(null, AppConstants.PERMIT_ISSUED), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+            addTextToPrinter(printer, "VALID UNTIL : " + SharedPreferenceManager.getString(null, AppConstants.PERMIT_VALIDITY), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
 //            addTextToPrinter(printer, "Date Issued : " + Utils.birDateTimeFormat(currentDate), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
 //            addTextToPrinter(printer, "Valid Until : " + Utils.birDateTimeFormat(currentDatePlus5), Printer.FALSE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
 
             addPrinterSpace(1, printer);
-            addTextToPrinter(printer, "THIS RECEIPT SHALL BE VALID FOR", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+            addTextToPrinter(printer, "THIS INVOICE/RECEIPT SHALL BE VALID FOR", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
             addTextToPrinter(printer, "FIVE(5) YEARS FROM THE DATE OF", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
             addTextToPrinter(printer, "THE PERMIT TO USE", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
             addPrinterSpace(1, printer);
@@ -182,16 +186,28 @@ public class PrinterUtils {
             }
 
         } else {
+            if (!TextUtils.isEmpty(partOne)) {
+                if (partOne.length() < maxColumnDivideTwo) {
+                    filler += (maxColumnDivideTwo - partOne.length());
+                }
+            }
+            String part2Adder = "";
+            if (!TextUtils.isEmpty(partTwo)) {
+                if (partTwo.length() < maxColumnDivideTwo) {
+                    filler += (maxColumnDivideTwo - partTwo.length());
+                }
 
-            if (partOne.length() < maxColumnDivideTwo) {
-                filler += (maxColumnDivideTwo - partOne.length());
+                part2Adder = partTwo.length() >= maxColumnDivideTwo ? partTwo.substring(0, maxColumnDivideTwo) : partTwo;
+            } else {
+                filler += maxColumnDivideTwo;
             }
-            if (partTwo.length() < maxColumnDivideTwo) {
-                filler += (maxColumnDivideTwo - partTwo.length());
-            }
+
+
+
+
             finalString = (partOne.length() >= maxColumnDivideTwo ? partOne.substring(0, maxColumnDivideTwo) : partOne)
                     + repeat(" ", filler)
-                    + (partTwo.length() >= maxColumnDivideTwo ? partTwo.substring(0, maxColumnDivideTwo) : partTwo);
+                    + (part2Adder);
 
         }
 
@@ -200,5 +216,18 @@ public class PrinterUtils {
 
 
 
+    public static String yearPlusFive(String date) {
+        DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        String res = "";
+        try {
+            DateTime jodatime = dtf.parseDateTime(date);
+//            DateTimeFormatter dtfOut = DateTimeFormat.forPattern("MMM d h:m a");
+            DateTimeFormatter dtfOut = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+            res = dtfOut.print(jodatime.plusYears(5));
+        } catch (Exception e) {
+            res  = "NA";
+        }
+        return res.toUpperCase();
+    }
 
 }

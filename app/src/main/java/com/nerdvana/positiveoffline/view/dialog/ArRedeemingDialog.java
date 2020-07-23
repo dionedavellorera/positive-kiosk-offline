@@ -123,7 +123,8 @@ public class ArRedeemingDialog extends BaseDialog implements PaymentsContract {
                                     Utils.getDateTimeToday(),
                                     1,
                                     getUser().getUsername(),
-                                    Utils.getDateTimeToday());
+                                    Utils.getDateTimeToday(),
+                                    0);
                             p.setOther_data("");
 //                            p.setCut_off_id(payments.getCut_off_id());
                             p.setLink_payment_id(String.valueOf(payments.getId()));
@@ -153,7 +154,8 @@ public class ArRedeemingDialog extends BaseDialog implements PaymentsContract {
                                     Utils.getDateTimeToday(),
                                     1,
                                     getUser().getUsername(),
-                                    Utils.getDateTimeToday());
+                                    Utils.getDateTimeToday(),
+                                    0.00);
 //                            p.setCut_off_id(payments.getCut_off_id());
                             p.setOther_data(payments.getOther_data());
                             p.setLink_payment_id(String.valueOf(payments.getId()));

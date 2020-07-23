@@ -63,6 +63,15 @@ public class VerifyMachineResponse {
     }
 
     public class Result {
+        @SerializedName("permit_nos")
+        @Expose
+        private String permit_nos;
+        @SerializedName("permit_issued_at")
+        @Expose
+        private String permit_issued_at;
+        @SerializedName("permit_valid_at")
+        @Expose
+        private String permit_valid_at;
         @SerializedName("printer_path")
         @Expose
         private String printer_path;
@@ -91,6 +100,30 @@ public class VerifyMachineResponse {
 //        @Expose
 //        private Device device;
 
+
+        public String getPermit_nos() {
+            return permit_nos;
+        }
+
+        public void setPermit_nos(String permit_nos) {
+            this.permit_nos = permit_nos;
+        }
+
+        public String getPermit_issued_at() {
+            return permit_issued_at;
+        }
+
+        public void setPermit_issued_at(String permit_issued_at) {
+            this.permit_issued_at = permit_issued_at;
+        }
+
+        public String getPermit_valid_at() {
+            return permit_valid_at;
+        }
+
+        public void setPermit_valid_at(String permit_valid_at) {
+            this.permit_valid_at = permit_valid_at;
+        }
 
         public String getPrinter_path() {
             return printer_path;

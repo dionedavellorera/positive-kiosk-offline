@@ -35,6 +35,10 @@ public class OrderDiscounts {
 
     private String treg;
 
+    private int to_id = 0;
+
+    private int is_special = 0;
+
     @Ignore
     public OrderDiscounts() {}
 
@@ -43,7 +47,10 @@ public class OrderDiscounts {
                           int order_id, String discount_name,
                           long posted_discount_id, Boolean is_void,
                           int is_sent_to_server, int machine_id,
-                          int branch_id, String treg) {
+                          int branch_id, String treg, int to_id,
+                          int is_special) {
+        this.is_special = is_special;
+        this.to_id = to_id;
         this.is_sent_to_server = is_sent_to_server;
         this.machine_id = machine_id;
         this.branch_id = branch_id;
@@ -56,6 +63,22 @@ public class OrderDiscounts {
         this.posted_discount_id = posted_discount_id;
         this.is_void = is_void;
         this.treg = treg;
+    }
+
+    public int getIs_special() {
+        return is_special;
+    }
+
+    public void setIs_special(int is_special) {
+        this.is_special = is_special;
+    }
+
+    public int getTo_id() {
+        return to_id;
+    }
+
+    public void setTo_id(int to_id) {
+        this.to_id = to_id;
     }
 
     public String getTreg() {

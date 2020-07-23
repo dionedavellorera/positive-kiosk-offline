@@ -9,16 +9,23 @@ import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
 import com.epson.epos2.printer.PrinterStatusInfo;
 import com.epson.epos2.printer.ReceiveListener;
+import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
+import com.nerdvana.positiveoffline.MainActivity;
+import com.nerdvana.positiveoffline.PrinterPresenter;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
+import com.nerdvana.positiveoffline.ThreadPoolManager;
+import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.entities.CutOff;
 import com.nerdvana.positiveoffline.functions.PrinterFunctions;
 import com.nerdvana.positiveoffline.intf.AsyncFinishCallBack;
 import com.nerdvana.positiveoffline.localizereceipts.ILocalizeReceipts;
 import com.nerdvana.positiveoffline.model.OtherPrinterModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
+import com.nerdvana.positiveoffline.model.PrintingListModel;
+import com.nerdvana.positiveoffline.model.SunmiPrinterModel;
 import com.nerdvana.positiveoffline.printer.EJFileCreator;
 import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
@@ -26,7 +33,12 @@ import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
 import com.starmicronics.stario.StarPrinterStatus;
 import com.starmicronics.starioextension.StarIoExt;
+import com.sunmi.devicemanager.cons.Cons;
+import com.sunmi.devicemanager.device.Device;
+import com.sunmi.devicesdk.core.PrinterManager;
+import com.sunmi.peripheral.printer.SunmiPrinterService;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static com.nerdvana.positiveoffline.printer.PrinterUtils.addPrinterSpace;
@@ -45,11 +57,15 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
     private StarIOPort port = null;
     private boolean isReprint;
 
+    private PrinterPresenter printerPresenter;
+    private SunmiPrinterService mSunmiPrintService;
+
     public CutOffAsync(PrintModel printModel, Context context,
                        AsyncFinishCallBack asyncFinishCallBack,
                        DataSyncViewModel dataSyncViewModel,
                        ILocalizeReceipts iLocalizeReceipts,
-                       StarIOPort starIOPort, boolean isReprint) {
+                       StarIOPort starIOPort, boolean isReprint,
+                       PrinterPresenter printerPresenter, SunmiPrinterService mSunmiPrintService) {
         this.context = context;
         this.printModel = printModel;
         this.asyncFinishCallBack = asyncFinishCallBack;
@@ -57,6 +73,9 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
         this.iLocalizeReceipts = iLocalizeReceipts;
         this.port = starIOPort;
         this.isReprint = isReprint;
+
+        this.printerPresenter = printerPresenter;
+        this.mSunmiPrintService = mSunmiPrintService;
     }
 
 
@@ -125,9 +144,18 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
             addTextToPrinter(printer, "DESCRIPTION               VALUE", Printer.TRUE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
 
+//            Utils.roundedOffTwoDecimal(
+//                    transactionCompleteDetails.transactions.getGross_sales()
+//            ) +
+//                    Utils.roundedOffTwoDecimal(
+//                            transactionCompleteDetails.transactions.getService_charge_value()
+//                    ) +
+//                    Utils.roundedOffTwoDecimal(
+//                            transactionCompleteDetails.transactions.getDiscount_amount()
+//                    )
             addTextToPrinter(printer, twoColumns(
                     "GROSS SALES",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getGross_sales())),
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getGross_sales() + cutOff.getDiscount_amount())),
                     40,
                     2,
                     context)
@@ -135,7 +163,7 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
 
             addTextToPrinter(printer, twoColumns(
                     "NET SALES",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getNet_sales())),
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getNet_sales() + cutOff.getDiscount_amount())),
                     40,
                     2,
                     context)
@@ -184,7 +212,7 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
 
             addTextToPrinter(printer, twoColumns(
                     "CASH SALES",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_cash_payments())),
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_cash_payments() - cutOff.getTotal_change())),
                     40,
                     2,
                     context)
@@ -295,22 +323,22 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
                         ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             }
 
-            addTextToPrinter(printer, "SALES REFLECTED BELOW ARE AR FROM PREVIOUS SHIFT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
-            addTextToPrinter(printer, twoColumns(
-                    "AR CASH SALES",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCash_redeemed_from_prev_ar())),
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-
-            addTextToPrinter(printer, twoColumns(
-                    "AR CARD SALES",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCard_redeemed_from_prev_ar())),
-                    40,
-                    2,
-                    context)
-                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//            addTextToPrinter(printer, "SALES REFLECTED BELOW ARE AR FROM PREVIOUS SHIFT", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+//            addTextToPrinter(printer, twoColumns(
+//                    "AR CASH SALES",
+//                    PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCash_redeemed_from_prev_ar())),
+//                    40,
+//                    2,
+//                    context)
+//                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//
+//            addTextToPrinter(printer, twoColumns(
+//                    "AR CARD SALES",
+//                    PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getCard_redeemed_from_prev_ar())),
+//                    40,
+//                    2,
+//                    context)
+//                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
 
 
             PrinterUtils.addFooterToPrinter(printer);
@@ -367,6 +395,49 @@ public class CutOffAsync extends AsyncTask<Void, Void, Void> {
                 asyncFinishCallBack.doneProcessing();
                 asyncFinishCallBack.error("PRINTER NOT CONNECTED");
             }
+        } else if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY).equalsIgnoreCase("sunmi")) {
+            if (printerPresenter == null) {
+                printerPresenter = new PrinterPresenter(context, mSunmiPrintService);
+            }
+            String finalString = "";
+
+            finalString = EJFileCreator.cutOffString(cutOff, context, false, false);
+
+            TypeToken<List<PrintingListModel>> myToken = new TypeToken<List<PrintingListModel>>() {};
+            List<PrintingListModel> pOutList = GsonHelper.getGson().fromJson(SharedPreferenceManager.getString(context, AppConstants.PRINTER_PREFS), myToken.getType());
+            PrintingListModel tmpLstModel = null;
+            for (PrintingListModel list : pOutList) {
+                if (list.getType().equalsIgnoreCase(printModel.getType())) {
+                    String finalString1 = finalString;
+                    ThreadPoolManager.getsInstance().execute(() -> {
+                        for (PrintingListModel.SelectedPrinterData data : list.getSelectedPrinterList()) {
+                            if (data.getId().equalsIgnoreCase(SunmiPrinterModel.PRINTER_BUILT_IN)) {
+                                printerPresenter.printNormal(finalString1);
+                            }
+                        }
+                        List<Device> deviceList = PrinterManager.getInstance().getPrinterDevice();
+                        if (deviceList == null || deviceList.isEmpty()) return;
+                        for (Device device : deviceList) {
+                            if (device.type == Cons.Type.PRINT && device.connectType == Cons.ConT.INNER) {
+                                continue;
+                            }
+                            if (list.getSelectedPrinterList().size() > 0) {
+                                for (PrintingListModel.SelectedPrinterData data : list.getSelectedPrinterList()) {
+                                    if (data.getId().equalsIgnoreCase(device.getId())) {
+                                        printerPresenter.printByDeviceManager(device, finalString1);
+                                    }
+                                }
+
+                            }
+
+                        }
+                    });
+                }
+            }
+
+            BusProvider.getInstance().post(new PrintModel("PRINT_SHORTOVER", GsonHelper.getGson().toJson(cutOff)));
+
+            asyncFinishCallBack.doneProcessing();
         }
         return null;
     }

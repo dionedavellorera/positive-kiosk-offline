@@ -3,10 +3,20 @@ package com.nerdvana.positiveoffline.model;
 public class DiscountComputeModel {
     private int postedDiscountId;
     private Double discountAmount;
+    private double qty;
 
-    public DiscountComputeModel(int postedDiscountId, Double discountAmount) {
+    public DiscountComputeModel(int postedDiscountId, Double discountAmount, double qty) {
         this.postedDiscountId = postedDiscountId;
         this.discountAmount = discountAmount;
+        this.qty = qty;
+    }
+
+    public double getQty() {
+        return qty;
+    }
+
+    public void setQty(double qty) {
+        this.qty = qty;
     }
 
     public int getPostedDiscountId() {

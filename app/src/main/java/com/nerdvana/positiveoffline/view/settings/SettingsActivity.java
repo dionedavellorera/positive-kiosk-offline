@@ -21,6 +21,7 @@ import com.nerdvana.positiveoffline.intf.SettingsMenuContract;
 import com.nerdvana.positiveoffline.model.RefreshMenuModel;
 import com.nerdvana.positiveoffline.model.SettingsMenuModel;
 import com.nerdvana.positiveoffline.view.printersettings.PrinterConnectionFragment;
+import com.nerdvana.positiveoffline.view.printersettings.PrinterConnectionFragmentV2;
 import com.nerdvana.positiveoffline.view.printersettings.PrinterSetupFragment;
 import com.nerdvana.positiveoffline.view.printersettings.ReceiptSetupFragment;
 import com.nerdvana.positiveoffline.view.servicechargesetting.ServiceChargeFragment;
@@ -94,9 +95,9 @@ public class SettingsActivity extends AppCompatActivity implements SettingsMenuC
                         openFragment(R.id.settingFrame, new PrinterSetupFragment());
                         smm.setActive(true);
                         break;
-                    case 2://PRINTER CONNECTION
+                    case 2://SUNMI SETUP
                         if (!isEmulator()) {
-                            openFragment(R.id.settingFrame, new PrinterConnectionFragment());
+                            openFragment(R.id.settingFrame, new PrinterConnectionFragmentV2());
                             smm.setActive(true);
                         } else {
                             Helper.showDialogMessage(SettingsActivity.this, "Please use a real device for this setting", "Information");
@@ -115,6 +116,15 @@ public class SettingsActivity extends AppCompatActivity implements SettingsMenuC
                     case 5://SERVICE CHARGE SETUP
                         openFragment(R.id.settingFrame, new ServiceChargeFragment());
                         smm.setActive(true);
+                        break;
+                    case 6://PRINTER CONNECTION
+                        if (!isEmulator()) {
+                            openFragment(R.id.settingFrame, new PrinterConnectionFragment());
+                            smm.setActive(true);
+                        }  else {
+                            Helper.showDialogMessage(SettingsActivity.this, "Please use a real device for this setting", "Information");
+                        }
+
                         break;
                 }
 

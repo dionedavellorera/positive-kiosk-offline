@@ -19,6 +19,7 @@ import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.model.SafeKeepDataModel;
+import com.nerdvana.positiveoffline.view.HidingEditText;
 import com.nerdvana.positiveoffline.viewmodel.CutOffViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 
@@ -82,13 +83,13 @@ public abstract class CollectionDialog extends BaseDialog implements View.OnClic
         textView.setLayoutParams(params1);
         linearLayout.addView(textView);
 
-        final EditText editText = new EditText(getContext());
+        final HidingEditText editText = new HidingEditText(getContext());
         editText.setHeight(50);
         editText.setHint(actualAmount);
         editText.setId(id);
         editText.setLayoutParams(params1);
         editText.setInputType(InputType.TYPE_CLASS_NUMBER);
-        editText.setTextIsSelectable(true);
+//        editText.setTextIsSelectable(true);
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {

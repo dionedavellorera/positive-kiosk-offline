@@ -25,11 +25,14 @@ import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.TransactionsAdapter;
 import com.nerdvana.positiveoffline.base.BaseDialog;
+import com.nerdvana.positiveoffline.entities.Payments;
+import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
 import com.nerdvana.positiveoffline.intf.TransactionsContract;
 import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
+import com.nerdvana.positiveoffline.viewmodel.DiscountViewModel;
 import com.nerdvana.positiveoffline.viewmodel.TransactionsViewModel;
 import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 
@@ -50,16 +53,17 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
     private Boolean forVoid;
 
     private ProgressDialog progressDialog;
-
+    private DiscountViewModel discountViewModel;
     public TransactionDialog(Context context, String header,
                              TransactionsViewModel transactionsViewModel,
                              UserViewModel userViewModel,
-                             Boolean forVoid) {
+                             Boolean forVoid, DiscountViewModel discountViewModel) {
         super(context);
         this.header = header;
         this.transactionsViewModel = transactionsViewModel;
         this.userViewModel = userViewModel;
         this.forVoid = forVoid;
+        this.discountViewModel = discountViewModel;
     }
 
     @Override
@@ -196,7 +200,11 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                         reference.getIs_backed_out_by(),
                         reference.getIs_backed_out_at(),
                         reference.getDelivery_to(),
-                        reference.getDelivery_address()
+                        reference.getDelivery_address(),
+                        reference.getTo_id(),
+                        reference.getIs_temp(),
+                        reference.getTo_control_number(),
+                        reference.getShift_number()
                 );
                 transactions.setRoom_id(reference.getRoom_id());
                 transactions.setRoom_number(reference.getRoom_number());
@@ -206,10 +214,30 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                 transactions.setCheck_in_time(reference.getCheck_in_time());
                 transactions.setCheck_out_time(reference.getCheck_out_time());
 
+
+
                 if (Utils.isPasswordProtected(userViewModel, "67")) {
                     PasswordDialog passwordDialog = new PasswordDialog(getContext(), "POST VOID OR " + transactions.getReceipt_number(), userViewModel, transactionsViewModel) {
                         @Override
                         public void success(String username) {
+
+                            try {
+                                for (Payments payments : transactionsViewModel.paymentList(String.valueOf(transactions.getId()))) {
+                                    payments.setIs_void(true);
+                                    transactionsViewModel.updatePayment(payments);
+                                }
+
+                                //return discount view model
+                                for (PostedDiscounts pd : discountViewModel.getLastPostedDiscount(transactions.getId())) {
+                                    pd.setIs_void(true);
+                                    discountViewModel.updatePostedDiscount(pd);
+                                }
+                            } catch (ExecutionException e) {
+                                e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+
                             transactionsViewModel.update(transactions);
                             final Handler handler = new Handler();
                             handler.postDelayed(new Runnable() {
@@ -235,6 +263,24 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                     passwordDialog.show();
 
                 } else {
+
+                    try {
+                        for (Payments payments : transactionsViewModel.paymentList(String.valueOf(transactions.getId()))) {
+                            payments.setIs_void(true);
+                            transactionsViewModel.updatePayment(payments);
+                        }
+
+                        //return discount view model
+                        for (PostedDiscounts pd : discountViewModel.getLastPostedDiscount(transactions.getId())) {
+                            pd.setIs_void(true);
+                            discountViewModel.updatePostedDiscount(pd);
+                        }
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
                     transactionsViewModel.update(transactions);
                     final Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {

@@ -21,10 +21,24 @@ public class CheckPasswordAsync extends AsyncTask<Void, Void, String> {
     private UserViewModel userViewModel;
     private TransactionsViewModel transactionsViewModel;
     private Boolean fromLogin;
+    private Boolean forPasswording = true;
 
     public CheckPasswordAsync(PasswordCheckContract passwordCheckContract, String username,
                               String password, UserViewModel userViewModel,
                               TransactionsViewModel transactionsViewModel, boolean fromLogin) {
+        this.passwordCheckContract = passwordCheckContract;
+        this.username = username;
+        this.password = password;
+        this.userViewModel = userViewModel;
+        this.transactionsViewModel = transactionsViewModel;
+        this.fromLogin = fromLogin;
+    }
+
+    public CheckPasswordAsync(PasswordCheckContract passwordCheckContract, String username,
+                              String password, UserViewModel userViewModel,
+                              TransactionsViewModel transactionsViewModel, boolean fromLogin,
+                              Boolean forPasswording) {
+        this.forPasswording = forPasswording;
         this.passwordCheckContract = passwordCheckContract;
         this.username = username;
         this.password = password;
@@ -57,9 +71,12 @@ public class CheckPasswordAsync extends AsyncTask<Void, Void, String> {
             } else {
                 try {
                     if (transactionsViewModel.unCutOffTransactions().size() > 0) {
-                        if (!transactionsViewModel.unCutOffTransactions().get(0).getIs_completed_by().equalsIgnoreCase(user.get(0).getUsername())) {
-                            message = String.format("Please cutoff %s id transaction/s first", transactionsViewModel.unCutOffTransactions().get(0).getIs_completed_by());
+                        if (!forPasswording) {
+                            if (!transactionsViewModel.unCutOffTransactions().get(0).getIs_completed_by().equalsIgnoreCase(user.get(0).getUsername())) {
+                                message = String.format("Please cutoff %s id transaction/s first", transactionsViewModel.unCutOffTransactions().get(0).getIs_completed_by());
+                            }
                         }
+
                     }
                 } catch (ExecutionException e) {
                     message = e.getMessage();

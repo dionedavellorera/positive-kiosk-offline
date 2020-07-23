@@ -7,6 +7,7 @@ import com.nerdvana.positiveoffline.apiresponses.FetchCashDenominationResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchCreditCardResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchDiscountResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
+import com.nerdvana.positiveoffline.apiresponses.FetchPosToTransactions;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchRoomResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchRoomStatusResponse;
@@ -80,6 +81,9 @@ public interface IUsers {
     Call<CutOff> fetchCutOffOffline(@FieldMap Map<String, Object> params);
     //endregion
     //region submit data to server of offline transactions
+    @POST("addPOSTOTransactionsOffline")
+    @FormUrlEncoded
+    Call<ResponseBody> addPOSTOTransactionsOffline(@FieldMap Map<String, Object> params);
     @POST("addPayoutsOffline")
     @FormUrlEncoded
     Call<ResponseBody> addPayoutsOffline(@FieldMap Map<String, Object> params);
@@ -171,6 +175,11 @@ public interface IUsers {
     Call<TakasTypeResponse> fetchTakasTypeRequest(@FieldMap Map<String, String> params);
 
 
+    @POST("fetchPOSMachineInformations/machinecutoff")
+    @FormUrlEncoded
+    Call<ResponseBody> cutoffInventorySubtractRequest(@FieldMap Map<String, String> params);
+
+
     @POST("fetchPOSMachineInformations/payouts")
     @FormUrlEncoded
     Call<PayoutServerDataResponse> payoutServerDataRequest(@FieldMap Map<String, String> params);
@@ -204,4 +213,8 @@ public interface IUsers {
     @POST("fetchPOSMachineInformations/orderdiscounts")
     @FormUrlEncoded
     Call<OrderDiscountsServerDataResponse> orderDiscountsServerDataRequest(@FieldMap Map<String, String> params);
+
+    @POST("fetchPOSToTransactions")
+    @FormUrlEncoded
+    Call<FetchPosToTransactions> posToTransactionsRequest(@FieldMap Map<String, String> params);
 }

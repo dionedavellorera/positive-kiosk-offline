@@ -4,16 +4,21 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Html;
 import android.text.TextUtils;
 
 import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
 import com.epson.epos2.printer.PrinterStatusInfo;
 import com.epson.epos2.printer.ReceiveListener;
+import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
+import com.nerdvana.positiveoffline.MainActivity;
+import com.nerdvana.positiveoffline.PrinterPresenter;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
+import com.nerdvana.positiveoffline.ThreadPoolManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
@@ -23,6 +28,8 @@ import com.nerdvana.positiveoffline.intf.AsyncFinishCallBack;
 import com.nerdvana.positiveoffline.localizereceipts.ILocalizeReceipts;
 import com.nerdvana.positiveoffline.model.OtherPrinterModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
+import com.nerdvana.positiveoffline.model.PrintingListModel;
+import com.nerdvana.positiveoffline.model.SunmiPrinterModel;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.printer.EJFileCreator;
 import com.nerdvana.positiveoffline.printer.PrinterUtils;
@@ -31,6 +38,13 @@ import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
 import com.starmicronics.stario.StarPrinterStatus;
 import com.starmicronics.starioextension.StarIoExt;
+import com.sunmi.devicemanager.cons.Cons;
+import com.sunmi.devicemanager.device.Device;
+import com.sunmi.devicesdk.core.PrinterManager;
+import com.sunmi.peripheral.printer.SunmiPrinterService;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,12 +65,15 @@ public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
 
     private boolean isReprint = false;
 
+    private PrinterPresenter printerPresenter;
+    private SunmiPrinterService mSunmiPrintService;
 
     public PostVoidAsync(PrintModel printModel, Context context,
                              AsyncFinishCallBack asyncFinishCallBack,
                              DataSyncViewModel dataSyncViewModel,
                              ILocalizeReceipts iLocalizeReceipts,
-                             StarIOPort starIOPort, boolean isReprint) {
+                             StarIOPort starIOPort, boolean isReprint,
+                         PrinterPresenter printerPresenter, SunmiPrinterService mSunmiPrintService) {
         this.context = context;
         this.printModel = printModel;
         this.asyncFinishCallBack = asyncFinishCallBack;
@@ -64,6 +81,10 @@ public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
         this.iLocalizeReceipts = iLocalizeReceipts;
         this.port = starIOPort;
         this.isReprint = isReprint;
+
+        this.printerPresenter = printerPresenter;
+        this.mSunmiPrintService = mSunmiPrintService;
+
     }
 
 
@@ -183,6 +204,17 @@ public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
 
 
             addPrinterSpace(1, printer);
+
+            if (!TextUtils.isEmpty(transactionCompleteDetails.transactions.getTo_control_number())) {
+                addTextToPrinter(printer, twoColumns(
+                        "TO CTRL NO",
+                        transactionCompleteDetails.transactions.getTo_control_number(),
+                        40,
+                        2,
+                        context)
+                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            }
+
             addTextToPrinter(printer, twoColumns(
                     "OR NO",
                     transactionCompleteDetails.transactions.getReceipt_number(),
@@ -197,6 +229,17 @@ public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
                     2,
                     context)
                     ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+
+            if (!TextUtils.isEmpty(transactionCompleteDetails.transactions.getRoom_number())) {
+                addTextToPrinter(printer, twoColumns(
+                        "TABLE",
+                        transactionCompleteDetails.transactions.getRoom_number(),
+                        40,
+                        2,
+                        context)
+                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            }
+
             addPrinterSpace(1, printer);
 
             addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
@@ -204,29 +247,90 @@ public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
             addTextToPrinter(printer, new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
             Double amountDue = 0.00;
             for (Orders orders : transactionCompleteDetails.ordersList) {
+                if (!orders.getIs_void()) {
+                    String qty = "";
 
-                String qty = "";
+                    qty += orders.getQty();
 
-                qty += orders.getQty();
+                    if (String.valueOf(orders.getQty()).length() < 4) {
+                        for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
+                            qty += " ";
+                        }
+                    }
 
-                if (String.valueOf(orders.getQty()).length() < 4) {
-                    for (int i = 0; i < 4 - String.valueOf(orders.getQty()).length(); i++) {
-                        qty += " ";
+                    String myString = "";
+                    if (orders.getDiscountAmount() > 0) {
+                        if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+                            myString = "("+qty.trim()+")" +  "  " + Html.fromHtml(orders.getName_initials());
+                        } else {
+                            myString = "("+qty.trim()+")" +  " " + Html.fromHtml(orders.getName_initials());
+                        }
+                    } else {
+                        if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+                            myString = qty +  "  " + Html.fromHtml(orders.getName_initials());
+                        } else {
+                            myString = qty +  " " + Html.fromHtml(orders.getName_initials());
+                        }
+                    }
+
+                    addTextToPrinter(printer, twoColumns(
+                            myString,
+                            PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+                            40,
+                            2,
+                            context)
+                            ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+
+//                    if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
+//                        addTextToPrinter(printer, twoColumns(
+//                                orders.getDiscountAmount() <= 0 ? "(" + qty +  "  " + orders.getName_initials() +")": qty +  "  " + orders.getName_initials(),
+//                                PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+//                                40,
+//                                2,
+//                                context)
+//                                ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//                    } else {
+//                        addTextToPrinter(printer, twoColumns(
+//                                orders.getDiscountAmount() <= 0 ? "(" + qty +  " " + orders.getName_initials() + ")" : qty +  " " + orders.getName_initials(),
+//                                PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+//                                40,
+//                                2,
+//                                context)
+//                                ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//                    }
+
+                    if (orders.getQty() > 1) {
+                        addTextToPrinter(printer, twoColumns(
+                                "("+String.valueOf(Utils.roundedOffTwoDecimal(orders.getAmount())) + ")",
+                                "",
+                                40,
+                                2,
+                                context)
+                                ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+                    }
+
+
+//                    if (orders.getDiscountAmount() > 0) {
+//                        addTextToPrinter(printer, twoColumns(
+//                                "LESS",
+//                                "-" +PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getDiscountAmount())),
+//                                40,
+//                                2,
+//                                context)
+//                                ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//                    }
+
+
+
+
+
+                    if (orders.getVatExempt() > 0) {
+                        amountDue += orders.getOriginal_amount() * orders.getQty();
+                    } else {
+                        amountDue += orders.getAmount() * orders.getQty();
                     }
                 }
-                addTextToPrinter(printer, twoColumns(
-                        qty +  " " + orders.getName(),
-                        PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount())),
-                        40,
-                        2,
-                        context)
-                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
 
-                if (orders.getVatExempt() <= 0) {
-                    amountDue += orders.getOriginal_amount();
-                } else {
-                    amountDue += orders.getAmount();
-                }
             }
 
 
@@ -249,12 +353,36 @@ public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
                                 2,
                                 context)
                                 ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+
+
+                        if (postedDiscounts.getDiscount_name().equalsIgnoreCase("PWD") ||
+                                postedDiscounts.getDiscount_name().equalsIgnoreCase("SENIOR CITIZEN")) {
+
+                            addTextToPrinter(printer, "NAME:___________________________", Printer.TRUE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
+                            addTextToPrinter(printer, "ADDRESS:___________________________", Printer.TRUE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
+                            addTextToPrinter(printer, "SIGNATURE:___________________________", Printer.TRUE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
+
+                        }
+
+                        addTextToPrinter(printer, twoColumns(
+                                "LESS ",
+                                "",
+                                40,
+                                2,
+                                context)
+                                ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+
+
+                        addTextToPrinter(printer, twoColumns(
+                                (postedDiscounts.getIs_percentage() ? postedDiscounts.getDiscount_value() + "%" : String.valueOf(Utils.roundedOffTwoDecimal(postedDiscounts.getDiscount_value()))),
+                                String.valueOf((Utils.roundedOffTwoDecimal(postedDiscounts.getAmount()))),
+                                40,
+                                2,
+                                context)
+                                ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+
                     }
-
-
                 }
-
-
             }
 
             addPrinterSpace(1, printer);
@@ -294,11 +422,41 @@ public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
                     context)
                     ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
 
+            if (transactionCompleteDetails.transactions.getService_charge_value() > 0) {
+                addTextToPrinter(printer, twoColumns(
+                        "SERVICE CHARGE",
+                        PrinterUtils.returnWithTwoDecimal(String.valueOf(transactionCompleteDetails.transactions.getService_charge_value())),
+                        40,
+                        2,
+                        context)
+                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            } else {
+                addTextToPrinter(printer, twoColumns(
+                        "SERVICE CHARGE",
+                        "0.00",
+                        40,
+                        2,
+                        context)
+                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            }
+
+
             addPrinterSpace(1, printer);
 
             addTextToPrinter(printer, twoColumns(
                     "SUB TOTAL",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getGross_sales()))),
+                    PrinterUtils.returnWithTwoDecimal(
+                            String.valueOf(
+                                    Utils.roundedOffTwoDecimal(
+                                            transactionCompleteDetails.transactions.getGross_sales()
+                                    ) +
+                                            Utils.roundedOffTwoDecimal(
+                                                    transactionCompleteDetails.transactions.getService_charge_value()
+                                            ) +
+                                            Utils.roundedOffTwoDecimal(
+                                                    transactionCompleteDetails.transactions.getDiscount_amount()
+                                            )
+                            )),
                     40,
                     2,
                     context)
@@ -306,7 +464,9 @@ public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
 
             addTextToPrinter(printer, twoColumns(
                     "AMOUNT DUE",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue)),
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue) + Utils.roundedOffTwoDecimal(
+                            transactionCompleteDetails.transactions.getService_charge_value()
+                    )),
                     40,
                     2,
                     context)
@@ -316,12 +476,39 @@ public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
             Double payments = 0.00;
             List<Integer> tmpArray = new ArrayList<>();
             String pymntType = "";
+            String cardType = "";
+            String cardNumber = "";
             for (Payments pym : transactionCompleteDetails.paymentsList) {
-                if (!tmpArray.contains(pym.getCore_id())) {
-                    tmpArray.add(pym.getCore_id());
-                    pymntType = pym.getName();
+                if (!pym.getIs_void()) {
+                    if (!tmpArray.contains(pym.getCore_id())) {
+                        tmpArray.add(pym.getCore_id());
+                        pymntType = pym.getName();
+                    }
+                    if (pym.getCore_id() != 2) {
+                        payments += Utils.roundedOffTwoDecimal(pym.getAmount());
+                    }
+
+                    if (pym.getCore_id() == 2) {
+                        try {
+                            JSONObject jsonObject = new JSONObject(pym.getOther_data());
+                            cardType = jsonObject.getString("card_type");
+                            cardNumber = jsonObject.getString("card_number");
+                            int starCount = 0;
+                            if (cardNumber.length() < 3) {
+                                cardNumber = jsonObject.getString("card_number");
+                            } else {
+                                starCount = cardNumber.length() - 3;
+                                String starString = new String(new char[starCount]).replace("\0", "*");
+                                cardNumber = cardNumber.substring(0, cardNumber.length() - starCount) + starString;
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
                 }
-                payments += Utils.roundedOffTwoDecimal(pym.getAmount());
+
             }
 
             addTextToPrinter(printer, twoColumns(
@@ -342,12 +529,34 @@ public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
 
             addPrinterSpace(1, printer);
 
-            addTextToPrinter(printer, twoColumns(
-                    "PAYMENT TYPE",
-                    tmpArray.size() > 1 ? "MULTIPLE" : pymntType
-                    ,
-                    40,
-                    2,context), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            if (tmpArray.size() > 1) {
+                addTextToPrinter(printer, twoColumns(
+                        "PAYMENT TYPE",
+                        "MULTIPLE"
+                        ,
+                        40,
+                        2,context), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            } else {
+                addTextToPrinter(printer, twoColumns(
+                        "PAYMENT TYPE",
+                        pymntType
+                        ,
+                        40,
+                        2,context), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+                if (pymntType.equalsIgnoreCase("card")) {
+                    addTextToPrinter(printer, twoColumns(
+                            cardType,
+                            cardNumber
+                            ,
+                            40,
+                            2,context), Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+                }
+
+
+            }
+
+
+
 
             addPrinterSpace(1, printer);
 
@@ -365,6 +574,15 @@ public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
                 addTextToPrinter(printer, "BUSINESS STYLE:_________________", Printer.TRUE, Printer.FALSE, Printer.ALIGN_LEFT, 1, 1, 1);
             }
 
+
+            if (transactionCompleteDetails.transactions.getTransaction_type().equalsIgnoreCase("delivery")) {
+                addTextToPrinter(printer, "CONTROL#", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+                addTextToPrinter(printer, transactionCompleteDetails.transactions.getControl_number(), Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+                addTextToPrinter(printer, "DELIVERY FOR", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+                addTextToPrinter(printer, transactionCompleteDetails.transactions.getDelivery_to(), Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+                addTextToPrinter(printer, "DELIVERY ADDRESS", Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+                addTextToPrinter(printer, transactionCompleteDetails.transactions.getDelivery_address(), Printer.TRUE, Printer.FALSE, Printer.ALIGN_CENTER, 1, 1, 1);
+            }
 
 
 
@@ -434,6 +652,48 @@ public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
 
 
 
+        } else if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY).equalsIgnoreCase("sunmi")) {
+            if (printerPresenter == null) {
+                printerPresenter = new PrinterPresenter(context, mSunmiPrintService);
+            }
+            String finalString = "";
+
+            TransactionCompleteDetails postVoidDetails = GsonHelper.getGson().fromJson(printModel.getData(), TransactionCompleteDetails.class);
+            finalString = EJFileCreator.postVoidString(postVoidDetails, context, false, printModel);
+
+            TypeToken<List<PrintingListModel>> myToken = new TypeToken<List<PrintingListModel>>() {};
+            List<PrintingListModel> pOutList = GsonHelper.getGson().fromJson(SharedPreferenceManager.getString(context, AppConstants.PRINTER_PREFS), myToken.getType());
+            PrintingListModel tmpLstModel = null;
+            for (PrintingListModel list : pOutList) {
+                if (list.getType().equalsIgnoreCase(printModel.getType())) {
+                    String finalString1 = finalString;
+                    ThreadPoolManager.getsInstance().execute(() -> {
+                        for (PrintingListModel.SelectedPrinterData data : list.getSelectedPrinterList()) {
+                            if (data.getId().equalsIgnoreCase(SunmiPrinterModel.PRINTER_BUILT_IN)) {
+                                printerPresenter.printNormal(finalString1);
+                            }
+                        }
+                        List<Device> deviceList = PrinterManager.getInstance().getPrinterDevice();
+                        if (deviceList == null || deviceList.isEmpty()) return;
+                        for (Device device : deviceList) {
+                            if (device.type == Cons.Type.PRINT && device.connectType == Cons.ConT.INNER) {
+                                continue;
+                            }
+                            if (list.getSelectedPrinterList().size() > 0) {
+                                for (PrintingListModel.SelectedPrinterData data : list.getSelectedPrinterList()) {
+                                    if (data.getId().equalsIgnoreCase(device.getId())) {
+                                        printerPresenter.printByDeviceManager(device, finalString1);
+                                    }
+                                }
+
+                            }
+
+                        }
+                    });
+                }
+            }
+
+            asyncFinishCallBack.doneProcessing();
         }
 
 

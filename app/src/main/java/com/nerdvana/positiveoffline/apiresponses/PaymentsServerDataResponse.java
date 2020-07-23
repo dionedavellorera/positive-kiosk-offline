@@ -20,7 +20,24 @@ public class PaymentsServerDataResponse {
     }
 
     public class Payment {
-
+        @SerializedName("is_redeemed")
+        @Expose
+        private Integer isRedeemed;
+        @SerializedName("is_from_other_shift")
+        @Expose
+        private Integer isFromOtherShift;
+        @SerializedName("is_redeemed_by")
+        @Expose
+        private String isRedeemedBy;
+        @SerializedName("is_redeemed_at")
+        @Expose
+        private String isRedeemedAt;
+        @SerializedName("is_redeemed_for")
+        @Expose
+        private String isRedeemedFor;
+        @SerializedName("link_payment_id")
+        @Expose
+        private String linkPaymentId;
         @SerializedName("my_id")
         @Expose
         private Integer myId;
@@ -69,6 +86,54 @@ public class PaymentsServerDataResponse {
         @SerializedName("deleted_at")
         @Expose
         private Object deletedAt;
+
+        public Integer getIsRedeemed() {
+            return isRedeemed;
+        }
+
+        public void setIsRedeemed(Integer isRedeemed) {
+            this.isRedeemed = isRedeemed;
+        }
+
+        public Integer getIsFromOtherShift() {
+            return isFromOtherShift;
+        }
+
+        public void setIsFromOtherShift(Integer isFromOtherShift) {
+            this.isFromOtherShift = isFromOtherShift;
+        }
+
+        public String getIsRedeemedBy() {
+            return isRedeemedBy;
+        }
+
+        public void setIsRedeemedBy(String isRedeemedBy) {
+            this.isRedeemedBy = isRedeemedBy;
+        }
+
+        public String getIsRedeemedAt() {
+            return isRedeemedAt;
+        }
+
+        public void setIsRedeemedAt(String isRedeemedAt) {
+            this.isRedeemedAt = isRedeemedAt;
+        }
+
+        public String getIsRedeemedFor() {
+            return isRedeemedFor;
+        }
+
+        public void setIsRedeemedFor(String isRedeemedFor) {
+            this.isRedeemedFor = isRedeemedFor;
+        }
+
+        public String getLinkPaymentId() {
+            return linkPaymentId;
+        }
+
+        public void setLinkPaymentId(String linkPaymentId) {
+            this.linkPaymentId = linkPaymentId;
+        }
 
         public Integer getMyId() {
             return myId;

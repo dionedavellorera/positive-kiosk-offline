@@ -262,7 +262,9 @@ public class DiscountMenuDialog extends BaseDialog implements DiscountsContract 
                     0,
                     Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
                     Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
-                    Utils.getDateTimeToday()
+                    Utils.getDateTimeToday(),
+                    tmpPd.getTo_id(),
+                    tmpPd.getQty()
             );
             postedDiscounts.setId(transactionWithDiscounts.getPosted_discount_id());
 
@@ -279,11 +281,12 @@ public class DiscountMenuDialog extends BaseDialog implements DiscountsContract 
                 public void run() {
 
                     transactionsViewModel.recomputeTransactionWithDiscount(transactionId, discountViewModel);
-
+                    dismiss();
                 }
             }, 700);
 
             loadDiscounts();
+
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {

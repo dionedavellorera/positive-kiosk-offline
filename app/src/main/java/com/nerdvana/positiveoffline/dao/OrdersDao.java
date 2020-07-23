@@ -1,17 +1,13 @@
 package com.nerdvana.positiveoffline.dao;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.nerdvana.positiveoffline.entities.DataSync;
 import com.nerdvana.positiveoffline.entities.Orders;
-import com.nerdvana.positiveoffline.entities.Transactions;
-import com.nerdvana.positiveoffline.model.OrderWithDiscounts;
 
 import java.util.List;
 
@@ -21,11 +17,15 @@ public interface OrdersDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insert(List<Orders> dataSyncList);
 
+
     @Query("SELECT * FROM Orders")
     LiveData<List<Orders>> ldOrderList();
 
     @Query("SELECT * FROM Orders WHERE is_sent_to_server = 0")
     List<Orders> unsyncedOrders();
+
+    @Query("SELECT * FROM Orders WHERE is_sent_to_server = 0 AND to_id != 0")
+    List<Orders> unsyncedToOrders();
 
     @Query("SELECT * FROM Orders WHERE transaction_id = :transaction_id AND is_void = 0 AND is_room_rate = 1")
     List<Orders> roomRateList(String transaction_id);
@@ -55,4 +55,7 @@ public interface OrdersDao {
 
     @Query("UPDATE Orders set is_editing = 0 where transaction_id = :transaction_id")
     void removeEditingOrders(String transaction_id);
+
+    @Query("UPDATE Orders set is_sent_to_server = 1 where transaction_id = :transaction_id")
+    int updateSentToServer(String transaction_id);
 }

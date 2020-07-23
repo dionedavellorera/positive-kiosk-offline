@@ -17,6 +17,8 @@ public abstract class InputDialog extends BaseDialog implements View.OnClickList
     private EditText input;
     private String header;
     private String defaultText;
+
+    public static boolean IS_SHOWN = false;
     public InputDialog(Context context, String header, String defaultText) {
         super(context);
         this.header = header;
@@ -54,4 +56,23 @@ public abstract class InputDialog extends BaseDialog implements View.OnClickList
     }
 
     public abstract void confirm(String str);
+
+
+    @Override
+    public void show() {
+        super.show();
+        IS_SHOWN = true;
+    }
+
+    @Override
+    public void dismiss() {
+        super.dismiss();
+        IS_SHOWN = false;
+    }
+
+    @Override
+    public void cancel() {
+        super.cancel();
+        IS_SHOWN = false;
+    }
 }

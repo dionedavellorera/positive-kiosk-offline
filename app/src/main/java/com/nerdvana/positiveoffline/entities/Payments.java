@@ -41,6 +41,8 @@ public class Payments {
     private String link_payment_id = "";
     private int is_from_other_shift = 0;
 
+    private double change = 0.00;
+
     @Ignore
     public Payments() {}
 
@@ -51,7 +53,8 @@ public class Payments {
                     int is_sent_to_server, int machine_id,
                     int branch_id, String treg,
                     int is_redeemed, String is_redeemed_by,
-                    String is_redeemed_at) {
+                    String is_redeemed_at, double change) {
+        this.change = change;
         this.is_redeemed = is_redeemed;
         this.is_redeemed_by = is_redeemed_by;
         this.is_redeemed_at = is_redeemed_at;
@@ -63,6 +66,14 @@ public class Payments {
         this.amount = amount;
         this.name = name;
         this.treg = treg;
+    }
+
+    public double getChange() {
+        return change;
+    }
+
+    public void setChange(double change) {
+        this.change = change;
     }
 
     public int getIs_from_other_shift() {

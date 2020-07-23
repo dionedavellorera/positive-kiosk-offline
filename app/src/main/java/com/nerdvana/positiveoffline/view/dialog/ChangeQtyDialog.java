@@ -16,8 +16,8 @@ public abstract class ChangeQtyDialog extends BaseDialog implements View.OnClick
 
     private EditText etQty;
     private ProgressButton btnConfirm;
-    private int qty;
-    public ChangeQtyDialog(Context context, int quantity) {
+    private double qty;
+    public ChangeQtyDialog(Context context, double quantity) {
         super(context);
         this.qty = quantity;
     }
@@ -39,8 +39,8 @@ public abstract class ChangeQtyDialog extends BaseDialog implements View.OnClick
     @Override
     public void onClick(View view) {
         if (!TextUtils.isEmpty(etQty.getText().toString())) {
-            if (Integer.valueOf(etQty.getText().toString()) > 0) {
-                success(Integer.valueOf(etQty.getText().toString()));
+            if (Double.valueOf(etQty.getText().toString()) > 0) {
+                success(Double.valueOf(etQty.getText().toString()));
                 dismiss();
             } else {
                 Helper.showDialogMessage(getContext(), getContext().getString(R.string.error_zero_quantity), getContext().getString(R.string.header_message));
@@ -50,5 +50,5 @@ public abstract class ChangeQtyDialog extends BaseDialog implements View.OnClick
         }
     }
 
-    public abstract void success(int newQty);
+    public abstract void success(double newQty);
 }

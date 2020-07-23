@@ -4,6 +4,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Transaction;
 import androidx.room.Update;
 
 import com.nerdvana.positiveoffline.entities.CreditCards;
@@ -25,6 +26,9 @@ public interface PostedDiscountsDao {
 
     @Query("SELECT * FROM PostedDiscounts WHERE is_sent_to_server = 0")
     List<PostedDiscounts> unsyncedPostedDiscounts();
+
+    @Query("SELECT * FROM PostedDiscounts WHERE is_sent_to_server = 0 AND to_id != 0")
+    List<PostedDiscounts> unsyncedToPostedDiscounts();
 
     @Query("SELECT * FROM PostedDiscounts WHERE id = :posted_discount_id")
     PostedDiscounts getPostedDiscount(int posted_discount_id);
@@ -66,4 +70,9 @@ public interface PostedDiscountsDao {
 
     @Update
     public void update(PostedDiscounts postedDiscounts);
+
+    @Query("UPDATE PostedDiscounts set is_sent_to_server = 1 where transaction_id = :transaction_id")
+    int updateSentToServer(String transaction_id);
+
+
 }

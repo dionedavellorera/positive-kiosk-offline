@@ -28,13 +28,17 @@ public class SerialNumbers {
     private int machine_id;
     private int branch_id;
 
+    private int to_id = 0;
+
     @Ignore
     public SerialNumbers() {}
 
     public SerialNumbers(int transaction_id, String serial_number,
                          String treg, int product_core_id,
                          String product_name, int order_id,
-                         int machine_id, int branch_id) {
+                         int machine_id, int branch_id,
+                         int to_id) {
+        this.to_id = to_id;
         this.machine_id = machine_id;
         this.branch_id = branch_id;
         this.product_core_id = product_core_id;
@@ -43,6 +47,14 @@ public class SerialNumbers {
         this.serial_number = serial_number;
         this.treg = treg;
         this.order_id = order_id;
+    }
+
+    public int getTo_id() {
+        return to_id;
+    }
+
+    public void setTo_id(int to_id) {
+        this.to_id = to_id;
     }
 
     public int getMachine_id() {

@@ -146,6 +146,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                 passwordDialog = null;
                             }
                         });
+                        passwordDialog.show();
                     }
                 } else {
                     doXReadFunction();
@@ -156,7 +157,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
 
                 if (Utils.isPasswordProtected(userViewModel, "73")) {
                     if (passwordDialog == null) {
-                        passwordDialog = new PasswordDialog(getContext(), "XREADING", userViewModel, transactionsViewModel) {
+                        passwordDialog = new PasswordDialog(getContext(), "ZREADING", userViewModel, transactionsViewModel) {
                             @Override
                             public void success(String username) {
                                 doZReadFunction();
@@ -174,6 +175,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                 passwordDialog = null;
                             }
                         });
+                        passwordDialog.show();
                     }
                 } else {
                     doZReadFunction();
@@ -206,6 +208,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                 passwordDialog = null;
                             }
                         });
+                        passwordDialog.show();
                     }
                 } else {
                     doReprintXReading();
@@ -237,6 +240,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                 passwordDialog = null;
                             }
                         });
+                        passwordDialog.show();
                     }
                 } else {
                     doReprintZReading();
@@ -397,6 +401,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         0,
                         Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
                         Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
+                        0.00,
                         0.00
                 ));
 
@@ -427,6 +432,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                 Double cash_redeemed_from_prev_ar = 0.00;
                 Double card_redeemed_from_prev_ar = 0.00;
 
+                Double discount_amount = 0.00;
 
                 int seniorCount = 0;
                 Double seniorAmount = 0.00;
@@ -463,7 +469,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                     total_mobile_payments += cutOff.getTotal_mobile_payments();
 
                     total_change += cutOff.getTotal_change() != null ? cutOff.getTotal_change() : 0.00;
-
+                    discount_amount += cutOff.getDiscount_amount();
                     seniorCount += cutOff.getSeniorCount();
                     seniorAmount += cutOff.getSeniorAmount();
                     pwdCount += cutOff.getPwdCount();
@@ -502,6 +508,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                 endOfDay.setPwdAmount(pwdAmount);
                 endOfDay.setOthersCount(othersCount);
                 endOfDay.setOthersAmount(othersAmount);
+                endOfDay.setDiscount_amount(discount_amount);
 
                 if (orNumberArray.size() > 0) {
                     endOfDay.setBegOrNo(orNumberArray.get(0));
@@ -556,7 +563,9 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                             0,
                             Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
                             Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
-                            0.00
+                            0.00,
+                            0.00,
+                            String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
                     ));
 
                     List<Transactions> transactionsList = transactionsViewModel.unCutOffTransactions(userViewModel.searchLoggedInUser().get(0).getUsername());
@@ -582,6 +591,8 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                     Double total_change = 0.00;
                     Double total_service_charge = 0.00;
 
+                    Double discount_amount = 0.00;
+
                     int seniorCount = 0;
                     Double seniorAmount = 0.00;
                     int pwdCount = 0;
@@ -599,7 +610,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         endOrNo = transactionsList.get(transactionsList.size() - 1).getReceipt_number();
                         for (Transactions tr : transactionsList) {
                             if (tr.getIs_void()) {
-                                void_amount += tr.getNet_sales();
+                                void_amount += tr.getNet_sales() + tr.getDiscount_amount();
                             } else {
                                 gross_sales += tr.getGross_sales();
                                 net_sales += tr.getNet_sales();
@@ -608,6 +619,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                 vat_amount += tr.getVat_amount();
                                 total_change += tr.getChange();
                                 total_service_charge += tr.getService_charge_value();
+                                discount_amount += tr.getDiscount_amount();
                             }
                             number_of_transaction += 1;
 
@@ -619,123 +631,149 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                             tr.setIs_cut_off_at(Utils.getDateTimeToday());
                             transactionsViewModel.update(tr);
                         }
+//                        dismiss();
+
+
+                        for (Payments payments : cutOffViewModel.getAllPayments()) {
+                            switch (payments.getCore_id()) {
+                                case 1://CASH
+                                    if (!payments.getIs_void()) {
+                                        if (payments.getIs_from_other_shift() != 0) {
+                                            cash_redeemed_from_prev_ar += payments.getAmount();
+                                        }
+                                        total_cash_payments += payments.getAmount();
+                                    }
+                                    break;
+                                case 2://CARD
+                                    if (!payments.getIs_void()) {
+                                        if (payments.getIs_from_other_shift() != 0) {
+                                            card_redeemed_from_prev_ar += payments.getAmount();
+                                        }
+                                        total_card_payments += payments.getAmount();
+                                    }
+
+                                    break;
+                                case 3://ONLINE
+                                    if (!payments.getIs_void()) {
+                                        total_online_payments += payments.getAmount();
+                                    }
+                                    break;
+                                case 8://AR
+                                    if (!payments.getIs_void()) {
+                                        if (payments.getIs_redeemed() == 0) {
+                                            total_ar_payments += payments.getAmount();
+                                        }
+                                    }
+
+                                    break;
+                                case 9://MOBILE PAYMENT
+                                    if (!payments.getIs_void()) {
+                                        total_mobile_payments += payments.getAmount();
+                                    }
+
+                                    break;
+                            }
+
+                            payments.setIs_sent_to_server(0);
+                            payments.setCut_off_id((int) cut_off_id);
+                            cutOffViewModel.update(payments);
+                        }
+
+                        for (Payout payout : cutOffViewModel.getUnCutOffPayouts()) {
+
+                            total_payout += payout.getAmount();
+                            payout.setIs_sent_to_server(0);
+                            payout.setIs_cut_off(true);
+                            payout.setIs_cut_off_by(userViewModel.searchLoggedInUser().get(0).getUsername());
+                            payout.setCut_off_id((int)cut_off_id);
+                            payout.setIs_cut_off_at(Utils.getDateTimeToday());
+                            cutOffViewModel.update(payout);
+
+                        }
+
+                        for (PostedDiscounts postedDiscounts : cutOffViewModel.getUnCutOffPostedDiscount()) {
+                            postedDiscounts.setCut_off_id((int)cut_off_id);
+                            postedDiscounts.setIs_sent_to_server(0);
+                            if (!postedDiscounts.getIs_void()) {
+                                if (postedDiscounts.getDiscount_name().equalsIgnoreCase("SENIOR")) {
+                                    seniorCount += 1;
+                                    seniorAmount += postedDiscounts.getAmount();
+                                } else if (postedDiscounts.getDiscount_name().equalsIgnoreCase("PWD")) {
+                                    pwdCount += 1;
+                                    pwdAmount += postedDiscounts.getAmount();
+                                } else {
+                                    othersCount += 1;
+                                    othersAmount += postedDiscounts.getAmount();
+                                }
+                            }
+
+                            cutOffViewModel.update(postedDiscounts);
+
+                        }
+
+                        Log.d("DATA-PREVCASH", String.valueOf(cash_redeemed_from_prev_ar));
+                        Log.d("DATA-PREVCARD", String.valueOf(card_redeemed_from_prev_ar));
+
+                        Log.d("DATA-ONLINEPAY", String.valueOf(total_online_payments));
+                        Log.d("DATA-ARPAY", String.valueOf(total_ar_payments));
+                        Log.d("DATA-MOBILEPAY", String.valueOf(total_mobile_payments));
+
+                        Log.d("DATA-CASHPAY", String.valueOf(total_cash_payments));
+                        Log.d("DATA-CARDPAY", String.valueOf(total_card_payments));
+                        Log.d("DATA-GROSSSALE", String.valueOf(gross_sales));
+                        Log.d("DATA-NETSALES", String.valueOf(net_sales));
+                        Log.d("DATA-VATSALES", String.valueOf(vatable_sales));
+                        Log.d("DATA-VATEXESALES", String.valueOf(vat_exempt_sales));
+                        Log.d("DATA-CHANGE", String.valueOf(total_change));
+                        Log.d("DATA-TOTALCASH", String.valueOf(totalCash));
+                        Log.d("DATA-SHORTOVER", String.valueOf(totalCash - (total_cash_payments - total_change)));
+
+                        CutOff cutOff = cutOffViewModel.getCutOff(cut_off_id);
+                        //SHORT OVER COMPUTATION
+                        //cutOff.getTotal_cash_amount() - (cutOff.getTotal_cash_payments() - cutOff.getTotal_change())
+                        cutOff.setTotal_service_charge(total_service_charge);
+                        cutOff.setIs_sent_to_server(0);
+                        cutOff.setTotal_payout(total_payout);
+                        cutOff.setTotal_change(Utils.roundedOffTwoDecimal(total_change));
+                        cutOff.setGross_sales(Utils.roundedOffTwoDecimal(gross_sales));
+                        cutOff.setNet_sales(Utils.roundedOffTwoDecimal(net_sales));
+                        cutOff.setVatable_sales(Utils.roundedOffTwoDecimal(vatable_sales));
+                        cutOff.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vat_exempt_sales));
+                        cutOff.setVat_amount(Utils.roundedOffTwoDecimal(vat_amount));
+                        cutOff.setNumber_of_transactions(number_of_transaction);
+                        cutOff.setVoid_amount(Utils.roundedOffTwoDecimal(void_amount));
+                        cutOff.setTotal_cash_amount(Utils.roundedOffTwoDecimal(totalCash));
+                        cutOff.setTotal_cash_payments(Utils.roundedOffTwoDecimal(total_cash_payments));
+                        cutOff.setTotal_card_payments(Utils.roundedOffTwoDecimal(total_card_payments));
+
+                        cutOff.setTotal_online_payments(Utils.roundedOffTwoDecimal(total_online_payments));
+                        cutOff.setTotal_ar_payments(Utils.roundedOffTwoDecimal(total_ar_payments));
+                        cutOff.setTotal_mobile_payments(Utils.roundedOffTwoDecimal(total_mobile_payments));
+
+                        cutOff.setSeniorCount(seniorCount);
+                        cutOff.setSeniorAmount(seniorAmount);
+                        cutOff.setPwdCount(pwdCount);
+                        cutOff.setPwdAmount(pwdAmount);
+                        cutOff.setOthersCount(othersCount);
+                        cutOff.setOthersAmount(othersAmount);
+
+                        cutOff.setBegOrNo(begOrNo);
+                        cutOff.setEndOrNo(endOrNo);
+                        cutOff.setDiscount_amount(discount_amount);
+
+                        BusProvider.getInstance().post(new PrintModel("PRINT_XREAD", GsonHelper.getGson().toJson(cutOff)));
+
+                        cutOffViewModel.update(cutOff);
                         dismiss();
+                        CutOffMenuDialog.this.dismiss();
+
+
                     } else {
                         Helper.showDialogMessage(getContext(), getContext().getString(R.string.error_no_transaction_cutoff), getContext().getString(R.string.header_message));
                     }
 
 
-                    for (Payments payments : cutOffViewModel.getAllPayments()) {
-                        switch (payments.getCore_id()) {
-                            case 1://CASH
-                                if (payments.getIs_from_other_shift() != 0) {
-                                    cash_redeemed_from_prev_ar += payments.getAmount();
-                                }
-                                total_cash_payments += payments.getAmount();
-                                break;
-                            case 2://CARD
-                                if (payments.getIs_from_other_shift() != 0) {
-                                    card_redeemed_from_prev_ar += payments.getAmount();
-                                }
-                                total_card_payments += payments.getAmount();
-                                break;
-                            case 3://ONLINE
-                                total_online_payments += payments.getAmount();
-                                break;
-                            case 8://AR
-                                if (payments.getIs_redeemed() == 0) {
-                                    total_ar_payments += payments.getAmount();
-                                }
-                                break;
-                            case 9://MOBILE PAYMENT
-                                total_mobile_payments += payments.getAmount();
-                        }
 
-                        payments.setIs_sent_to_server(0);
-                        payments.setCut_off_id((int) cut_off_id);
-                        cutOffViewModel.update(payments);
-                    }
-
-                    for (Payout payout : cutOffViewModel.getUnCutOffPayouts()) {
-
-                        total_payout += payout.getAmount();
-                        payout.setIs_sent_to_server(0);
-                        payout.setIs_cut_off(true);
-                        payout.setIs_cut_off_by(userViewModel.searchLoggedInUser().get(0).getUsername());
-                        payout.setCut_off_id((int)cut_off_id);
-                        payout.setIs_cut_off_at(Utils.getDateTimeToday());
-                        cutOffViewModel.update(payout);
-
-                    }
-
-                    for (PostedDiscounts postedDiscounts : cutOffViewModel.getUnCutOffPostedDiscount()) {
-                        postedDiscounts.setCut_off_id((int)cut_off_id);
-                        postedDiscounts.setIs_sent_to_server(0);
-                        if (postedDiscounts.getDiscount_name().equalsIgnoreCase("SENIOR")) {
-                            seniorCount += 1;
-                            seniorAmount += postedDiscounts.getAmount();
-                        } else if (postedDiscounts.getDiscount_name().equalsIgnoreCase("PWD")) {
-                            pwdCount += 1;
-                            pwdAmount += postedDiscounts.getAmount();
-                        } else {
-                            othersCount += 1;
-                            othersAmount += postedDiscounts.getAmount();
-                        }
-                    }
-
-                    Log.d("DATA-PREVCASH", String.valueOf(cash_redeemed_from_prev_ar));
-                    Log.d("DATA-PREVCARD", String.valueOf(card_redeemed_from_prev_ar));
-
-                    Log.d("DATA-ONLINEPAY", String.valueOf(total_online_payments));
-                    Log.d("DATA-ARPAY", String.valueOf(total_ar_payments));
-                    Log.d("DATA-MOBILEPAY", String.valueOf(total_mobile_payments));
-
-                    Log.d("DATA-CASHPAY", String.valueOf(total_cash_payments));
-                    Log.d("DATA-CARDPAY", String.valueOf(total_card_payments));
-                    Log.d("DATA-GROSSSALE", String.valueOf(gross_sales));
-                    Log.d("DATA-NETSALES", String.valueOf(net_sales));
-                    Log.d("DATA-VATSALES", String.valueOf(vatable_sales));
-                    Log.d("DATA-VATEXESALES", String.valueOf(vat_exempt_sales));
-                    Log.d("DATA-CHANGE", String.valueOf(total_change));
-                    Log.d("DATA-TOTALCASH", String.valueOf(totalCash));
-                    Log.d("DATA-SHORTOVER", String.valueOf(totalCash - (total_cash_payments - total_change)));
-
-                    CutOff cutOff = cutOffViewModel.getCutOff(cut_off_id);
-                    //SHORT OVER COMPUTATION
-                    //cutOff.getTotal_cash_amount() - (cutOff.getTotal_cash_payments() - cutOff.getTotal_change())
-                    cutOff.setTotal_service_charge(total_service_charge);
-                    cutOff.setIs_sent_to_server(0);
-                    cutOff.setTotal_payout(total_payout);
-                    cutOff.setTotal_change(Utils.roundedOffTwoDecimal(total_change));
-                    cutOff.setGross_sales(Utils.roundedOffTwoDecimal(gross_sales));
-                    cutOff.setNet_sales(Utils.roundedOffTwoDecimal(net_sales));
-                    cutOff.setVatable_sales(Utils.roundedOffTwoDecimal(vatable_sales));
-                    cutOff.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vat_exempt_sales));
-                    cutOff.setVat_amount(Utils.roundedOffTwoDecimal(vat_amount));
-                    cutOff.setNumber_of_transactions(number_of_transaction);
-                    cutOff.setVoid_amount(Utils.roundedOffTwoDecimal(void_amount));
-                    cutOff.setTotal_cash_amount(Utils.roundedOffTwoDecimal(totalCash));
-                    cutOff.setTotal_cash_payments(Utils.roundedOffTwoDecimal(total_cash_payments));
-                    cutOff.setTotal_card_payments(Utils.roundedOffTwoDecimal(total_card_payments));
-
-                    cutOff.setTotal_online_payments(Utils.roundedOffTwoDecimal(total_online_payments));
-                    cutOff.setTotal_ar_payments(Utils.roundedOffTwoDecimal(total_ar_payments));
-                    cutOff.setTotal_mobile_payments(Utils.roundedOffTwoDecimal(total_mobile_payments));
-
-                    cutOff.setSeniorCount(seniorCount);
-                    cutOff.setSeniorAmount(seniorAmount);
-                    cutOff.setPwdCount(pwdCount);
-                    cutOff.setPwdAmount(pwdAmount);
-                    cutOff.setOthersCount(othersCount);
-                    cutOff.setOthersAmount(othersAmount);
-
-                    cutOff.setBegOrNo(begOrNo);
-                    cutOff.setEndOrNo(endOrNo);
-
-                    BusProvider.getInstance().post(new PrintModel("PRINT_XREAD", GsonHelper.getGson().toJson(cutOff)));
-
-                    cutOffViewModel.update(cutOff);
-                    CutOffMenuDialog.this.dismiss();
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {

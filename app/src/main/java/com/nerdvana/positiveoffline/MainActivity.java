@@ -11,8 +11,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.room.PrimaryKey;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -65,7 +67,10 @@ import com.nerdvana.positiveoffline.entities.ServiceCharge;
 import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.functions.PrinterFunctions;
+import com.nerdvana.positiveoffline.model.CloseInputDialogModel;
 import com.nerdvana.positiveoffline.model.HasPendingDataOnLocalModel;
+import com.nerdvana.positiveoffline.model.ItemScannedModel;
+import com.nerdvana.positiveoffline.model.PrintingListModel;
 import com.nerdvana.positiveoffline.model.ServerDataCompletionModel;
 import com.nerdvana.positiveoffline.model.ShiftUpdateModel;
 import com.nerdvana.positiveoffline.model.TimerUpdateModel;
@@ -73,6 +78,7 @@ import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.printjobasync.BackoutAsync;
 import com.nerdvana.positiveoffline.background.CheatAsync;
+import com.nerdvana.positiveoffline.printjobasync.FosAsync;
 import com.nerdvana.positiveoffline.printjobasync.PayoutAsync;
 import com.nerdvana.positiveoffline.printjobasync.PostVoidAsync;
 import com.nerdvana.positiveoffline.background.TimerService;
@@ -99,6 +105,7 @@ import com.nerdvana.positiveoffline.printjobasync.PrintReceiptAsync;
 import com.nerdvana.positiveoffline.printjobasync.ShortOverAsync;
 import com.nerdvana.positiveoffline.printjobasync.SoaAsync;
 import com.nerdvana.positiveoffline.view.checkoutmenu.LeftFrameFragment;
+import com.nerdvana.positiveoffline.view.dialog.InputDialog;
 import com.nerdvana.positiveoffline.view.login.LoginActivity;
 import com.nerdvana.positiveoffline.view.posmenu.BottomFrameFragment;
 import com.nerdvana.positiveoffline.view.productsmenu.RightFrameFragment;
@@ -118,6 +125,10 @@ import com.starmicronics.starioextension.ICommandBuilder;
 import com.starmicronics.starioextension.StarIoExt;
 import com.starmicronics.starioextension.StarIoExtManager;
 import com.starmicronics.starioextension.StarIoExtManagerListener;
+import com.sunmi.peripheral.printer.InnerPrinterCallback;
+import com.sunmi.peripheral.printer.InnerPrinterException;
+import com.sunmi.peripheral.printer.InnerPrinterManager;
+import com.sunmi.peripheral.printer.SunmiPrinterService;
 
 import org.joda.time.DateTime;
 import org.joda.time.Minutes;
@@ -142,6 +153,18 @@ import static com.nerdvana.positiveoffline.printer.PrinterUtils.addTextToPrinter
 import static com.nerdvana.positiveoffline.printer.PrinterUtils.twoColumns;
 
 public class MainActivity extends AppCompatActivity implements AsyncFinishCallBack {
+
+
+
+    private InputDialog inputDialog;
+
+    private static final String ACTION_DATA_CODE_RECEIVED =
+            "com.sunmi.scanner.ACTION_DATA_CODE_RECEIVED";
+    private static final String DATA = "data";
+    private static final String SOURCE = "source_byte";
+
+    private SunmiPrinterService mSunmiPrintService;
+    private PrinterPresenter printerPresenter;
 
     private ProgressDialog datafromServerProgressBar;
 
@@ -186,7 +209,15 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        new SocketManager(getApplicationContext());
 
+        Log.d("SUSMODE", SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_MODE));
+        SharedPreferenceManager.saveString(MainActivity.this, "", AppConstants.HAS_CONNECTION_TO_SERVER);
+
+
+//        SharedPreferenceManager.saveString(MainActivity.this, "sunmi", AppConstants.SELECTED_PRINTER_MANUALLY);
+        savePrinterPreferences();
+        connectInnerPrinter();
         if (TextUtils.isEmpty(SharedPreferenceManager.getString(MainActivity.this, AppConstants.TYPE_VALUE))) {
             SharedPreferenceManager.saveString(MainActivity.this, "retail", AppConstants.TYPE_VALUE);
         }
@@ -249,6 +280,30 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
     }
 
+    private void savePrinterPreferences() {
+        if (TextUtils.isEmpty(SharedPreferenceManager.getString(MainActivity.this, AppConstants.PRINTER_PREFS))) {
+            List<PrintingListModel> printoutList = new ArrayList<>();
+            printoutList.add(new PrintingListModel("PRINT_ITEM_CANCELLED", "ITEM VOID", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("PRINT_PAYOUT", "PAYOUT", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("PRINT_INTRANSIT", "INTRANSIT", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("SOA", "STATEMENT OF ACCOUNT", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("POST_VOID", "POST VOID", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("BACKOUT", "BACKOUT", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("PRINT_RECEIPT_SPEC", "OFFICIAL RECEIPT(SPECIAL)", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("REPRINT_RECEIPT_SPEC", "REPRINT OFFICIAL RECEIPT(SPECIAL)", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("REPRINT_RECEIPT", "REPRINT OFFICIAL RECEIPT(OFFICIAL)", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("PRINT_RECEIPT", "OFFICIAL RECEIPT(OFFICIAL)", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("REPRINT_XREAD", "REPRINT X READING", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("PRINT_SPOT_AUDIT", "SPOT AUDIT", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("PRINT_SHORTOVER", "SHORT / OVER", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("PRINT_XREAD", "X READING", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("REPRINT_ZREAD", "REPRINT Z READING", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("PRINT_ZREAD", "Z READING", false, new ArrayList<>()));
+            printoutList.add(new PrintingListModel("PRINT_FOS", "ORDER SLIP", false, new ArrayList<>()));
+            SharedPreferenceManager.saveString(MainActivity.this, GsonHelper.getGson().toJson(printoutList) , AppConstants.PRINTER_PREFS);
+        }
+    }
+
     private void orderDiscountsDataRequest(ServerDataRequest data, IUsers iUsers) {
         Call<OrderDiscountsServerDataResponse> request = iUsers.orderDiscountsServerDataRequest(data.getMapValue());
         request.enqueue(new Callback<OrderDiscountsServerDataResponse>() {
@@ -277,6 +332,8 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 orderDiscounts.setMachine_id(list.getMachineId());
                                 orderDiscounts.setBranch_id(list.getBranchId());
                                 orderDiscounts.setTreg(list.getTreg());
+
+                                orderDiscounts.setTo_id(list.getToId());
 
                                 orderDiscountsList.add(orderDiscounts);
                             }
@@ -344,6 +401,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 orders.setIs_take_out(list.getIsTakeOut());
                                 orders.setSerial_number(list.getSerialNumber());
                                 orders.setIs_fixed_asset(list.getIsFixedAsset());
+                                orders.setTo_id(list.getToId());
 
                                 orderList.add(orders);
                             }
@@ -396,6 +454,13 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 payments.setMachine_id(list.getMachineId());
                                 payments.setBranch_id(list.getBranchId());
                                 payments.setTreg(list.getTreg());
+
+                                payments.setIs_redeemed(list.getIsRedeemed());
+                                payments.setIs_redeemed_by(list.getIsRedeemedBy());
+                                payments.setIs_redeemed_at(list.getIsRedeemedAt());
+                                payments.setIs_redeemed_for(list.getIsRedeemedFor());
+                                payments.setLink_payment_id(list.getLinkPaymentId());
+                                payments.setIs_from_other_shift(list.getIsFromOtherShift());
                                 paymentsList.add(payments);
 
 
@@ -541,6 +606,13 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
                                 tr.setIs_shared(list.getIsShared());
 
+                                tr.setDelivery_to(list.getDeliveryTo());
+                                tr.setDelivery_address(list.getDeliveryAddress());
+                                tr.setTo_id(list.getToId());
+
+
+                                tr.setTo_transaction_id(list.getToTransactionId());
+                                tr.setIs_temp(list.getIsTemp());
 
 
                                 transactionsViewModel.insertTransactionWaitData(tr);
@@ -611,6 +683,10 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 cutOff.setBranch_id(list.getBranchId());
                                 cutOff.setTotal_service_charge(Double.valueOf(list.getTotalServiceCharge()));
 
+
+                                cutOff.setCash_redeemed_from_prev_ar(list.getCashRedeemedFromPrevAr());
+                                cutOff.setCard_redeemed_from_prev_ar(list.getCardRedeemedFromPrevAr());
+
                                 cutOffViewModel.insertData(cutOff);
                             }
                             BusProvider.getInstance().post(new ServerDataCompletionModel(true, "CUTOFF"));
@@ -673,6 +749,9 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 endOfDay.setMachine_id(list.getMachineId());
                                 endOfDay.setBranch_id(list.getBranchId());
                                 endOfDay.setTotal_payout(Double.valueOf(list.getTotalPayout()));
+
+                                endOfDay.setCash_redeemed_from_prev_ar(list.getCashRedeemedFromPrevAr());
+                                endOfDay.setCard_redeemed_from_prev_ar(list.getCardRedeemedFromPrevAr());
                                 cutOffViewModel.insertData(endOfDay);
                             }
                             BusProvider.getInstance().post(new ServerDataCompletionModel(true, "END OF DAY"));
@@ -729,6 +808,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 postedDiscounts.setMachine_id(list.getMachineId());
                                 postedDiscounts.setBranch_id(list.getBranchId());
                                 postedDiscounts.setTreg(list.getTreg());
+                                postedDiscounts.setTo_id(list.getToId());
 
                                 discountViewModel.insertPostedDiscount(postedDiscounts);
                             }
@@ -817,6 +897,8 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 serialNumbers.setOrder_id(list.getOrderId());
                                 serialNumbers.setMachine_id(list.getMachineId());
                                 serialNumbers.setBranch_id(list.getBranchId());
+
+                                serialNumbers.setTo_id(list.getToId());
                                 transactionsViewModel.insertSerialNumbers(serialNumbers);
                             }
                             BusProvider.getInstance().post(new ServerDataCompletionModel(true, "SERIAL NUMBER"));
@@ -1079,6 +1161,19 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     public void menuClicked(ButtonsModel buttonsModel) throws ExecutionException, InterruptedException {
 
         switch (buttonsModel.getId()) {
+            case 152:
+                inputDialog = new InputDialog(MainActivity.this, "SEARCH", "") {
+
+                    @Override
+                    public void confirm(String str) {
+                        BusProvider.getInstance().post(new ItemScannedModel(str));
+
+                        dismiss();
+                    }
+
+                };
+                inputDialog.show();
+                break;
             case 997://LOGOUT
                 logoutUser();
                 openLoginPage();
@@ -1100,6 +1195,14 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         super.onResume();
         BusProvider.getInstance().register(this);
         loadPrinter();
+        try {
+            if (userViewModel.searchLoggedInUser().size() < 1) {
+                openLoginPage();
+            }
+        } catch (Exception e) {
+
+        }
+
 
         if (!TextUtils.isEmpty(SharedPreferenceManager.getString(null, AppConstants.HAS_CHANGED))) {
             if (SharedPreferenceManager.getString(null, AppConstants.HAS_CHANGED).equalsIgnoreCase("1")) {
@@ -1107,7 +1210,10 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                 SharedPreferenceManager.saveString(null, "0", AppConstants.HAS_CHANGED);
             }
         }
+        registerReceiver();
     }
+
+
 
     private void refreshBottomSelection() {
         BusProvider.getInstance().post(new RefreshViewModel(""));
@@ -1163,6 +1269,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     protected void onPause() {
         super.onPause();
         BusProvider.getInstance().unregister(this);
+        unregisterReceiver(receiver);
     }
 
     private void logoutUser() throws ExecutionException, InterruptedException{
@@ -1232,30 +1339,40 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     public void print(PrintModel printModel) {
 
         switch (printModel.getType()) {
+            case "PRINT_FOS":
+                addAsync(new FosAsync(printModel, MainActivity.this,
+                        this, dataSyncViewModel,
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true,
+                        printerPresenter, mSunmiPrintService), "print_fos");
+                break;
             case "PRINT_ITEM_CANCELLED":
                 saveEjFile(printModel);
                 addAsync(new PrintItemCancelledAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "print_item_cancelled");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true,
+                        printerPresenter, mSunmiPrintService), "print_item_cancelled");
                 break;
             case "PRINT_PAYOUT":
                 saveEjFile(printModel);
                 addAsync(new PayoutAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "print_payout");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true,
+                        printerPresenter, mSunmiPrintService), "print_payout");
                 break;
             case "PRINT_INTRANSIT":
 //                intransitTest(printModel);
                 addAsync(new IntransitAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "intransit");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true,
+                        printerPresenter, mSunmiPrintService), "intransit");
                 break;
             case "SOA":
                 addAsync(new SoaAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "soa");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true,
+                        printerPresenter, mSunmiPrintService), "soa");
                 break;
-            case "CHEAT":
+            case "CHEAT": //ignore
                 addAsync(new CheatAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
                         iLocalizeReceipts, SStarPort.getStarIOPort(),true), "cheat");
@@ -1264,68 +1381,80 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                 saveEjFile(printModel);
                 addAsync(new PostVoidAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "post_void");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true,
+                        printerPresenter, mSunmiPrintService), "post_void");
                 break;
             case "BACKOUT":
                 saveEjFile(printModel);
                 addAsync(new BackoutAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "backout");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true,
+                        printerPresenter, mSunmiPrintService), "backout");
                 break;
             case "PRINT_RECEIPT_SPEC":
                 addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "print_receipt_spec");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true,
+                        printerPresenter, mSunmiPrintService), "print_receipt_spec");
                 break;
             case "REPRINT_RECEIPT_SPEC":
                 addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "reprint_receipt_spec");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true,
+                        printerPresenter, mSunmiPrintService), "reprint_receipt_spec");
                 break;
             case "REPRINT_RECEIPT":
                 addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(),true), "reprint_receipt");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(),true,
+                        printerPresenter, mSunmiPrintService), "reprint_receipt");
                 break;
             case "PRINT_RECEIPT":
 //                orTest(printModel);
                 saveEjFile(printModel);
                 addAsync(new PrintReceiptAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, null, false), "print_receipt");
+                        iLocalizeReceipts, null, false,
+                        printerPresenter, mSunmiPrintService), "print_receipt");
                 break;
             case "REPRINT_XREAD":
                 addAsync(new CutOffAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(), true), "print_xread");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(), true,
+                        printerPresenter, mSunmiPrintService), "print_xread");
                 break;
             case "PRINT_SPOT_AUDIT":
 //                saveEjFile(printModel);
                 addAsync(new CutOffAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_xread");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(), false,
+                        printerPresenter, mSunmiPrintService), "print_xread");
                 break;
             case "PRINT_SHORTOVER":
                 addAsync(new ShortOverAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_shortover");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(), false,
+                        printerPresenter, mSunmiPrintService), "print_shortover");
                 break;
             case "PRINT_XREAD":
                 saveEjFile(printModel);
                 addAsync(new CutOffAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_xread");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(), false,
+                        printerPresenter, mSunmiPrintService), "print_xread");
                 break;
             case "REPRINT_ZREAD":
                 addAsync(new EndOfDayAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(), true), "print_zread");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(), true,
+                        printerPresenter, mSunmiPrintService), "print_zread");
                 break;
             case "PRINT_ZREAD":
                 saveEjFile(printModel);
                 addAsync(new EndOfDayAsync(printModel, MainActivity.this,
                         this, dataSyncViewModel,
-                        iLocalizeReceipts, SStarPort.getStarIOPort(), false), "print_zread");
+                        iLocalizeReceipts, SStarPort.getStarIOPort(), false,
+                        printerPresenter, mSunmiPrintService), "print_zread");
                 break;
         }
 
@@ -1374,7 +1503,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                 if (orders.getDiscountAmount() > 0) {
                     Log.d("RECEIPTDATA", twoColumns(
                             "LESS",
-                            PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getDiscountAmount())),
+                            PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getDiscountAmount() * orders.getQty())),
                             40,
                             2,
                             getApplicationContext()));
@@ -1637,6 +1766,10 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     private void runTask(String taskName, AsyncTask asyncTask) {
 
         switch (taskName) {
+            case "print_fos":
+                FosAsync fosAsync =(FosAsync) asyncTask;
+                fosAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                break;
             case "print_item_cancelled":
                 PrintItemCancelledAsync printItemCancelledAsync = (PrintItemCancelledAsync) asyncTask;
                 printItemCancelledAsync.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
@@ -1945,9 +2078,11 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
     private void showConnection(boolean canConnect) {
         if (canConnect) {
+            SharedPreferenceManager.saveString(MainActivity.this, "yes", AppConstants.HAS_CONNECTION_TO_SERVER);
             onlineTextIndicator.setText("ONLINE");
             onlineImageIndicator.setBackground(getResources().getDrawable(R.drawable.circle_online));
         } else {
+            SharedPreferenceManager.saveString(MainActivity.this, "", AppConstants.HAS_CONNECTION_TO_SERVER);
             onlineTextIndicator.setText("OFFLINE");
             onlineImageIndicator.setBackground(getResources().getDrawable(R.drawable.circle_offline));
         }
@@ -1962,7 +2097,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void shiftUpdate(ShiftUpdateModel shiftUpdateModel) {
         try {
-            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 2.1.0");
+            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 2.3.1");
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -2065,6 +2200,87 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
 
 
+        }
+    }
+
+
+    private void connectInnerPrinter() {
+        try {
+            InnerPrinterManager.getInstance().bindService(this,
+                    innerPrinterCallback);
+        } catch (InnerPrinterException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private InnerPrinterCallback innerPrinterCallback = new InnerPrinterCallback() {
+        @Override
+        protected void onConnected(SunmiPrinterService service) {
+
+            mSunmiPrintService = service;
+            printerPresenter = new PrinterPresenter(MainActivity.this, mSunmiPrintService);
+
+        }
+
+        @Override
+        protected void onDisconnected() {
+            mSunmiPrintService = null;
+
+        }
+    };
+
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String code = intent.getStringExtra(DATA);
+            byte[] arr = intent.getByteArrayExtra(SOURCE);
+            if (code != null && !code.isEmpty()) {
+
+                String fnl = code.replaceAll("\n", "");
+
+                BusProvider.getInstance().post(new ItemScannedModel(fnl));
+
+
+            }
+        }
+    };
+
+    private void registerReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_DATA_CODE_RECEIVED);
+        registerReceiver(receiver, filter);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (event.isCtrlPressed()) {
+            switch (keyCode) {
+                case KeyEvent.KEYCODE_F:
+                    inputDialog = new InputDialog(MainActivity.this, "SEARCH", "") {
+
+                        @Override
+                        public void confirm(String str) {
+                            BusProvider.getInstance().post(new ItemScannedModel(str));
+
+                            dismiss();
+                        }
+
+                    };
+                    inputDialog.show();
+                default:
+                    return super.onKeyUp(keyCode, event);
+            }
+        }
+
+        return super.onKeyUp(keyCode, event);
+    }
+
+
+    @Subscribe
+    public void closeInputDialog(CloseInputDialogModel closeInputDialogModel) {
+        if (inputDialog != null) {
+            inputDialog.dismiss();
         }
     }
 

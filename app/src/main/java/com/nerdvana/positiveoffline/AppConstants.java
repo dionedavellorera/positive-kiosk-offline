@@ -33,8 +33,17 @@ public class AppConstants {
     public static final String SELECTED_PRINTER_MANUALLY = "selected_printer_manually";
     public static final String SELECTED_PRINTER_MODEL = "selected_printer_model";
     public static final String SELECTED_SYSTEM_TYPE = "selected_system_type";
+    public static final String SELECTED_SYSTEM_MODE = "selected_system_mode";
 
     public static final String HAS_CHANGED = "has_changed";
     public static final String HAS_CHECKED_DATA_FROM_SERVER = "has_checked_data_from_server";
     public static final String TYPE_VALUE = "type_value";
+
+    public static final String PRINTER_PREFS = "printer_prefs";
+    public static final String HAS_CONNECTION_TO_SERVER = "is_connected_to_server";
+    public static final String NORE_URL = "node_url";
+    public static final String ACCRED_NO = "accred_no";
+    public static final String PERMIT_NO = "permit_no";
+    public static final String PERMIT_ISSUED = "permit_issued_at";
+    public static final String PERMIT_VALIDITY = "permit_validity";
 }

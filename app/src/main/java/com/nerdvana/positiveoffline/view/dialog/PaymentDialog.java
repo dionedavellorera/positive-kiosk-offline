@@ -29,6 +29,8 @@ import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
+import com.nerdvana.positiveoffline.IUsers;
+import com.nerdvana.positiveoffline.PosClient;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
@@ -36,6 +38,7 @@ import com.nerdvana.positiveoffline.adapter.CreditCardAdapter;
 import com.nerdvana.positiveoffline.adapter.CustomSpinnerAdapter;
 import com.nerdvana.positiveoffline.adapter.PaymentTypeAdapter;
 import com.nerdvana.positiveoffline.adapter.PaymentsAdapter;
+import com.nerdvana.positiveoffline.apirequests.AddTransactionsOfflineRequest;
 import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.base.BaseDialog;
@@ -54,6 +57,7 @@ import com.nerdvana.positiveoffline.intf.CreditCardContract;
 import com.nerdvana.positiveoffline.intf.PaymentTypeContract;
 import com.nerdvana.positiveoffline.intf.PaymentsContract;
 import com.nerdvana.positiveoffline.model.CreditCardListModel;
+import com.nerdvana.positiveoffline.model.PaymentSelectionModel;
 import com.nerdvana.positiveoffline.model.SettingsMenuModel;
 import com.nerdvana.positiveoffline.model.StringModel;
 import com.nerdvana.positiveoffline.printer.PrinterUtils;
@@ -75,9 +79,15 @@ import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import static android.view.View.GONE;
 
 public abstract class PaymentDialog extends BaseDialog implements PaymentTypeContract, View.OnClickListener, PaymentsContract {
+    private Double amountDue = 0.00;
     private int selectedCreditCardId = 0;
     private String takasId = "";
     private String onlineId = "";
@@ -312,7 +322,7 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             paymentsAdapter.notifyDataSetChanged();
 
             Double tendered = 0.00;
-            Double amountDue = 0.00;
+            amountDue = 0.00;
             Double change = 0.00;
             for (Payments payments : transactionsViewModel.paymentList(transactionId)) {
                 tendered += Utils.roundedOffTwoDecimal(payments.getAmount());
@@ -601,12 +611,12 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formTakas.setVisibility(GONE);
             formDeliveryInfo.setVisibility(GONE);
 
-            TypeToken<List<FetchPaymentTypeResponse.OnlinePayment>> token = new TypeToken<List<FetchPaymentTypeResponse.OnlinePayment>>() {};
-            final List<FetchPaymentTypeResponse.OnlinePayment> onlinePaymentList = GsonHelper.getGson().fromJson(otherData, token.getType());
+            TypeToken<List<PaymentSelectionModel>> token = new TypeToken<List<PaymentSelectionModel>>() {};
+            final List<PaymentSelectionModel> onlinePaymentList = GsonHelper.getGson().fromJson(otherData, token.getType());
 
             if (onlinePaymentList.size() > 0) {
-                for (FetchPaymentTypeResponse.OnlinePayment list : onlinePaymentList) {
-                    arOnlineString.add(new StringModel(list.getOnlinePaymentId(), list.getOnlinePayment().toUpperCase()));
+                for (PaymentSelectionModel list : onlinePaymentList) {
+                    arOnlineString.add(new StringModel(list.getPaymentId(), list.getOnlinePayment().toUpperCase()));
                 }
             }
 
@@ -643,12 +653,12 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formTakas.setVisibility(View.VISIBLE);
             formDeliveryInfo.setVisibility(GONE);
 
-            TypeToken<List<FetchPaymentTypeResponse.AccountReceivable>> token = new TypeToken<List<FetchPaymentTypeResponse.AccountReceivable>>() {};
-            final List<FetchPaymentTypeResponse.AccountReceivable> accountReceivableList = GsonHelper.getGson().fromJson(otherData, token.getType());
+            TypeToken<List<PaymentSelectionModel>> token = new TypeToken<List<PaymentSelectionModel>>() {};
+            final List<PaymentSelectionModel> accountReceivableList = GsonHelper.getGson().fromJson(otherData, token.getType());
 
             if (accountReceivableList.size() > 0) {
-                for (FetchPaymentTypeResponse.AccountReceivable list : accountReceivableList) {
-                    arString.add(new StringModel(list.getArPaymentId(), list.getAccountReceivablePayment().toUpperCase()));
+                for (PaymentSelectionModel list : accountReceivableList) {
+                    arString.add(new StringModel(list.getPaymentId(), list.getOnlinePayment().toUpperCase()));
                 }
             }
 
@@ -666,12 +676,12 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             formMobilePayments.setVisibility(View.VISIBLE);
             formDeliveryInfo.setVisibility(GONE);
 
-            TypeToken<List<FetchPaymentTypeResponse.MobilePayment>> token = new TypeToken<List<FetchPaymentTypeResponse.MobilePayment>>() {};
-            final List<FetchPaymentTypeResponse.MobilePayment> mobilePaymentList = GsonHelper.getGson().fromJson(otherData, token.getType());
+            TypeToken<List<PaymentSelectionModel>> token = new TypeToken<List<PaymentSelectionModel>>() {};
+            final List<PaymentSelectionModel> mobilePaymentList = GsonHelper.getGson().fromJson(otherData, token.getType());
 
             if (mobilePaymentList.size() > 0) {
-                for (FetchPaymentTypeResponse.MobilePayment list : mobilePaymentList) {
-                    mobileString.add(new StringModel(list.getMobilePaymentId(), list.getMobilePayment().toUpperCase()));
+                for (PaymentSelectionModel list : mobilePaymentList) {
+                    mobileString.add(new StringModel(list.getPaymentId(), list.getOnlinePayment().toUpperCase()));
                 }
             }
         } else if (coreId.equalsIgnoreCase("999")) {
@@ -817,7 +827,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                 Utils.getDateTimeToday(),
                                 1,
                                 getUser().getUsername(),
-                                Utils.getDateTimeToday());
+                                Utils.getDateTimeToday(),
+                                0);
                         p.setOther_data(GsonHelper.getGson().toJson(takasMap));
                         takasPayment.add(p);
                         transactionsViewModel.insertPayment(takasPayment);
@@ -876,7 +887,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                             Utils.getDateTimeToday(),
                             0,
                             "",
-                            "");
+                            "",
+                            0);
                     p.setOther_data(GsonHelper.getGson().toJson(takasMap));
                     takasPayment.add(p);
                     transactionsViewModel.insertPayment(takasPayment);
@@ -929,7 +941,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                 Utils.getDateTimeToday(),
                                 1,
                                 getUser().getUsername(),
-                                Utils.getDateTimeToday());
+                                Utils.getDateTimeToday(),
+                                0);
                         p.setOther_data(GsonHelper.getGson().toJson(onlineMap));
                         onlinePayment.add(p);
                         transactionsViewModel.insertPayment(onlinePayment);
@@ -1046,7 +1059,11 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                     tmp.getIs_backed_out_by(),
                                     tmp.getIs_backed_out_at(),
                                     tmp.getDelivery_to(),
-                                    tmp.getDelivery_address()
+                                    tmp.getDelivery_address(),
+                                    tmp.getTo_id(),
+                                    tmp.getIs_temp(),
+                                    tmp.getTo_control_number(),
+                                    tmp.getShift_number()
                             );
 
                             transactions.setIs_shared(tmp.getIs_shared());
@@ -1062,11 +1079,48 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                             transactions.setBranch_id(tmp.getBranch_id());
                             transactions.setCheck_in_time(tmp.getCheck_in_time());
                             transactions.setCheck_out_time(!TextUtils.isEmpty(tmp.getCheck_in_time()) ? Utils.getDateTimeToday() : "");
+                            transactions.setIs_temp(0);
 
+                            transactions.setTo_transaction_id(tmp.getTo_transaction_id());
 
                             transactions.setHas_special(tmp.getHas_special());
                             int isFinished = transactionsViewModel.updateLong(transactions);
 
+
+                            //ignore this one
+                            if (transactions.getTo_transaction_id() > 0) {
+//                                transactions.getTo_transaction_id()
+//                                transactions.getMachine_id()
+                                List<Transactions> tmpSend = new ArrayList<>();
+                                Transactions tmpTr = transactionsViewModel.getTransactionViaTransactionIdOnly(transactionId);
+                                tmpTr.setId(transactions.getTo_transaction_id());
+                                tmpTr.setIs_completed(true);
+                                tmpTr.setIs_completed_by(getUser().getUsername());
+                                tmpTr.setCompleted_at(Utils.getDateTimeToday());
+                                tmpSend.add(tmpTr);
+                                Map<String, String> transactionMap = new HashMap<>();
+                                transactionMap.put("transactions", GsonHelper.getGson().toJson(tmpSend));
+
+                                Map<String, Object> wholeData = new HashMap<>();
+                                wholeData.put("data", GsonHelper.getGson().toJson(transactionMap));
+                                AddTransactionsOfflineRequest req = new AddTransactionsOfflineRequest(wholeData);
+                                IUsers iUsers = PosClient.mRestAdapter.create(IUsers.class);
+                                Call<ResponseBody> call = iUsers.addTransactionsOffline(req.getMapValue());
+                                call.enqueue(new Callback<ResponseBody>() {
+                                    @Override
+                                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                        String message = "";
+
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                    }
+                                });
+                            }
+
+                            //
 
                             RoomStatus roomStatus = roomsViewModel.getRoomStatusViaId(1);
                             Log.d("TRACING", "TRANS TO LOGOUT " + transactionId);
@@ -1130,7 +1184,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                     Utils.getDateTimeToday(),
                                     1,
                                     getUser().getUsername(),
-                                    Utils.getDateTimeToday());
+                                    Utils.getDateTimeToday(),
+                                    Double.valueOf(cashAmount.getText().toString()) - Double.valueOf(amountDue));
                             p.setOther_data("");
                             cashPayment.add(p);
 
@@ -1177,7 +1232,8 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                     Utils.getDateTimeToday(),
                                     1,
                                     getUser().getUsername(),
-                                    Utils.getDateTimeToday());
+                                    Utils.getDateTimeToday(),
+                                    0);
                             p.setOther_data(GsonHelper.getGson().toJson(cardMap));
                             cardPayment.add(p);
                             transactionsViewModel.insertPayment(cardPayment);

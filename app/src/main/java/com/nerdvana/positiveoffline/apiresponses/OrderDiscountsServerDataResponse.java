@@ -21,7 +21,9 @@ public class OrderDiscountsServerDataResponse {
 
 
     public class OrderDiscount {
-
+        @SerializedName("to_id")
+        @Expose
+        private Integer toId;
         @SerializedName("my_id")
         @Expose
         private Integer myId;
@@ -116,6 +118,14 @@ public class OrderDiscountsServerDataResponse {
 
         public Integer getPostedDiscountId() {
             return postedDiscountId;
+        }
+
+        public Integer getToId() {
+            return toId;
+        }
+
+        public void setToId(Integer toId) {
+            this.toId = toId;
         }
 
         public void setPostedDiscountId(Integer postedDiscountId) {

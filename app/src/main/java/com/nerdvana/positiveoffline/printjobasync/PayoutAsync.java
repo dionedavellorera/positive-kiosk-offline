@@ -12,13 +12,18 @@ import com.epson.eposprint.Print;
 import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.GsonHelper;
+import com.nerdvana.positiveoffline.MainActivity;
+import com.nerdvana.positiveoffline.PrinterPresenter;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
+import com.nerdvana.positiveoffline.ThreadPoolManager;
 import com.nerdvana.positiveoffline.entities.Payout;
 import com.nerdvana.positiveoffline.functions.PrinterFunctions;
 import com.nerdvana.positiveoffline.intf.AsyncFinishCallBack;
 import com.nerdvana.positiveoffline.localizereceipts.ILocalizeReceipts;
 import com.nerdvana.positiveoffline.model.OtherPrinterModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
+import com.nerdvana.positiveoffline.model.PrintingListModel;
+import com.nerdvana.positiveoffline.model.SunmiPrinterModel;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.printer.EJFileCreator;
 import com.nerdvana.positiveoffline.printer.PrinterUtils;
@@ -26,6 +31,10 @@ import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
 import com.starmicronics.starioextension.StarIoExt;
+import com.sunmi.devicemanager.cons.Cons;
+import com.sunmi.devicemanager.device.Device;
+import com.sunmi.devicesdk.core.PrinterManager;
+import com.sunmi.peripheral.printer.SunmiPrinterService;
 
 import org.joda.time.DateTime;
 import org.joda.time.Minutes;
@@ -52,12 +61,14 @@ public class PayoutAsync extends AsyncTask<Void, Void, Void> {
 
     private boolean isReprint = false;
 
-
+    private PrinterPresenter printerPresenter;
+    private SunmiPrinterService mSunmiPrintService;
     public PayoutAsync(PrintModel printModel, Context context,
                           AsyncFinishCallBack asyncFinishCallBack,
                           DataSyncViewModel dataSyncViewModel,
                           ILocalizeReceipts iLocalizeReceipts,
-                          StarIOPort starIOPort, boolean isReprint) {
+                          StarIOPort starIOPort, boolean isReprint,
+                       PrinterPresenter printerPresenter, SunmiPrinterService mSunmiPrintService) {
         this.context = context;
         this.printModel = printModel;
         this.asyncFinishCallBack = asyncFinishCallBack;
@@ -65,6 +76,11 @@ public class PayoutAsync extends AsyncTask<Void, Void, Void> {
         this.iLocalizeReceipts = iLocalizeReceipts;
         this.port = starIOPort;
         this.isReprint = isReprint;
+
+        this.printerPresenter = printerPresenter;
+        this.mSunmiPrintService = mSunmiPrintService;
+
+
     }
 
 
@@ -239,6 +255,47 @@ public class PayoutAsync extends AsyncTask<Void, Void, Void> {
                 asyncFinishCallBack.doneProcessing();
                 asyncFinishCallBack.error("PRINTER NOT CONNECTED");
             }
+        } else if (SharedPreferenceManager.getString(context, AppConstants.SELECTED_PRINTER_MANUALLY).equalsIgnoreCase("sunmi")) {
+            if (printerPresenter == null) {
+                printerPresenter = new PrinterPresenter(context, mSunmiPrintService);
+            }
+            String finalString = "";
+
+            Payout payoutDetails = GsonHelper.getGson().fromJson(printModel.getData(), Payout.class);
+            finalString = EJFileCreator.payoutString(payoutDetails, context);
+
+            TypeToken<List<PrintingListModel>> myToken = new TypeToken<List<PrintingListModel>>() {};
+            List<PrintingListModel> pOutList = GsonHelper.getGson().fromJson(SharedPreferenceManager.getString(context, AppConstants.PRINTER_PREFS), myToken.getType());
+            PrintingListModel tmpLstModel = null;
+            for (PrintingListModel list : pOutList) {
+                if (list.getType().equalsIgnoreCase(printModel.getType())) {
+                    String finalString1 = finalString;
+                    ThreadPoolManager.getsInstance().execute(() -> {
+                        for (PrintingListModel.SelectedPrinterData data : list.getSelectedPrinterList()) {
+                            if (data.getId().equalsIgnoreCase(SunmiPrinterModel.PRINTER_BUILT_IN)) {
+                                printerPresenter.printNormal(finalString1);
+                            }
+                        }
+                        List<Device> deviceList = PrinterManager.getInstance().getPrinterDevice();
+                        if (deviceList == null || deviceList.isEmpty()) return;
+                        for (Device device : deviceList) {
+                            if (device.type == Cons.Type.PRINT && device.connectType == Cons.ConT.INNER) {
+                                continue;
+                            }
+                            if (list.getSelectedPrinterList().size() > 0) {
+                                for (PrintingListModel.SelectedPrinterData data : list.getSelectedPrinterList()) {
+                                    if (data.getId().equalsIgnoreCase(device.getId())) {
+                                        printerPresenter.printByDeviceManager(device, finalString1);
+                                    }
+                                }
+
+                            }
+
+                        }
+                    });
+                }
+            }
+            asyncFinishCallBack.doneProcessing();
         }
 
 

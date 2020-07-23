@@ -73,6 +73,18 @@ public class SerialNumbersServerDataResponse {
         @Expose
         private Object deletedAt;
 
+        @SerializedName("to_id")
+        @Expose
+        private Integer toId;
+
+        public Integer getToId() {
+            return toId;
+        }
+
+        public void setToId(Integer toId) {
+            this.toId = toId;
+        }
+
         public Integer getMyId() {
             return myId;
         }

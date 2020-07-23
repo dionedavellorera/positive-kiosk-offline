@@ -80,7 +80,13 @@ public abstract class SerialNumbersDialog extends BaseDialog implements View.OnC
                                 Utils.getDateTimeToday(), ord.getCore_id(),
                                 ord.getName(),ord.getId(),
                                 Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)));
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                                SharedPreferenceManager
+                                        .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                        .equalsIgnoreCase("to")
+                                        ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                        : 0
+                        );
                         ordersWithSerialNeeded.add(sn);
                     }
                 } else {
@@ -90,7 +96,13 @@ public abstract class SerialNumbersDialog extends BaseDialog implements View.OnC
                                 Utils.getDateTimeToday(), ord.getCore_id(),
                                 ord.getName(),ord.getId(),
                                 Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)));
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                                SharedPreferenceManager
+                                        .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                        .equalsIgnoreCase("to")
+                                        ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                        : 0
+                        );
                         ordersWithSerialNeeded.add(sn);
                     }
                 }

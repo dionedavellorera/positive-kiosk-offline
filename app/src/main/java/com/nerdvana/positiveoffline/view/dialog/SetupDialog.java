@@ -40,6 +40,7 @@ public abstract class SetupDialog extends BaseDialog implements View.OnClickList
     private HidingEditText etCompany;
     private HidingEditText etCode;
     private HidingEditText etProductKey;
+    private HidingEditText etNodeUrl;
     //endregion
 
     public SetupDialog(Context context) {
@@ -63,10 +64,12 @@ public abstract class SetupDialog extends BaseDialog implements View.OnClickList
             etCompany.setText(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH));
             etCode.setText(SharedPreferenceManager.getString(getContext(), AppConstants.CODE));
             etProductKey.setText(SharedPreferenceManager.getString(getContext(), AppConstants.SERIAL_NUMBER));
+            etNodeUrl.setText(SharedPreferenceManager.getString(getContext(), AppConstants.NORE_URL));
         }
     }
 
     private void initViews() {
+        etNodeUrl = findViewById(R.id.etNodeUrl);
         btnConfirm = findViewById(R.id.btnConfirm);
         btnConfirm.setOnClickListener(this);
 
@@ -101,6 +104,9 @@ public abstract class SetupDialog extends BaseDialog implements View.OnClickList
                 etCode.getText().toString(),AppConstants.CODE);
         SharedPreferenceManager.saveString(getContext(),
                 etProductKey.getText().toString(), AppConstants.SERIAL_NUMBER);
+
+        SharedPreferenceManager.saveString(getContext(),
+                etNodeUrl.getText().toString(), AppConstants.NORE_URL);
     }
 
     private void testConnection() {
@@ -215,6 +221,12 @@ public abstract class SetupDialog extends BaseDialog implements View.OnClickList
                     SharedPreferenceManager.saveString(getContext(), String.valueOf(response.body().getBranch().getBranchCode()), AppConstants.BRANCH_CODE);
                     SharedPreferenceManager.saveString(getContext(), String.valueOf(response.body().getBranch().getInfo().getSafe_keeping_amount()), AppConstants.SAFEKEEPING_AMOUNT);
                     SharedPreferenceManager.saveString(getContext(), GsonHelper.getGson().toJson(String.valueOf(response.body().getBranch().getShift())), AppConstants.SHIFT_DETAILS);
+
+                    SharedPreferenceManager.saveString(getContext(), response.body().getBranch().getInfo().getAccreditationNo(), AppConstants.ACCRED_NO);
+
+                    SharedPreferenceManager.saveString(getContext(), response.body().getResult().get(0).getPermit_nos(), AppConstants.PERMIT_NO);
+                    SharedPreferenceManager.saveString(getContext(), response.body().getResult().get(0).getPermit_issued_at(), AppConstants.PERMIT_ISSUED);
+                    SharedPreferenceManager.saveString(getContext(), response.body().getResult().get(0).getPermit_valid_at(), AppConstants.PERMIT_VALIDITY);
                     verifySuccess();
                     dismiss();
                 } else {

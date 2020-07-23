@@ -6,14 +6,10 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.room.Query;
 
-import com.facebook.stetho.common.Util;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.Utils;
-import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.entities.BranchGroup;
 import com.nerdvana.positiveoffline.entities.OrDetails;
 import com.nerdvana.positiveoffline.entities.OrderDiscounts;
@@ -22,15 +18,13 @@ import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.Payout;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.ProductAlacart;
-import com.nerdvana.positiveoffline.entities.Products;
 import com.nerdvana.positiveoffline.entities.SerialNumbers;
 import com.nerdvana.positiveoffline.entities.Transactions;
-import com.nerdvana.positiveoffline.entities.User;
+import com.nerdvana.positiveoffline.intf.AsyncSaveContract;
 import com.nerdvana.positiveoffline.model.DiscountComputeModel;
 import com.nerdvana.positiveoffline.model.OdWithPd;
 import com.nerdvana.positiveoffline.model.OrderWithDiscounts;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
-import com.nerdvana.positiveoffline.model.TransactionWithDiscounts;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.repository.DiscountsRepository;
 import com.nerdvana.positiveoffline.repository.TransactionsRepository;
@@ -89,6 +83,7 @@ public class TransactionsViewModel extends AndroidViewModel {
         transactionsRepository.insert(transactionList);
     }
 
+
     public long insertTransactionWaitData(Transactions transactions) throws ExecutionException, InterruptedException {
         return transactionsRepository.insertTransactionWaitData(transactions);
     }
@@ -100,6 +95,28 @@ public class TransactionsViewModel extends AndroidViewModel {
     public Integer updateLong(Transactions transaction) throws ExecutionException, InterruptedException {
         return transactionsRepository.updateLong(transaction);
     }
+
+    public Integer updateTransactionDataToSent(String transactionId) throws ExecutionException, InterruptedException {
+        return transactionsRepository.updateTransactionDataToSent(transactionId);
+    }
+
+    public Integer updateOrdersDataToSent(String transactionId) throws ExecutionException, InterruptedException {
+        return transactionsRepository.updateOrdersDataToSent(transactionId);
+    }
+
+    public Integer updateOrderDiscountsDataToSent(String transactionId) throws ExecutionException, InterruptedException {
+        return transactionsRepository.updateOrderDiscountsDataToSent(transactionId);
+    }
+
+    public Integer updatePostedDataToSent(String transactionId) throws ExecutionException, InterruptedException {
+        return transactionsRepository.updatePostedDataToSent(transactionId);
+    }
+
+    public Integer updateSerialNumbersToSent(String transactionId) throws ExecutionException, InterruptedException {
+        return transactionsRepository.updateSerialNumbersToSent(transactionId);
+    }
+
+
 
     public void recomputeTransaction(List<Orders> orderList, String transactionId) {
         Double grossSales = 0.00;
@@ -114,14 +131,14 @@ public class TransactionsViewModel extends AndroidViewModel {
 
                 grossSales += (Utils.roundedOffTwoDecimal(owd.getVatAmount() + owd.getVatable() + owd.getVatExempt()));
                 if (owd.getVatExempt() > 0) {
-                    netSales += (Utils.roundedOffTwoDecimal((owd.getVatExempt()) - owd.getDiscountAmount()));
+                    netSales += (owd.getVatExempt()) - owd.getDiscountAmount();
                 } else {
-                    netSales += (Utils.roundedOffTwoDecimal((owd.getVatAmount() + owd.getVatable() + owd.getVatExempt()) - owd.getDiscountAmount()));
+                    netSales += ((owd.getVatAmount() + owd.getVatable() + owd.getVatExempt()) - owd.getDiscountAmount());
                 }
-                vatableSales += Utils.roundedOffTwoDecimal(owd.getVatable());
-                vatExemptSales += Utils.roundedOffTwoDecimal(owd.getVatExempt());
-                vatAmount += Utils.roundedOffTwoDecimal(owd.getVatAmount());
-                discountAmount += Utils.roundedOffTwoDecimal(owd.getDiscountAmount());
+                vatableSales += owd.getVatable();
+                vatExemptSales += owd.getVatExempt();
+                vatAmount += owd.getVatAmount();
+                discountAmount += owd.getDiscountAmount();
 
 
             }
@@ -165,10 +182,14 @@ public class TransactionsViewModel extends AndroidViewModel {
                         //region check if special
                         for (OrderDiscounts od : owd.orderWithDiscountList) {
                             if (!od.getIs_void()) {
-                                if (od.getDiscount_name().equalsIgnoreCase("senior") ||
-                                        od.getDiscount_name().equalsIgnoreCase("pwd")) {
+                                if (od.getIs_special() == 1) {
                                     hasSpecial = 1;
                                 }
+//                                if (od.getDiscount_name().equalsIgnoreCase("senior") ||
+//                                        od.getDiscount_name().equalsIgnoreCase("senior citizen") ||
+//                                        od.getDiscount_name().equalsIgnoreCase("pwd")) {
+//                                    hasSpecial = 1;
+//                                }
 
                             }
                         }
@@ -178,15 +199,20 @@ public class TransactionsViewModel extends AndroidViewModel {
                         Double finalAmount = 0.00;
                         Double totalDiscountAmount = 0.00; ;
 
-                        if (hasSpecial == 1) {
-                            remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
-                            finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
-                            totalDiscountAmount = 0.00;
-                        } else {
-                            remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
-                            finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
-                            totalDiscountAmount = 0.00;
-                        }
+
+                        remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
+                        finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
+                        totalDiscountAmount = 0.00;
+
+//                        if (hasSpecial == 1) {
+//                            remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
+//                            finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
+//                            totalDiscountAmount = 0.00;
+//                        } else {
+//                            remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
+//                            finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
+//                            totalDiscountAmount = 0.00;
+//                        }
 
                         //region apply discounting
 
@@ -198,13 +224,9 @@ public class TransactionsViewModel extends AndroidViewModel {
                         for (OrderDiscounts od : owd.orderWithDiscountList) {
                             if (!od.getIs_void()) {
 
-                                if (od.getDiscount_name().equalsIgnoreCase("senior") ||
-                                        od.getDiscount_name().equalsIgnoreCase("pwd")) {
-
+                                if (od.getIs_special() == 1 ) {
                                     sortedDiscounts.add(otherCounter, od);
-
                                 } else {
-
                                     if (od.getIs_percentage()) {
                                         sortedDiscounts.add(0, od);
                                     } else {
@@ -213,6 +235,23 @@ public class TransactionsViewModel extends AndroidViewModel {
 
                                     otherCounter += 1;
                                 }
+
+//                                if (od.getDiscount_name().equalsIgnoreCase("senior") ||
+//                                        od.getDiscount_name().equalsIgnoreCase("senior citizen") ||
+//                                        od.getDiscount_name().equalsIgnoreCase("pwd")) {
+//
+//                                    sortedDiscounts.add(otherCounter, od);
+//
+//                                } else {
+//
+//                                    if (od.getIs_percentage()) {
+//                                        sortedDiscounts.add(0, od);
+//                                    } else {
+//                                        sortedDiscounts.add(od);
+//                                    }
+//
+//                                    otherCounter += 1;
+//                                }
                             }
                         }
 
@@ -222,14 +261,14 @@ public class TransactionsViewModel extends AndroidViewModel {
                             if (!od.getIs_void()) {
 
                                 if (od.getIs_percentage()) {
-                                    totalDiscountAmount += Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100));
-                                    currentDiscountAmount = Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(remainingAmount) * (od.getValue() / 100));
+                                    totalDiscountAmount += Utils.roundedOffTwoDecimal((remainingAmount * (od.getValue() / 100)) );
+                                    currentDiscountAmount = Utils.roundedOffTwoDecimal((remainingAmount * (od.getValue() / 100)));
                                 } else {
                                     totalDiscountAmount += Utils.roundedOffTwoDecimal(od.getValue());
                                     currentDiscountAmount = Utils.roundedOffTwoDecimal(od.getValue());
                                 }
 
-                                dcm.add(new DiscountComputeModel((int)od.getPosted_discount_id(), currentDiscountAmount));
+                                dcm.add(new DiscountComputeModel((int)od.getPosted_discount_id(), currentDiscountAmount, owd.orders.getQty()));
 
                                 remainingAmount = Utils.roundedOffTwoDecimal(remainingAmount - totalDiscountAmount);
                             }
@@ -247,10 +286,10 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 owd.orders.getOriginal_amount(),
                                 owd.orders.getName(),
                                 owd.orders.getDepartmentId(),
-                                hasSpecial == 1 ? Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() - (owd.orders.getOriginal_amount() / 1.12)) : Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() * .12),
-                                hasSpecial == 1 ? 0.00 : owd.orders.getOriginal_amount() / 1.12,
-                                hasSpecial == 1 ? Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12) : 0.00,
-                                Utils.roundedOffTwoDecimal(totalDiscountAmount),
+                                hasSpecial == 1 ? (finalAmount - (finalAmount / 1.12)) * owd.orders.getQty() : ((finalAmount/1.12) * .12) * owd.orders.getQty(),
+                                hasSpecial == 1 ? 0.00 : (finalAmount / 1.12) * owd.orders.getQty(),
+                                hasSpecial == 1 ? (Utils.roundedOffTwoDecimal(finalAmount / 1.12)) * owd.orders.getQty() : 0.00,
+                                Utils.roundedOffTwoDecimal(totalDiscountAmount * owd.orders.getQty()),
                                 owd.orders.getDepartmentName(),
                                 owd.orders.getCategoryName(),
                                 owd.orders.getCategoryId(),
@@ -261,7 +300,9 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 owd.orders.getIs_room_rate(),
                                 owd.orders.getNotes(),
                                 owd.orders.getIs_take_out(),
-                                owd.orders.getIs_fixed_asset()
+                                owd.orders.getIs_fixed_asset(),
+                                owd.orders.getTo_id(),
+                                owd.orders.getName_initials()
 
                         );
 
@@ -269,12 +310,12 @@ public class TransactionsViewModel extends AndroidViewModel {
 
                         ord.setId(owd.orders.getId());
                         updateOrder(ord);
-                        grossSales += Utils.roundedOffTwoDecimal((owd.orders.getVatAmount() + owd.orders.getVatable() + owd.orders.getVatExempt()));
-                        netSales += Utils.roundedOffTwoDecimal(((owd.orders.getVatable() + owd.orders.getVatExempt()) - owd.orders.getDiscountAmount()));
-                        vatableSales += Utils.roundedOffTwoDecimal(owd.orders.getVatable());
-                        vatExemptSales += Utils.roundedOffTwoDecimal(owd.orders.getVatExempt());
-                        vatAmount += Utils.roundedOffTwoDecimal(owd.orders.getVatAmount());
-                        discountAmount += Utils.roundedOffTwoDecimal(totalDiscountAmount);
+                        grossSales += owd.orders.getVatAmount() + owd.orders.getVatable() + owd.orders.getVatExempt();
+                        netSales += ((owd.orders.getVatable() + owd.orders.getVatExempt()) - owd.orders.getDiscountAmount());
+                        vatableSales += owd.orders.getVatable();
+                        vatExemptSales += owd.orders.getVatExempt();
+                        vatAmount += owd.orders.getVatAmount();
+                        discountAmount += totalDiscountAmount;
                     }
 
 
@@ -291,10 +332,11 @@ public class TransactionsViewModel extends AndroidViewModel {
                         }
                     }
 
+
                     if (!isExisting) {
-                        pepe.add(new DiscountComputeModel(dcm.get(i).getPostedDiscountId(), dcm.get(i).getDiscountAmount()));
+                        pepe.add(new DiscountComputeModel(dcm.get(i).getPostedDiscountId(), dcm.get(i).getDiscountAmount() * dcm.get(i).getQty(), dcm.get(i).getQty()));
                     } else {
-                        pepe.get(index).setDiscountAmount(pepe.get(index).getDiscountAmount() + dcm.get(i).getDiscountAmount());
+                        pepe.get(index).setDiscountAmount(pepe.get(index).getDiscountAmount() + (dcm.get(i).getDiscountAmount() * dcm.get(i).getQty()));
                     }
 
                 }
@@ -315,8 +357,8 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 selectedProduct.getOriginal_amount(),
                                 selectedProduct.getName(),
                                 selectedProduct.getDepartmentId(),
-                                Utils.roundedOffTwoDecimal((selectedProduct.getOriginal_amount()/1.12) * .12),
-                                Utils.roundedOffTwoDecimal( selectedProduct.getOriginal_amount() / 1.12),
+                                (selectedProduct.getOriginal_amount()/1.12) * .12,
+                                selectedProduct.getOriginal_amount() / 1.12,
                                 0.00,
                                 0.00,
                                 selectedProduct.getDepartmentName(),
@@ -329,21 +371,25 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 selectedProduct.getIs_room_rate(),
                                 selectedProduct.getNotes(),
                                 selectedProduct.getIs_take_out(),
-                                selectedProduct.getIs_fixed_asset()
+                                selectedProduct.getIs_fixed_asset(),
+                                selectedProduct.getTo_id(),
+                                selectedProduct.getName_initials()
                         );
                         ord.setId(selectedProduct.getId());
                         updateOrder(ord);
 
-                        grossSales += Utils.roundedOffTwoDecimal((selectedProduct.getVatAmount() + selectedProduct.getVatable() + selectedProduct.getVatExempt()));
-                        netSales += Utils.roundedOffTwoDecimal(((selectedProduct.getVatable() + selectedProduct.getVatExempt()) - selectedProduct.getDiscountAmount()));
-                        vatableSales += Utils.roundedOffTwoDecimal(selectedProduct.getVatable());
-                        vatAmount += Utils.roundedOffTwoDecimal(selectedProduct.getVatAmount());
+                        grossSales += selectedProduct.getVatAmount() + selectedProduct.getVatable() + selectedProduct.getVatExempt();
+                        netSales += (selectedProduct.getVatable() + selectedProduct.getVatExempt()) - selectedProduct.getDiscountAmount();
+                        vatableSales += selectedProduct.getVatable();
+                        vatAmount += selectedProduct.getVatAmount();
                         vatExemptSales += 0.00;
                         discountAmount += 0.00;
                     }
 
                 }
             }
+
+            Log.d("MYDISCAMOUNT", String.valueOf(discountAmount));
 
             if (loadedTransactionList(transactionId).size() > 0) {
                 Transactions tr = loadedTransactionList(transactionId).get(0);
@@ -407,6 +453,12 @@ public class TransactionsViewModel extends AndroidViewModel {
 //    }
 
 
+
+    public LiveData<List<Transactions>> transactionLiveDataTo() {
+        return transactionsRepository.getTransactionsTo();
+    }
+
+
     public LiveData<List<Transactions>> transactionLiveData() {
         return transactionsRepository.getTransactions();
     }
@@ -425,6 +477,10 @@ public class TransactionsViewModel extends AndroidViewModel {
 
     public Transactions lastOrNumber() throws ExecutionException, InterruptedException {
         return transactionsRepository.getLastOrNumber();
+    }
+
+    public Transactions existingToTransaction(String to_transaction_id, String machine_id) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getExistingToTransaction(to_transaction_id, machine_id);
     }
 
     public Payout lastPayoutSeriesNumber() throws ExecutionException, InterruptedException {
@@ -502,6 +558,12 @@ public class TransactionsViewModel extends AndroidViewModel {
         return transactionsRepository.getLatestTransaction();
     }
 
+
+    public List<Transactions> transactionListFromTo() throws ExecutionException, InterruptedException {
+        return transactionsRepository.transactionListFromTo();
+    }
+
+
     public List<Transactions> getAllTransactions() throws ExecutionException, InterruptedException {
         return transactionsRepository.getAllTransactions();
     }
@@ -522,6 +584,14 @@ public class TransactionsViewModel extends AndroidViewModel {
 
     public TransactionCompleteDetails getTransactionViaTransactionId(String transaction_id) throws ExecutionException, InterruptedException {
         return transactionsRepository.getTransactionViaTransactionId(transaction_id);
+    }
+
+    public Transactions getTransactionViaTransactionIdOnly(String transaction_id) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getTransactionViaTransactionIdOnly(transaction_id);
+    }
+
+    public Transactions getTransactionViaToTransactionId(String transaction_id) throws ExecutionException, InterruptedException {
+        return transactionsRepository.getTransactionViaToTransactionId(transaction_id);
     }
 
     public List<OrDetails> getAllSavedOr() throws ExecutionException, InterruptedException {
