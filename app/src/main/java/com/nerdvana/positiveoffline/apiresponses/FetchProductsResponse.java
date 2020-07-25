@@ -768,7 +768,38 @@ public class FetchProductsResponse {
         }
     }
 
+    public class Unit {
+        @SerializedName("unit")
+        @Expose
+        private String unit;
+        @SerializedName("unit_initial")
+        @Expose
+        private String unit_initial;
+
+        public String getUnit() {
+            return unit;
+        }
+
+        public void setUnit(String unit) {
+            this.unit = unit;
+        }
+
+        public String getUnit_initial() {
+            return unit_initial;
+        }
+
+        public void setUnit_initial(String unit_initial) {
+            this.unit_initial = unit_initial;
+        }
+    }
+
     public class Result {
+        @SerializedName("unit")
+        @Expose
+        private Unit unit;
+        @SerializedName("unit_id")
+        @Expose
+        private int unit_id;
         @SerializedName("promo")
         @Expose
         private List<ProductPromo> productPromoList;
@@ -850,6 +881,22 @@ public class FetchProductsResponse {
         @SerializedName("branch_departments")
         @Expose
         private List<BranchDepartment> branchDepartments;
+
+        public Unit getUnit() {
+            return unit;
+        }
+
+        public void setUnit(Unit unit) {
+            this.unit = unit;
+        }
+
+        public int getUnit_id() {
+            return unit_id;
+        }
+
+        public void setUnit_id(int unit_id) {
+            this.unit_id = unit_id;
+        }
 
         public List<ProductPromo> getProductPromoList() {
             return productPromoList;

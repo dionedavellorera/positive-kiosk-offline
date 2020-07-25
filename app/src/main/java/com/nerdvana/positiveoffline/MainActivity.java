@@ -1,14 +1,11 @@
 package com.nerdvana.positiveoffline;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.room.PrimaryKey;
 
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -22,7 +19,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -35,11 +31,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.epson.epos2.Epos2Exception;
-import com.epson.epos2.printer.Printer;
-import com.epson.epos2.printer.PrinterStatusInfo;
-import com.epson.epos2.printer.ReceiveListener;
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.apirequests.ServerDataRequest;
 import com.nerdvana.positiveoffline.apirequests.TestRequest;
@@ -66,7 +57,6 @@ import com.nerdvana.positiveoffline.entities.SerialNumbers;
 import com.nerdvana.positiveoffline.entities.ServiceCharge;
 import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.Transactions;
-import com.nerdvana.positiveoffline.functions.PrinterFunctions;
 import com.nerdvana.positiveoffline.model.CloseInputDialogModel;
 import com.nerdvana.positiveoffline.model.HasPendingDataOnLocalModel;
 import com.nerdvana.positiveoffline.model.ItemScannedModel;
@@ -122,7 +112,6 @@ import com.starmicronics.stario.StarIOPortException;
 import com.starmicronics.stario.StarResultCode;
 import com.starmicronics.starioextension.ConnectionCallback;
 import com.starmicronics.starioextension.ICommandBuilder;
-import com.starmicronics.starioextension.StarIoExt;
 import com.starmicronics.starioextension.StarIoExtManager;
 import com.starmicronics.starioextension.StarIoExtManagerListener;
 import com.sunmi.peripheral.printer.InnerPrinterCallback;
@@ -148,8 +137,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.nerdvana.positiveoffline.printer.PrinterUtils.addPrinterSpace;
-import static com.nerdvana.positiveoffline.printer.PrinterUtils.addTextToPrinter;
 import static com.nerdvana.positiveoffline.printer.PrinterUtils.twoColumns;
 
 public class MainActivity extends AppCompatActivity implements AsyncFinishCallBack {
@@ -1211,8 +1198,25 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
             }
         }
         registerReceiver();
+
+
+        loadUserImage();
     }
 
+    private void loadUserImage() {
+//        File direct = new File(Environment.getExternalStorageDirectory()
+//                + "/POS/USERS/" + SharedPreferenceManager.getString(null, AppConstants.));
+//
+//        if (transactionType.equalsIgnoreCase("delivery") && model.getCore_id() == 998) {
+//            Picasso.get().load(R.drawable.ic_shipping).placeholder(R.drawable.pos_logo_edited).into(((PaymentTypeAdapter.ViewHolder)holder).image);
+//        } else {
+//            if (model.getCore_id() == 999) {
+//                Picasso.get().load(R.mipmap.baseline_assignment_black_48dp).placeholder(R.drawable.pos_logo_edited).into(((PaymentTypeAdapter.ViewHolder)holder).image);
+//            } else {
+//                Picasso.get().load(direct).placeholder(R.drawable.pos_logo_edited).into(((PaymentTypeAdapter.ViewHolder)holder).image);
+//            }
+//        }
+    }
 
 
     private void refreshBottomSelection() {
@@ -1543,9 +1547,9 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
             }
         }
 
-        Log.d("RECEIPTDATA", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVatable_sales()))));
-        Log.d("RECEIPTDATA", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_amount()))));
-        Log.d("RECEIPTDATA", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_exempt_sales()))));
+        Log.d("RECEIPTDATA", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffFourDecimal(transactionCompleteDetails.transactions.getVatable_sales()))));
+        Log.d("RECEIPTDATA", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffFourDecimal(transactionCompleteDetails.transactions.getVat_amount()))));
+        Log.d("RECEIPTDATA", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffFourDecimal(transactionCompleteDetails.transactions.getVat_exempt_sales()))));
         Log.d("RECEIPTDATA", twoColumns(
                 "ZERO-RATED SALES",
                 "0.00",
@@ -1579,10 +1583,10 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                 "SUB TOTAL",
                 PrinterUtils.returnWithTwoDecimal(
                         String.valueOf(
-                                Utils.roundedOffTwoDecimal(
+                                Utils.roundedOffFourDecimal(
                                         transactionCompleteDetails.transactions.getGross_sales()
                                 ) +
-                                        Utils.roundedOffTwoDecimal(
+                                        Utils.roundedOffFourDecimal(
                                                 transactionCompleteDetails.transactions.getService_charge_value()
                                         )
                         )),
@@ -1592,7 +1596,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
         Log.d("RECEIPTDATA", twoColumns(
                 "AMOUNT DUE",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue) + Utils.roundedOffTwoDecimal(
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue) + Utils.roundedOffFourDecimal(
                         transactionCompleteDetails.transactions.getService_charge_value()
                 )),
                 40,
@@ -1607,19 +1611,19 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                 tmpArray.add(pym.getCore_id());
                 pymntType = pym.getName();
             }
-            payments += Utils.roundedOffTwoDecimal(pym.getAmount());
+            payments += Utils.roundedOffFourDecimal(pym.getAmount());
         }
 
 
         Log.d("RECEIPTDATA", twoColumns(
                 "TENDERED",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(payments))),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffFourDecimal(payments))),
                 40,
                 2,
                 getApplicationContext()));
         Log.d("RECEIPTDATA", twoColumns(
                 "CHANGE",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getChange()))),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffFourDecimal(transactionCompleteDetails.transactions.getChange()))),
                 40,
                 2,
                 getApplicationContext()));
@@ -2097,7 +2101,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void shiftUpdate(ShiftUpdateModel shiftUpdateModel) {
         try {
-            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 2.3.1");
+            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 3.0.0");
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {

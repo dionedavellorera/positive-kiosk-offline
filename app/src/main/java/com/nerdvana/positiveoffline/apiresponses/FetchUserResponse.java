@@ -135,6 +135,9 @@ public class FetchUserResponse {
     }
 
     public class Result {
+        @SerializedName("image_file")
+        @Expose
+        private String image_file;
         @SerializedName("id")
         @Expose
         private int id;
@@ -162,6 +165,14 @@ public class FetchUserResponse {
         @SerializedName("role")
         @Expose
         private Role role;
+
+        public String getImage_file() {
+            return image_file;
+        }
+
+        public void setImage_file(String image_file) {
+            this.image_file = image_file;
+        }
 
         public Role getRole() {
             return role;

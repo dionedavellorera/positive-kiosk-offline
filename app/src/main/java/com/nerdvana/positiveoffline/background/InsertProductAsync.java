@@ -71,7 +71,9 @@ public class InsertProductAsync extends AsyncTask<Void, Void, Void> {
                     r.getBranchDepartments().size() > 0 ? r.getBranchDepartments().get(0).getDepartmentId() : 0,
                     r.getBranchCategories().size() > 0 ? r.getBranchCategories().get(0).getCategoryId() : 0,
                     r.getIsFixedAsset(),
-                    GsonHelper.getGson().toJson(r.getProductPromoList()));
+                    GsonHelper.getGson().toJson(r.getProductPromoList()),
+                    r.getUnit_id(),
+                    r.getUnit() != null ? r.getUnit().getUnit() : "NA");
 
 
             if (r.getImageFile() != null) {

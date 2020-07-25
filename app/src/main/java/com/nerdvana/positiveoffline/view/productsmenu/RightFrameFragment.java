@@ -1,15 +1,12 @@
 package com.nerdvana.positiveoffline.view.productsmenu;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -25,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
-import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
@@ -39,7 +35,6 @@ import com.nerdvana.positiveoffline.intf.AsyncContract;
 import com.nerdvana.positiveoffline.intf.ProductsContract;
 import com.nerdvana.positiveoffline.model.CloseInputDialogModel;
 import com.nerdvana.positiveoffline.model.ItemScannedModel;
-import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
 import com.nerdvana.positiveoffline.view.HidingEditText;
 import com.nerdvana.positiveoffline.view.dialog.InputDialog;
@@ -50,7 +45,6 @@ import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
@@ -285,8 +279,8 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
                                 products.getAmount(),
                                 products.getProduct(),
                                 products.getDepartmentId(),
-                                Utils.roundedOffTwoDecimal(products.getAmount() - (products.getAmount() / 1.12)),
-                                Utils.roundedOffTwoDecimal(products.getAmount() / 1.12),
+                                Utils.roundedOffFourDecimal(products.getAmount() - (products.getAmount() / 1.12)),
+                                Utils.roundedOffFourDecimal(products.getAmount() / 1.12),
                                 0.00,
                                 0.00,
                                 products.getDepartment(),
@@ -305,7 +299,9 @@ public class RightFrameFragment extends Fragment implements AsyncContract, Produ
                                         .equalsIgnoreCase("to")
                                         ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
                                         : 0,
-                                products.getProduct_initial()
+                                products.getProduct_initial(),
+                                products.getUnit_id(),
+                                products.getUnit_id_description()
                         ));
                         transactionsViewModel.insertOrder(orderList);
                     }

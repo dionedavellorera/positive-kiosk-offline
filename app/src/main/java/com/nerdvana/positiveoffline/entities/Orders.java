@@ -66,6 +66,10 @@ public class Orders {
 
     private String name_initials;
 
+    private int unit_id = 0;
+    private String unit_id_description = "";
+
+
     @Ignore
     public Orders() {}
 
@@ -81,7 +85,10 @@ public class Orders {
                   String treg, int is_room_rate,
                   String notes, int is_take_out,
                   int is_fixed_asset, int to_id,
-                  String name_initials) {
+                  String name_initials, int unit_id,
+                  String unit_id_description) {
+        this.unit_id = unit_id;
+        this.unit_id_description = unit_id_description;
         this.name_initials = name_initials;
         this.to_id = to_id;
         this.is_fixed_asset = is_fixed_asset;
@@ -106,6 +113,22 @@ public class Orders {
         this.vatable = vatable;
         this.vatExempt = vatExempt;
         this.discountAmount = discountAmount;
+    }
+
+    public int getUnit_id() {
+        return unit_id;
+    }
+
+    public void setUnit_id(int unit_id) {
+        this.unit_id = unit_id;
+    }
+
+    public String getUnit_id_description() {
+        return unit_id_description;
+    }
+
+    public void setUnit_id_description(String unit_id_description) {
+        this.unit_id_description = unit_id_description;
     }
 
     @NonNull

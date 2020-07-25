@@ -220,7 +220,7 @@ public class FosAsync extends AsyncTask<Void, Void, Void> {
                     if (orders.getQty() > 1) {
 
                         addTextToPrinter(printer, twoColumns(
-                                "("+String.valueOf(Utils.roundedOffTwoDecimal(orders.getOriginal_amount())) + ")",
+                                "("+String.valueOf(Utils.roundedOffFourDecimal(orders.getOriginal_amount())) + ")",
                                 "",
                                 40,
                                 2,
@@ -268,7 +268,7 @@ public class FosAsync extends AsyncTask<Void, Void, Void> {
 //
 //                    if (orders.getQty() > 1) {
 //                        addTextToPrinter(printer, twoColumns(
-//                                "("+String.valueOf(Utils.roundedOffTwoDecimal(orders.getAmount())) + ")",
+//                                "("+String.valueOf(Utils.roundedOffFourDecimal(orders.getAmount())) + ")",
 //                                "",
 //                                40,
 //                                2,

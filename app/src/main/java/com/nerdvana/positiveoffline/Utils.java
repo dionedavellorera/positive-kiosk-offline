@@ -58,8 +58,16 @@ public class Utils {
         return decimalFormat.format(value);
     }
 
+    public static Double roundedOffFourDecimal(Double value) {
+        return Double.valueOf(String.format("%.6f", value));
+    }
+
     public static Double roundedOffTwoDecimal(Double value) {
         return Double.valueOf(String.format("%.2f", value));
+    }
+
+    public static Double roundedOffOneDecimal(Double value) {
+        return Double.valueOf(String.format("%.1f", value));
     }
 
     public static String getInitials(String value) {

@@ -1,12 +1,10 @@
 package com.nerdvana.positiveoffline.adapter;
 
 import android.content.Context;
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -16,11 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.entities.Orders;
-import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.intf.StOrderContract;
-import com.squareup.picasso.Picasso;
 
-import java.io.File;
 import java.util.List;
 
 public class ShareTransactionProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -73,7 +68,7 @@ public class ShareTransactionProductAdapter extends RecyclerView.Adapter<Recycle
                 String.format("%sx %s", String.valueOf(model.getQty()), model.getName())
         );
 //        ((ViewHolder)holder).listItemQty.setText(String.valueOf(model.getQty()));
-        ((ViewHolder)holder).listItemPrice.setText(String.valueOf(Utils.roundedOffTwoDecimal(model.getAmount() * model.getQty())));
+        ((ViewHolder)holder).listItemPrice.setText(String.valueOf(Utils.roundedOffFourDecimal(model.getAmount() * model.getQty())));
 
 
 

@@ -20,12 +20,12 @@ import com.nerdvana.positiveoffline.entities.PostedDiscounts;
 import com.nerdvana.positiveoffline.entities.ProductAlacart;
 import com.nerdvana.positiveoffline.entities.SerialNumbers;
 import com.nerdvana.positiveoffline.entities.Transactions;
-import com.nerdvana.positiveoffline.intf.AsyncSaveContract;
 import com.nerdvana.positiveoffline.model.DiscountComputeModel;
 import com.nerdvana.positiveoffline.model.OdWithPd;
 import com.nerdvana.positiveoffline.model.OrderWithDiscounts;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
+import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.repository.DiscountsRepository;
 import com.nerdvana.positiveoffline.repository.TransactionsRepository;
 
@@ -129,7 +129,7 @@ public class TransactionsViewModel extends AndroidViewModel {
         try {
             for (Orders owd : orderList) {
 
-                grossSales += (Utils.roundedOffTwoDecimal(owd.getVatAmount() + owd.getVatable() + owd.getVatExempt()));
+                grossSales += (owd.getVatAmount() + owd.getVatable() + owd.getVatExempt());
                 if (owd.getVatExempt() > 0) {
                     netSales += (owd.getVatExempt()) - owd.getDiscountAmount();
                 } else {
@@ -146,12 +146,12 @@ public class TransactionsViewModel extends AndroidViewModel {
             if (loadedTransactionList(transactionId).size() > 0) {
                 Transactions tr = loadedTransactionList(transactionId).get(0);
                 tr.setId(Integer.valueOf(transactionId));
-                tr.setGross_sales(Utils.roundedOffTwoDecimal(grossSales));
-                tr.setNet_sales(Utils.roundedOffTwoDecimal(netSales));
-                tr.setVatable_sales(Utils.roundedOffTwoDecimal(vatableSales));
-                tr.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vatExemptSales));
-                tr.setVat_amount(Utils.roundedOffTwoDecimal(vatAmount));
-                tr.setDiscount_amount(Utils.roundedOffTwoDecimal(discountAmount));
+                tr.setGross_sales(grossSales);
+                tr.setNet_sales(netSales);
+                tr.setVatable_sales(vatableSales);
+                tr.setVat_exempt_sales(vatExemptSales);
+                tr.setVat_amount(vatAmount);
+                tr.setDiscount_amount(discountAmount);
                 tr.setIs_sent_to_server(0);
                 update(tr);
             }
@@ -200,17 +200,17 @@ public class TransactionsViewModel extends AndroidViewModel {
                         Double totalDiscountAmount = 0.00; ;
 
 
-                        remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
-                        finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
+                        remainingAmount = owd.orders.getOriginal_amount();
+                        finalAmount = owd.orders.getOriginal_amount();
                         totalDiscountAmount = 0.00;
 
 //                        if (hasSpecial == 1) {
-//                            remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
-//                            finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount() / 1.12);
+//                            remainingAmount = Utils.roundedOffFourDecimal(owd.orders.getOriginal_amount() / 1.12);
+//                            finalAmount = Utils.roundedOffFourDecimal(owd.orders.getOriginal_amount() / 1.12);
 //                            totalDiscountAmount = 0.00;
 //                        } else {
-//                            remainingAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
-//                            finalAmount = Utils.roundedOffTwoDecimal(owd.orders.getOriginal_amount());
+//                            remainingAmount = Utils.roundedOffFourDecimal(owd.orders.getOriginal_amount());
+//                            finalAmount = Utils.roundedOffFourDecimal(owd.orders.getOriginal_amount());
 //                            totalDiscountAmount = 0.00;
 //                        }
 
@@ -261,35 +261,41 @@ public class TransactionsViewModel extends AndroidViewModel {
                             if (!od.getIs_void()) {
 
                                 if (od.getIs_percentage()) {
-                                    totalDiscountAmount += Utils.roundedOffTwoDecimal((remainingAmount * (od.getValue() / 100)) );
-                                    currentDiscountAmount = Utils.roundedOffTwoDecimal((remainingAmount * (od.getValue() / 100)));
+                                    totalDiscountAmount += remainingAmount * (od.getValue() / 100);
+                                    currentDiscountAmount = (remainingAmount * (od.getValue() / 100));
                                 } else {
-                                    totalDiscountAmount += Utils.roundedOffTwoDecimal(od.getValue());
-                                    currentDiscountAmount = Utils.roundedOffTwoDecimal(od.getValue());
+                                    totalDiscountAmount += od.getValue();
+                                    currentDiscountAmount = od.getValue();
                                 }
 
                                 dcm.add(new DiscountComputeModel((int)od.getPosted_discount_id(), currentDiscountAmount, owd.orders.getQty()));
 
-                                remainingAmount = Utils.roundedOffTwoDecimal(remainingAmount - totalDiscountAmount);
+//                                remainingAmount = Utils.roundedOffFourDecimal(remainingAmount - totalDiscountAmount);
+                                remainingAmount = remainingAmount - totalDiscountAmount;
                             }
                         }
 
                         //endregion
 
+                        Log.d("ITEMAAA-0", String.format("%s-%s", String.valueOf(finalAmount), owd.orders.getName_initials()));
+                        Log.d("ITEMAAA-1", String.format("%s-%s", String.valueOf(discountAmount), owd.orders.getName_initials()));
                         finalAmount = finalAmount - totalDiscountAmount;
+                        Log.d("ITEMAAA-2", String.format("%s-%s", String.valueOf(finalAmount), owd.orders.getName_initials()));
+                        Log.d("ITEMAAA-3", String.format("%s-%s", String.valueOf(owd.orders.getOriginal_amount()), owd.orders.getName_initials()));
 
                         Orders ord = new Orders(
                                 owd.orders.getTransaction_id(),
                                 owd.orders.getCore_id(),
                                 owd.orders.getQty(),
-                                Utils.roundedOffTwoDecimal(finalAmount),
+                                finalAmount,
                                 owd.orders.getOriginal_amount(),
                                 owd.orders.getName(),
                                 owd.orders.getDepartmentId(),
                                 hasSpecial == 1 ? (finalAmount - (finalAmount / 1.12)) * owd.orders.getQty() : ((finalAmount/1.12) * .12) * owd.orders.getQty(),
-                                hasSpecial == 1 ? 0.00 : (finalAmount / 1.12) * owd.orders.getQty(),
-                                hasSpecial == 1 ? (Utils.roundedOffTwoDecimal(finalAmount / 1.12)) * owd.orders.getQty() : 0.00,
-                                Utils.roundedOffTwoDecimal(totalDiscountAmount * owd.orders.getQty()),
+//                                hasSpecial == 1 ? 0.00 : ((Utils.roundedOffFourDecimal(finalAmount)) * owd.orders.getQty()) / 1.12,
+                                hasSpecial == 1 ? 0.00 : ((finalAmount * owd.orders.getQty()) / 1.12),
+                                hasSpecial == 1 ? (finalAmount / 1.12) * owd.orders.getQty() : 0.00,
+                                totalDiscountAmount * owd.orders.getQty(),
                                 owd.orders.getDepartmentName(),
                                 owd.orders.getCategoryName(),
                                 owd.orders.getCategoryId(),
@@ -302,7 +308,9 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 owd.orders.getIs_take_out(),
                                 owd.orders.getIs_fixed_asset(),
                                 owd.orders.getTo_id(),
-                                owd.orders.getName_initials()
+                                owd.orders.getName_initials(),
+                                owd.orders.getUnit_id(),
+                                owd.orders.getUnit_id_description()
 
                         );
 
@@ -310,13 +318,16 @@ public class TransactionsViewModel extends AndroidViewModel {
 
                         ord.setId(owd.orders.getId());
                         updateOrder(ord);
-                        grossSales += owd.orders.getVatAmount() + owd.orders.getVatable() + owd.orders.getVatExempt();
-                        netSales += ((owd.orders.getVatable() + owd.orders.getVatExempt()) - owd.orders.getDiscountAmount());
-                        vatableSales += owd.orders.getVatable();
-                        vatExemptSales += owd.orders.getVatExempt();
-                        vatAmount += owd.orders.getVatAmount();
+
+                        grossSales += ord.getVatAmount() + ord.getVatable() + ord.getVatExempt();
+                        netSales += ((ord.getVatable() + ord.getVatExempt()) - ord.getDiscountAmount());
+                        vatableSales += ord.getVatable();
+                        vatExemptSales += ord.getVatExempt();
+                        vatAmount += ord.getVatAmount();
                         discountAmount += totalDiscountAmount;
                     }
+
+
 
 
                 }
@@ -357,8 +368,8 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 selectedProduct.getOriginal_amount(),
                                 selectedProduct.getName(),
                                 selectedProduct.getDepartmentId(),
-                                (selectedProduct.getOriginal_amount()/1.12) * .12,
-                                selectedProduct.getOriginal_amount() / 1.12,
+                                ((selectedProduct.getOriginal_amount()/1.12) * .12) * selectedProduct.getQty(),
+                                (selectedProduct.getOriginal_amount() / 1.12) * selectedProduct.getQty(),
                                 0.00,
                                 0.00,
                                 selectedProduct.getDepartmentName(),
@@ -373,7 +384,9 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 selectedProduct.getIs_take_out(),
                                 selectedProduct.getIs_fixed_asset(),
                                 selectedProduct.getTo_id(),
-                                selectedProduct.getName_initials()
+                                selectedProduct.getName_initials(),
+                                selectedProduct.getUnit_id(),
+                                selectedProduct.getUnit_id_description()
                         );
                         ord.setId(selectedProduct.getId());
                         updateOrder(ord);
@@ -389,17 +402,15 @@ public class TransactionsViewModel extends AndroidViewModel {
                 }
             }
 
-            Log.d("MYDISCAMOUNT", String.valueOf(discountAmount));
-
             if (loadedTransactionList(transactionId).size() > 0) {
                 Transactions tr = loadedTransactionList(transactionId).get(0);
                 tr.setId(Integer.valueOf(transactionId));
-                tr.setGross_sales(Utils.roundedOffTwoDecimal(grossSales));
-                tr.setNet_sales(Utils.roundedOffTwoDecimal(netSales));
-                tr.setVatable_sales(Utils.roundedOffTwoDecimal(vatableSales));
-                tr.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vatExemptSales));
-                tr.setVat_amount(Utils.roundedOffTwoDecimal(vatAmount));
-                tr.setDiscount_amount(Utils.roundedOffTwoDecimal(discountAmount));
+                tr.setGross_sales(grossSales);
+                tr.setNet_sales(netSales);
+                tr.setVatable_sales(vatableSales);
+                tr.setVat_exempt_sales(vatExemptSales);
+                tr.setVat_amount(vatAmount);
+                tr.setDiscount_amount(discountAmount);
                 tr.setHas_special(hasSpecial);
                 update(tr);
             }

@@ -71,11 +71,6 @@ public class InsertPaymentTypeAsync extends AsyncTask<Void, Void, Void> {
                         mp.getMobilePayment(), mp.getImageFile()));
             }
 
-            Log.d("PAYMENTSELEC", r.getPaymentType() + "-"+String.valueOf(selectionModelList.size()) + "-"  +r.getCoreId() + "-" + String.valueOf(r.getId()));
-            Log.d("PAYMENTSELEC-MP", r.getPaymentType() + "-"+String.valueOf(r.getMobilePaymentList().size()));
-            Log.d("PAYMENTSELEC-AR", r.getPaymentType() + "-"+String.valueOf(r.getAccountReceivableList().size()));
-            Log.d("PAYMENTSELEC-OL", r.getPaymentType() + "-"+String.valueOf(r.getOnlinePaymentList().size()));
-
             paymentType = new PaymentTypes(
                     Integer.valueOf(r.getCoreId()),
                     r.getImage() != null ? String.valueOf(r.getCoreId()) + ".jpg" : "",

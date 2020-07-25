@@ -2,8 +2,6 @@ package com.nerdvana.positiveoffline.printjobasync;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.Html;
 import android.text.TextUtils;
 
@@ -15,7 +13,6 @@ import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
-import com.nerdvana.positiveoffline.MainActivity;
 import com.nerdvana.positiveoffline.PrinterPresenter;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.ThreadPoolManager;
@@ -36,7 +33,6 @@ import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
-import com.starmicronics.stario.StarPrinterStatus;
 import com.starmicronics.starioextension.StarIoExt;
 import com.sunmi.devicemanager.cons.Cons;
 import com.sunmi.devicemanager.device.Device;
@@ -69,10 +65,10 @@ public class PostVoidAsync extends AsyncTask<Void, Void, Void> {
     private SunmiPrinterService mSunmiPrintService;
 
     public PostVoidAsync(PrintModel printModel, Context context,
-                             AsyncFinishCallBack asyncFinishCallBack,
-                             DataSyncViewModel dataSyncViewModel,
-                             ILocalizeReceipts iLocalizeReceipts,
-                             StarIOPort starIOPort, boolean isReprint,
+                         AsyncFinishCallBack asyncFinishCallBack,
+                         DataSyncViewModel dataSyncViewModel,
+                         ILocalizeReceipts iLocalizeReceipts,
+                         StarIOPort starIOPort, boolean isReprint,
                          PrinterPresenter printerPresenter, SunmiPrinterService mSunmiPrintService) {
         this.context = context;
         this.printModel = printModel;

@@ -4,13 +4,6 @@ import android.content.Context;
 import android.text.Html;
 import android.text.TextUtils;
 
-import androidx.core.content.ContextCompat;
-
-import com.epson.epos2.Epos2Exception;
-import com.epson.epos2.printer.Printer;
-import com.epson.epos2.printer.PrinterStatusInfo;
-import com.epson.epos2.printer.ReceiveListener;
-import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
@@ -22,7 +15,6 @@ import com.nerdvana.positiveoffline.entities.Orders;
 import com.nerdvana.positiveoffline.entities.Payments;
 import com.nerdvana.positiveoffline.entities.Payout;
 import com.nerdvana.positiveoffline.entities.PostedDiscounts;
-import com.nerdvana.positiveoffline.model.OtherPrinterModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
 import com.nerdvana.positiveoffline.model.TransactionWithOrders;
@@ -36,11 +28,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-
-import static com.nerdvana.positiveoffline.printer.PrinterUtils.addPrinterSpace;
-import static com.nerdvana.positiveoffline.printer.PrinterUtils.addTextToPrinter;
-import static com.nerdvana.positiveoffline.printer.PrinterUtils.twoColumns;
 
 public class EJFileCreator {
 
@@ -62,7 +49,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString("", "", context, true);
 
-        finalString += PrinterUtils.receiptString("SHORT/OVER", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_cash_amount() - (cutOff.getTotal_cash_payments() - cutOff.getTotal_change()))), context, false);
+        finalString += PrinterUtils.receiptString("SHORT/OVER", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getTotal_cash_amount() - (cutOff.getTotal_cash_payments() - cutOff.getTotal_change())))), context, false);
 
         return finalString;
     }
@@ -93,26 +80,26 @@ public class EJFileCreator {
         finalString += PrinterUtils.receiptString("DESCRIPTION               VALUE", "", context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
 
-        finalString += PrinterUtils.receiptString("GROSS SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getGross_sales() + cutOff.getDiscount_amount())), context, false);
-        finalString += PrinterUtils.receiptString("NET SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getNet_sales() + cutOff.getDiscount_amount())), context, false);
-        finalString += PrinterUtils.receiptString("VATABLE SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getVatable_sales())), context, false);
-        finalString += PrinterUtils.receiptString("VAT EXEMPT SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getVat_exempt_sales())), context, false);
+        finalString += PrinterUtils.receiptString("GROSS SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getGross_sales() + cutOff.getDiscount_amount()))), context, false);
+        finalString += PrinterUtils.receiptString("NET SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getNet_sales()))), context, false);
+        finalString += PrinterUtils.receiptString("VATABLE SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getVatable_sales()))), context, false);
+        finalString += PrinterUtils.receiptString("VAT EXEMPT SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getVat_exempt_sales()))), context, false);
         finalString += PrinterUtils.receiptString("VAT DISCOUNT", "0.00", context, false);
-        finalString += PrinterUtils.receiptString("VAT AMOUNT", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getVat_amount())), context, false);
+        finalString += PrinterUtils.receiptString("VAT AMOUNT", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getVat_amount()))), context, false);
         finalString += PrinterUtils.receiptString("ZERO RATED SALES", "0.00", context, false);
-        finalString += PrinterUtils.receiptString("CASH SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_cash_payments() - cutOff.getTotal_change())), context, false);
-        finalString += PrinterUtils.receiptString("CARD SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_card_payments())), context, false);
-        finalString += PrinterUtils.receiptString("ONLINE SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_online_payments())), context, false);
-        finalString += PrinterUtils.receiptString("MOBILE SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_mobile_payments())), context, false);
-        finalString += PrinterUtils.receiptString("VOID", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getVoid_amount())), context, false);
-        finalString += PrinterUtils.receiptString("SENIOR", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getSeniorAmount())), context, false);
+        finalString += PrinterUtils.receiptString("CASH SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getTotal_cash_payments() - cutOff.getTotal_change()))), context, false);
+        finalString += PrinterUtils.receiptString("CARD SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getTotal_card_payments()))), context, false);
+        finalString += PrinterUtils.receiptString("ONLINE SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getTotal_online_payments()))), context, false);
+        finalString += PrinterUtils.receiptString("MOBILE SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getTotal_mobile_payments()))), context, false);
+        finalString += PrinterUtils.receiptString("VOID", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getVoid_amount()))), context, false);
+        finalString += PrinterUtils.receiptString("SENIOR", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getSeniorAmount()))), context, false);
         finalString += PrinterUtils.receiptString("SENIOR(COUNT)", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getSeniorCount())), context, false);
-        finalString += PrinterUtils.receiptString("PWD", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getPwdAmount())), context, false);
+        finalString += PrinterUtils.receiptString("PWD", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getPwdAmount()))), context, false);
         finalString += PrinterUtils.receiptString("PWD(COUNT)", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getPwdCount())), context, false);
-        finalString += PrinterUtils.receiptString("OTHERS", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getOthersAmount())), context, false);
+        finalString += PrinterUtils.receiptString("OTHERS", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getOthersAmount()))), context, false);
         finalString += PrinterUtils.receiptString("OTHERS(COUNT)", PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getOthersCount())), context, false);
         if (cutOff.getTotal_payout() > 0) {
-            finalString += PrinterUtils.receiptString("PAYOUT", "-"+PrinterUtils.returnWithTwoDecimal(String.valueOf(cutOff.getTotal_payout())), context, false);
+            finalString += PrinterUtils.receiptString("PAYOUT", "-"+PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getTotal_payout()))), context, false);
         } else {
             finalString += PrinterUtils.receiptString("PAYOUT", "0.00", context, false);
         }
@@ -266,26 +253,26 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "GROSS SALES",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getGross_sales() + endOfDay.getDiscount_amount())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getGross_sales() + endOfDay.getDiscount_amount()))),
                 context,
                 false);
 
         finalString += PrinterUtils.receiptString(
                 "NET SALES",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getNet_sales() + endOfDay.getDiscount_amount())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getNet_sales()))),
                 context,
                 false);
 
         finalString += PrinterUtils.receiptString(
                 "VATABLE SALES",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getVatable_sales())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getVatable_sales()))),
                 context,
                 false);
 
 
         finalString += PrinterUtils.receiptString(
                 "VAT EXEMPT SALES",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getVat_exempt_sales())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getVat_exempt_sales()))),
                 context,
                 false);
 
@@ -297,7 +284,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "VAT AMOUNT",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getVat_amount())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getVat_amount()))),
                 context,
                 false);
 
@@ -310,7 +297,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "CASH SALES",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getTotal_cash_payments() - endOfDay.getTotal_change())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getTotal_cash_payments() - endOfDay.getTotal_change()))),
                 context,
                 false);
 
@@ -318,26 +305,26 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "CARD SALES",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getTotal_card_payments())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getTotal_card_payments()))),
                 context,
                 false);
 
         finalString += PrinterUtils.receiptString(
                 "ONLINE SALES",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getTotal_online_payments())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getTotal_online_payments()))),
                 context,
                 false);
 
         finalString += PrinterUtils.receiptString(
                 "MOBILE SALES",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getTotal_mobile_payments())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getTotal_mobile_payments()))),
                 context,
                 false);
 
 
         finalString += PrinterUtils.receiptString(
                 "VOID",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getVoid_amount())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getVoid_amount()))),
                 context,
                 false);
 //        finalString += PrinterUtils.receiptString(
@@ -354,7 +341,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "SENIOR",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getSeniorAmount())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getSeniorAmount()))),
                 context,
                 false);
 
@@ -366,7 +353,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "PWD",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getPwdAmount())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getPwdAmount()))),
                 context,
                 false);
 
@@ -379,7 +366,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "OTHERS",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(endOfDay.getOthersAmount())),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getOthersAmount()))),
                 context,
                 false);
 
@@ -407,12 +394,12 @@ public class EJFileCreator {
                 false);
         finalString += PrinterUtils.receiptString(
                 "BEG BALANCE",
-                String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getBegSales())),
+                String.valueOf(Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(endOfDay.getBegSales()))),
                 context,
                 false);
         finalString += PrinterUtils.receiptString(
                 "ENDING BALANCE",
-                String.valueOf(Utils.roundedOffTwoDecimal(endOfDay.getEndSales())),
+                String.valueOf(Utils.roundedOffTwoDecimal(Utils.roundedOffTwoDecimal(endOfDay.getEndSales()))),
                 context,
                 false);
 
@@ -614,7 +601,7 @@ public class EJFileCreator {
 
                 finalString += PrinterUtils.receiptString(
                         myString,
-                        PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+                        PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(orders.getOriginal_amount() * orders.getQty()))),
                         context, false);
 
 
@@ -631,7 +618,7 @@ public class EJFileCreator {
 //                }
 
                 if (orders.getQty() > 1) {
-                    finalString += PrinterUtils.receiptString("("+String.valueOf(Utils.roundedOffTwoDecimal(orders.getOriginal_amount())) + ")", "", context, false);
+                    finalString += PrinterUtils.receiptString("("+String.valueOf(orders.getOriginal_amount()) + ")", "", context, false);
                 }
 
 //                if (orders.getDiscountAmount() > 0) {
@@ -722,6 +709,18 @@ public class EJFileCreator {
                 context,
                 false);
 
+//        finalString += PrinterUtils.receiptString(
+//                "VATABLE SALES",
+//                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVatable_sales()))),
+//                context,
+//                false);
+//
+//        finalString += PrinterUtils.receiptString(
+//                "VAT AMOUNT",
+//                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_amount()))),
+//                context,
+//                false);
+
         finalString += PrinterUtils.receiptString(
                 "VAT-EXEMPT SALES",
                 PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_exempt_sales()))),
@@ -736,7 +735,7 @@ public class EJFileCreator {
         if (transactionCompleteDetails.transactions.getService_charge_value() > 0) {
             finalString += PrinterUtils.receiptString(
                     "SERVICE CHARGE",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(transactionCompleteDetails.transactions.getService_charge_value())),
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getService_charge_value()))),
                     context,
                     false);
         } else {
@@ -756,28 +755,32 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "SUB TOTAL",
-                PrinterUtils.returnWithTwoDecimal(
-                        String.valueOf(
-                                Utils.roundedOffTwoDecimal(
-                                        transactionCompleteDetails.transactions.getGross_sales()
-                                ) +
-                                Utils.roundedOffTwoDecimal(
-                                        transactionCompleteDetails.transactions.getService_charge_value()
-                                ) +
-                                Utils.roundedOffTwoDecimal(
-                                        transactionCompleteDetails.transactions.getDiscount_amount()
-                                )
-                        )),
+PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(                transactionCompleteDetails.transactions.getGross_sales()
+        +
+        transactionCompleteDetails.transactions.getService_charge_value()
+        +
+        transactionCompleteDetails.transactions.getDiscount_amount()))),
                 context,
                 false);
+//                PrinterUtils.returnWithTwoDecimal(
+//                        String.valueOf(
+//                                Utils.roundedOffTwoDecimal(
+//                                        transactionCompleteDetails.transactions.getGross_sales()
+//                                ) +
+//                                        Utils.roundedOffTwoDecimal(
+//                                                transactionCompleteDetails.transactions.getService_charge_value()
+//                                        ) +
+//                                        Utils.roundedOffTwoDecimal(
+//                                                transactionCompleteDetails.transactions.getDiscount_amount()
+//                                        )
+//                        )),
+//                context,
+//                false);
 
         finalString += PrinterUtils.receiptString(
                 "AMOUNT DUE",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue - transactionCompleteDetails.transactions.getDiscount_amount())
-                        +
-                        Utils.roundedOffTwoDecimal(
-                                transactionCompleteDetails.transactions.getService_charge_value()
-                        )),
+//                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(amountDue - transactionCompleteDetails.transactions.getDiscount_amount() + transactionCompleteDetails.transactions.getService_charge_value()))),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getNet_sales()))),
                 context,
                 false);
 
@@ -1734,7 +1737,7 @@ public class EJFileCreator {
 
         finalString += PrinterUtils.receiptString(
                 "AMOUNT DUE",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(amountDue - transactionCompleteDetails.transactions.getDiscount_amount())
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(amountDue - transactionCompleteDetails.transactions.getDiscount_amount()))
                         +
                         Utils.roundedOffTwoDecimal(
                                 transactionCompleteDetails.transactions.getService_charge_value()

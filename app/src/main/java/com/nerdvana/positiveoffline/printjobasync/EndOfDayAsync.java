@@ -2,8 +2,6 @@ package com.nerdvana.positiveoffline.printjobasync;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Looper;
 
 import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
@@ -12,7 +10,6 @@ import com.epson.epos2.printer.ReceiveListener;
 import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.GsonHelper;
-import com.nerdvana.positiveoffline.MainActivity;
 import com.nerdvana.positiveoffline.PrinterPresenter;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.ThreadPoolManager;
@@ -30,7 +27,6 @@ import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
-import com.starmicronics.stario.StarPrinterStatus;
 import com.starmicronics.starioextension.StarIoExt;
 import com.sunmi.devicemanager.cons.Cons;
 import com.sunmi.devicemanager.device.Device;

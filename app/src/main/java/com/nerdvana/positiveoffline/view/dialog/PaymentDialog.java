@@ -2,7 +2,6 @@ package com.nerdvana.positiveoffline.view.dialog;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -13,8 +12,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -39,8 +36,6 @@ import com.nerdvana.positiveoffline.adapter.CustomSpinnerAdapter;
 import com.nerdvana.positiveoffline.adapter.PaymentTypeAdapter;
 import com.nerdvana.positiveoffline.adapter.PaymentsAdapter;
 import com.nerdvana.positiveoffline.apirequests.AddTransactionsOfflineRequest;
-import com.nerdvana.positiveoffline.apiresponses.FetchPaymentTypeResponse;
-import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
 import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.ArOnline;
 import com.nerdvana.positiveoffline.entities.CreditCards;
@@ -58,7 +53,6 @@ import com.nerdvana.positiveoffline.intf.PaymentTypeContract;
 import com.nerdvana.positiveoffline.intf.PaymentsContract;
 import com.nerdvana.positiveoffline.model.CreditCardListModel;
 import com.nerdvana.positiveoffline.model.PaymentSelectionModel;
-import com.nerdvana.positiveoffline.model.SettingsMenuModel;
 import com.nerdvana.positiveoffline.model.StringModel;
 import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.view.HidingEditText;
@@ -325,11 +319,11 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
             amountDue = 0.00;
             Double change = 0.00;
             for (Payments payments : transactionsViewModel.paymentList(transactionId)) {
-                tendered += Utils.roundedOffTwoDecimal(payments.getAmount());
+                tendered += payments.getAmount();
             }
 
             for (Orders order : transactionsViewModel.orderList(transactionId)) {
-                amountDue += Utils.roundedOffTwoDecimal(order.getAmount()) * order.getQty();
+                amountDue += order.getAmount() * order.getQty();
             }
             Double surCharge = 0.00;
 
@@ -348,10 +342,10 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
             }
 
+            amountDue = Utils.roundedOffTwoDecimal(amountDue);
 
 
-
-            change = (tendered - amountDue < 1 ? 0.00 : tendered - amountDue);
+            change = (tendered - amountDue <= 0 ? 0.00 : tendered - amountDue);
 
             totalPayment.setText(Utils.digitsWithComma(tendered));
 
@@ -371,13 +365,13 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 //            totalAmountDue.setText(Utils.digitsWithComma(tendered >= amountDue ? 0.00 : amountDue - tendered));
             totalChange.setText(Utils.digitsWithComma(change));
 
-            cashAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
-            creditCardAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
-            voucherAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
-            takasAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
-            mobilePaymentAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
+            cashAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Math.ceil(amountDue - tendered)));
+            creditCardAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffFourDecimal(amountDue - tendered)));
+            voucherAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffFourDecimal(amountDue - tendered)));
+            takasAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffFourDecimal(amountDue - tendered)));
+            mobilePaymentAmount.setText(String.valueOf(tendered >= amountDue ? 0.00 : Utils.roundedOffFourDecimal(amountDue - tendered)));
 
-            if (Utils.roundedOffTwoDecimal(tendered) >= Utils.roundedOffTwoDecimal(amountDue)) {
+            if (Utils.roundedOffFourDecimal(tendered) >= Utils.roundedOffFourDecimal(amountDue)) {
                 pay.setBackgroundResource(R.drawable.button_selector_green);
 //                pay.setBackgroundResource(R.drawable.button_selector);
 //                pay.setEnabled(true);
@@ -965,11 +959,11 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                     Double amountDue = 0.00;
                     Double change = 0.00;
                     for (Payments payments : transactionsViewModel.paymentList(transactionId)) {
-                        tendered += Utils.roundedOffTwoDecimal(payments.getAmount());
+                        tendered += payments.getAmount();
                     }
 
                     for (Orders order : transactionsViewModel.orderList(transactionId)) {
-                        amountDue += Utils.roundedOffTwoDecimal(order.getAmount()) * order.getQty();
+                        amountDue += order.getAmount() * order.getQty();
                     }
 
 
@@ -989,18 +983,19 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
                     }
 
+                    amountDue = Utils.roundedOffTwoDecimal(amountDue);
 
 
 
 
-                    change = (Utils.roundedOffTwoDecimal(tendered) - Utils.roundedOffTwoDecimal(amountDue) < 1 ? 0.00 : Utils.roundedOffTwoDecimal(tendered) - Utils.roundedOffTwoDecimal(amountDue));
+
+                    change = (tendered - amountDue <= 0 ? 0.00 : tendered - amountDue);
 
                     totalPayment.setText(Utils.digitsWithComma(tendered));
-                    totalAmountDue.setText(Utils.digitsWithComma(tendered >= amountDue ? 0.00 : Utils.roundedOffTwoDecimal(amountDue - tendered)));
+                    totalAmountDue.setText(Utils.digitsWithComma(tendered >= amountDue ? 0.00 : amountDue - tendered));
                     totalChange.setText(Utils.digitsWithComma(change));
 
-
-                    if (Utils.roundedOffTwoDecimal(tendered) >= Utils.roundedOffTwoDecimal(amountDue)) {
+                    if (tendered >= amountDue) {
 
                         if (transactionsViewModel.loadedTransactionList(transactionId).get(0).getTransaction_type().equalsIgnoreCase("delivery") &&
                                 (TextUtils.isEmpty(transactionsViewModel.loadedTransactionList(transactionId).get(0).getDelivery_address())||
@@ -1041,12 +1036,12 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                     tmp.getTreg(),
                                     receiptNumber,
                                     tmp.getGross_sales(),
-                                    tmp.getNet_sales(),
-                                    tmp.getVatable_sales(),
+                                    amountDue,
+                                    tmp.getHas_special() == 0 ? amountDue / 1.12 : tmp.getVatable_sales(),
                                     tmp.getVat_exempt_sales(),
-                                    tmp.getVat_amount(),
+                                    tmp.getHas_special() == 0 ? Utils.roundedOffTwoDecimal((amountDue / 1.12) * .12) : tmp.getVat_amount(),
                                     tmp.getDiscount_amount(),
-                                    Utils.roundedOffTwoDecimal(change),
+                                    change,
                                     tmp.getVoid_at(),
                                     Utils.getDateTimeToday(),
                                     tmp.getSaved_at(),

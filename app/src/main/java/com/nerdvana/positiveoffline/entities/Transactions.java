@@ -41,7 +41,7 @@ public class Transactions {
     private Double vatable_sales = 0.00;
     private Double vat_exempt_sales = 0.00;
     private Double vat_amount = 0.00;
-    private Double discount_amount;
+    private Double discount_amount = 0.00;
     private Double change = 0.00;
     private long cut_off_id = 0;
 

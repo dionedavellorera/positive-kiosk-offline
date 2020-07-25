@@ -2,8 +2,6 @@ package com.nerdvana.positiveoffline.printjobasync;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 
 import com.epson.epos2.Epos2Exception;
@@ -12,9 +10,7 @@ import com.epson.epos2.printer.PrinterStatusInfo;
 import com.epson.epos2.printer.ReceiveListener;
 import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
-import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
-import com.nerdvana.positiveoffline.MainActivity;
 import com.nerdvana.positiveoffline.PrinterPresenter;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.ThreadPoolManager;
@@ -35,7 +31,6 @@ import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
-import com.starmicronics.stario.StarPrinterStatus;
 import com.starmicronics.starioextension.StarIoExt;
 import com.sunmi.devicemanager.cons.Cons;
 import com.sunmi.devicemanager.device.Device;
@@ -247,7 +242,7 @@ public class BackoutAsync extends AsyncTask<Void, Void, Void> {
 
             addTextToPrinter(printer, twoColumns(
                     "VATABLE SALES",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVatable_sales()))),
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffFourDecimal(transactionCompleteDetails.transactions.getVatable_sales()))),
                     40,
                     2,
                     context)
@@ -255,7 +250,7 @@ public class BackoutAsync extends AsyncTask<Void, Void, Void> {
 
             addTextToPrinter(printer, twoColumns(
                     "VAT AMOUNT",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_amount()))),
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffFourDecimal(transactionCompleteDetails.transactions.getVat_amount()))),
                     40,
                     2,
                     context)
@@ -264,7 +259,7 @@ public class BackoutAsync extends AsyncTask<Void, Void, Void> {
 
             addTextToPrinter(printer, twoColumns(
                     "VAT-EXEMPT SALES",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_exempt_sales()))),
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffFourDecimal(transactionCompleteDetails.transactions.getVat_exempt_sales()))),
                     40,
                     2,
                     context)
@@ -283,7 +278,7 @@ public class BackoutAsync extends AsyncTask<Void, Void, Void> {
 
             addTextToPrinter(printer, twoColumns(
                     "SUB TOTAL",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getGross_sales()))),
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffFourDecimal(transactionCompleteDetails.transactions.getGross_sales()))),
                     40,
                     2,
                     context)
@@ -306,12 +301,12 @@ public class BackoutAsync extends AsyncTask<Void, Void, Void> {
                     tmpArray.add(pym.getCore_id());
                     pymntType = pym.getName();
                 }
-                payments += Utils.roundedOffTwoDecimal(pym.getAmount());
+                payments += Utils.roundedOffFourDecimal(pym.getAmount());
             }
 
             addTextToPrinter(printer, twoColumns(
                     "TENDERED",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(payments))),
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffFourDecimal(payments))),
                     40,
                     2,
                     context)
@@ -319,7 +314,7 @@ public class BackoutAsync extends AsyncTask<Void, Void, Void> {
 
             addTextToPrinter(printer, twoColumns(
                     "CHANGE",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getChange()))),
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffFourDecimal(transactionCompleteDetails.transactions.getChange()))),
                     40,
                     2,
                     context)

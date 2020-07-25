@@ -75,7 +75,7 @@ import com.nerdvana.positiveoffline.entities.User;
                         Payout.class, ServiceCharge.class,
                         SerialNumbers.class, ArOnline.class,
                         Takas.class},
-          version = 335)
+          version = 353)
 
 public abstract class PosDatabase extends RoomDatabase {
     public abstract UserDao userDao();

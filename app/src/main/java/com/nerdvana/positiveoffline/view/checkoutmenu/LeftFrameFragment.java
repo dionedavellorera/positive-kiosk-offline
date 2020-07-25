@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,24 +29,19 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.Room;
 
-import com.facebook.stetho.common.Util;
 import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.IUsers;
-import com.nerdvana.positiveoffline.MainActivity;
 import com.nerdvana.positiveoffline.PosClient;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.SocketManager;
 import com.nerdvana.positiveoffline.Utils;
 import com.nerdvana.positiveoffline.adapter.CheckoutAdapter;
-import com.nerdvana.positiveoffline.apirequests.AddOrderDiscountsOfflineRequest;
-import com.nerdvana.positiveoffline.apirequests.AddOrdersOfflineRequest;
 import com.nerdvana.positiveoffline.apirequests.AddPostedDiscountsOfflineRequest;
 import com.nerdvana.positiveoffline.apirequests.AddTransactionsOfflineRequest;
 import com.nerdvana.positiveoffline.apiresponses.FetchProductsResponse;
@@ -74,14 +68,12 @@ import com.nerdvana.positiveoffline.entities.SerialNumbers;
 import com.nerdvana.positiveoffline.entities.ThemeSelection;
 import com.nerdvana.positiveoffline.entities.Transactions;
 import com.nerdvana.positiveoffline.entities.User;
-import com.nerdvana.positiveoffline.intf.AsyncSaveContract;
 import com.nerdvana.positiveoffline.intf.OrdersContract;
 import com.nerdvana.positiveoffline.model.ButtonsModel;
 import com.nerdvana.positiveoffline.model.PrintModel;
 import com.nerdvana.positiveoffline.model.ProductToCheckout;
 import com.nerdvana.positiveoffline.model.StPaymentsModel;
 import com.nerdvana.positiveoffline.model.TransactionCompleteDetails;
-import com.nerdvana.positiveoffline.model.TransactionWithOrders;
 import com.nerdvana.positiveoffline.view.dialog.AlacartCompositionDialog;
 import com.nerdvana.positiveoffline.view.dialog.ArRedeemingDialog;
 import com.nerdvana.positiveoffline.view.dialog.BundleCompositionDialog;
@@ -112,7 +104,6 @@ import com.nerdvana.positiveoffline.viewmodel.UserViewModel;
 import com.squareup.otto.Subscribe;
 
 import org.joda.time.DateTime;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -712,9 +703,12 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
         Double discountAmount = 0.00;
         for (Orders order : orderList) {
             totalValue += order.getAmount() * order.getQty();
+            Log.d("LOOP-0", String.valueOf(totalValue));
             subTotal += order.getOriginal_amount() * order.getQty();
             discountAmount += order.getDiscountAmount();
         }
+
+        Log.d("LOOP-1", String.valueOf(totalValue));
 
         discountValue.setText(Utils.digitsWithComma(discountAmount));
         subTotalValue.setText(Utils.digitsWithComma(subTotal));
@@ -984,22 +978,22 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
                                                     for (Orders ord : model.getOrdersList()) {
                                                         //create order step 2
-                                                        amountDue += Utils.roundedOffTwoDecimal(ord.getAmount()) * ord.getQty();
+                                                        amountDue += Utils.roundedOffFourDecimal(ord.getAmount()) * ord.getQty();
 
-                                                        grossSales += Utils.roundedOffTwoDecimal((ord.getVatAmount() + ord.getVatable() + ord.getVatExempt()));
-                                                        netSales += Utils.roundedOffTwoDecimal(((ord.getVatable() + ord.getVatExempt()) - ord.getDiscountAmount()));
-                                                        vatableSales += Utils.roundedOffTwoDecimal(ord.getVatable());
-                                                        vatAmount += Utils.roundedOffTwoDecimal(ord.getVatAmount());
+                                                        grossSales += Utils.roundedOffFourDecimal((ord.getVatAmount() + ord.getVatable() + ord.getVatExempt()));
+                                                        netSales += Utils.roundedOffFourDecimal(((ord.getVatable() + ord.getVatExempt()) - ord.getDiscountAmount()));
+                                                        vatableSales += Utils.roundedOffFourDecimal(ord.getVatable());
+                                                        vatAmount += Utils.roundedOffFourDecimal(ord.getVatAmount());
                                                         vatExemptSales += ord.getVatExempt();
                                                         discountAmount += ord.getDiscountAmount();
                                                     }
 
-                                                    tr.setGross_sales(Utils.roundedOffTwoDecimal(grossSales));
-                                                    tr.setNet_sales(Utils.roundedOffTwoDecimal(netSales));
-                                                    tr.setVatable_sales(Utils.roundedOffTwoDecimal(vatableSales));
-                                                    tr.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vatExemptSales));
-                                                    tr.setVat_amount(Utils.roundedOffTwoDecimal(vatAmount));
-                                                    tr.setDiscount_amount(Utils.roundedOffTwoDecimal(discountAmount));
+                                                    tr.setGross_sales(Utils.roundedOffFourDecimal(grossSales));
+                                                    tr.setNet_sales(Utils.roundedOffFourDecimal(netSales));
+                                                    tr.setVatable_sales(Utils.roundedOffFourDecimal(vatableSales));
+                                                    tr.setVat_exempt_sales(Utils.roundedOffFourDecimal(vatExemptSales));
+                                                    tr.setVat_amount(Utils.roundedOffFourDecimal(vatAmount));
+                                                    tr.setDiscount_amount(Utils.roundedOffFourDecimal(discountAmount));
 
                                                     if (SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("hotel") ||
                                                             SharedPreferenceManager.getString(null, AppConstants.SELECTED_SYSTEM_TYPE).equalsIgnoreCase("restaurant")) {
@@ -1023,10 +1017,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                     Double change = 0.00;
                                                     for (Payments pym : model.getPaymentsList()) {
                                                         //create payment
-                                                        tendered += Utils.roundedOffTwoDecimal(pym.getAmount());
+                                                        tendered += Utils.roundedOffFourDecimal(pym.getAmount());
                                                     }
 
-                                                    change = (Utils.roundedOffTwoDecimal(tendered) - Utils.roundedOffTwoDecimal(amountDue) < 1 ? 0.00 : Utils.roundedOffTwoDecimal(tendered) - Utils.roundedOffTwoDecimal(amountDue));
+                                                    change = (Utils.roundedOffFourDecimal(tendered) - Utils.roundedOffFourDecimal(amountDue) < 1 ? 0.00 : Utils.roundedOffFourDecimal(tendered) - Utils.roundedOffFourDecimal(amountDue));
 
                                                     tr.setService_charge_is_percentage(isPercentage);
                                                     tr.setService_charge_value(serviceCharge);
@@ -1479,17 +1473,17 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
 //                                CutOff cutOff = cutOffViewModel.getCutOff(cut_off_id);
                                 cutOff.setIs_sent_to_server(0);
-                                cutOff.setTotal_change(Utils.roundedOffTwoDecimal(total_change));
-                                cutOff.setGross_sales(Utils.roundedOffTwoDecimal(gross_sales));
-                                cutOff.setNet_sales(Utils.roundedOffTwoDecimal(net_sales));
-                                cutOff.setVatable_sales(Utils.roundedOffTwoDecimal(vatable_sales));
-                                cutOff.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vat_exempt_sales));
-                                cutOff.setVat_amount(Utils.roundedOffTwoDecimal(vat_amount));
+                                cutOff.setTotal_change(Utils.roundedOffFourDecimal(total_change));
+                                cutOff.setGross_sales(Utils.roundedOffFourDecimal(gross_sales));
+                                cutOff.setNet_sales(Utils.roundedOffFourDecimal(net_sales));
+                                cutOff.setVatable_sales(Utils.roundedOffFourDecimal(vatable_sales));
+                                cutOff.setVat_exempt_sales(Utils.roundedOffFourDecimal(vat_exempt_sales));
+                                cutOff.setVat_amount(Utils.roundedOffFourDecimal(vat_amount));
                                 cutOff.setNumber_of_transactions(number_of_transaction);
-                                cutOff.setVoid_amount(Utils.roundedOffTwoDecimal(void_amount));
-                                cutOff.setTotal_cash_amount(Utils.roundedOffTwoDecimal(totalCash));
-                                cutOff.setTotal_cash_payments(Utils.roundedOffTwoDecimal(total_cash_payments));
-                                cutOff.setTotal_card_payments(Utils.roundedOffTwoDecimal(total_card_payments));
+                                cutOff.setVoid_amount(Utils.roundedOffFourDecimal(void_amount));
+                                cutOff.setTotal_cash_amount(Utils.roundedOffFourDecimal(totalCash));
+                                cutOff.setTotal_cash_payments(Utils.roundedOffFourDecimal(total_cash_payments));
+                                cutOff.setTotal_card_payments(Utils.roundedOffFourDecimal(total_card_payments));
 
                                 cutOff.setSeniorCount(seniorCount);
                                 cutOff.setSeniorAmount(seniorAmount);
@@ -3166,8 +3160,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         selectedRoomRate.getAmount(),
                         selectedRoomRate.getRoom_rate_description(),
                         selectedRoomRate.getRoom_type_id(),
-                        Utils.roundedOffTwoDecimal((selectedRoomRate.getAmount() / 1.12) * .12),
-                        Utils.roundedOffTwoDecimal(selectedRoomRate.getAmount() / 1.12),
+                        Utils.roundedOffFourDecimal((selectedRoomRate.getAmount() / 1.12) * .12),
+                        Utils.roundedOffFourDecimal(selectedRoomRate.getAmount() / 1.12),
                         0.00,
                         0.00,
                         "ROOM RATE",
@@ -3186,6 +3180,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                 .equalsIgnoreCase("to")
                                 ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
                                 : 0,
+                        "",
+                        0,
                         ""
                 ));
                 transactionsViewModel.insertOrder(orderList);
@@ -3258,8 +3254,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                         productFinalAmount,
                         selectedProduct.getProduct(),
                         selectedProduct.getDepartmentId(),
-                        (1*mQty) * Utils.roundedOffTwoDecimal((productFinalAmount / 1.12) * .12),
-                        (1*mQty) * Utils.roundedOffTwoDecimal(productFinalAmount / 1.12),
+                        (1*mQty) * (productFinalAmount / 1.12) * .12,
+                        (1*mQty) * productFinalAmount / 1.12,
                         0.00,
                         0.00,
                         selectedProduct.getDepartment(),
@@ -3278,7 +3274,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                 .equalsIgnoreCase("to")
                                 ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
                                 : 0,
-                        selectedProduct.getProduct_initial()
+                        selectedProduct.getProduct_initial(),
+                        selectedProduct.getUnit_id(),
+                        selectedProduct.getUnit_id_description()
                 );
 //                orders.setIs_editing(true);
                 orderList.add(orders);
@@ -3350,7 +3348,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                             .equalsIgnoreCase("to")
                                             ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
                                             : 0,
-                                    palac.getProduct_initial()
+                                    palac.getProduct_initial(),
+                                    0, //bug here for inventory.. should return respective id of product
+                                    ""
                             );
                             orders.setProduct_alacart_id(palac.getProduct_alacart_id());
                             orders.setIs_editing(false);
@@ -3402,8 +3402,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                     palac.getPrice(),
                                     palac.getProduct(),
                                     0,
-                                    palac.getSelectedQty() * Utils.roundedOffTwoDecimal((palac.getPrice() / 1.12) * .12),
-                                    palac.getSelectedQty() * Utils.roundedOffTwoDecimal(palac.getPrice() / 1.12),
+                                    palac.getSelectedQty() * (palac.getPrice() / 1.12) * .12,
+                                    palac.getSelectedQty() * palac.getPrice() / 1.12,
                                     0.00,
                                     0.00,
                                     "",
@@ -3422,7 +3422,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                             .equalsIgnoreCase("to")
                                             ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
                                             : 0,
-                                    palac.getProduct_initial()
+                                    palac.getProduct_initial(),
+                                    0, //bug here on inventory.. return respective id of unit id from api..
+                                    ""
                             );
                             orders.setProduct_alacart_id(palac.getProduct_group_id());
                             orders.setIs_editing(false);

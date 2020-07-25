@@ -7,14 +7,12 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.nerdvana.positiveoffline.AppConstants;
-import com.nerdvana.positiveoffline.GsonHelper;
 import com.nerdvana.positiveoffline.Helper;
 import com.nerdvana.positiveoffline.R;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
@@ -305,7 +303,7 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
                         Double discountAmount =  (tmpOrder.getDiscountAmount());
                         Double finalAmount = 0.00;
                         if (tmpOrder.getVatExempt() > 0) {
-                            finalAmount = Utils.roundedOffTwoDecimal(tmpOrder.getOriginal_amount() / 1.12) - discountAmount;
+                            finalAmount = Utils.roundedOffFourDecimal(tmpOrder.getOriginal_amount() / 1.12) - discountAmount;
                         } else {
                             finalAmount = (tmpOrder.getOriginal_amount()) - discountAmount;
                         }
@@ -313,14 +311,14 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
                                 tmpOrder.getTransaction_id(), //to change later on
                                 tmpOrder.getCore_id(),
                                 qty,
-                                Utils.roundedOffTwoDecimal(finalAmount),
+                                Utils.roundedOffFourDecimal(finalAmount),
                                 tmpOrder.getOriginal_amount(),
                                 tmpOrder.getName(),
                                 tmpOrder.getDepartmentId(),
                                 tmpOrder.getVatAmount(),
                                 tmpOrder.getVatable(),
                                 tmpOrder.getVatExempt(),
-                                Utils.roundedOffTwoDecimal(discountAmount),
+                                Utils.roundedOffFourDecimal(discountAmount),
                                 tmpOrder.getDepartmentName(),
                                 tmpOrder.getCategoryName(),
                                 tmpOrder.getCategoryId(),
@@ -333,7 +331,9 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
                                 tmpOrder.getIs_take_out(),
                                 tmpOrder.getIs_fixed_asset(),
                                 tmpOrder.getTo_id(),
-                                tmpOrder.getName_initials()
+                                tmpOrder.getName_initials(),
+                                tmpOrder.getUnit_id(),
+                                tmpOrder.getUnit_id_description()
                         );
 
 
@@ -362,7 +362,7 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
                 Double discountAmount =  (tmpOrder.getDiscountAmount());
                 Double finalAmount = 0.00;
                 if (tmpOrder.getVatExempt() > 0) {
-                    finalAmount = Utils.roundedOffTwoDecimal(tmpOrder.getOriginal_amount() / 1.12) - discountAmount;
+                    finalAmount = Utils.roundedOffFourDecimal(tmpOrder.getOriginal_amount() / 1.12) - discountAmount;
                 } else {
                     finalAmount = (tmpOrder.getOriginal_amount()) - discountAmount;
                 }
@@ -370,14 +370,14 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
                         tmpOrder.getTransaction_id(), //to change later on
                         tmpOrder.getCore_id(),
                         tmpOrder.getQty(),
-                        Utils.roundedOffTwoDecimal(finalAmount),
+                        Utils.roundedOffFourDecimal(finalAmount),
                         tmpOrder.getOriginal_amount(),
                         tmpOrder.getName(),
                         tmpOrder.getDepartmentId(),
                         tmpOrder.getVatAmount(),
                         tmpOrder.getVatable(),
                         tmpOrder.getVatExempt(),
-                        Utils.roundedOffTwoDecimal(discountAmount),
+                        Utils.roundedOffFourDecimal(discountAmount),
                         tmpOrder.getDepartmentName(),
                         tmpOrder.getCategoryName(),
                         tmpOrder.getCategoryId(),
@@ -390,7 +390,9 @@ public abstract class ShareTransactionDialog extends BaseDialog implements View.
                         tmpOrder.getIs_take_out(),
                         tmpOrder.getIs_fixed_asset(),
                         tmpOrder.getTo_id(),
-                        tmpOrder.getName_initials()
+                        tmpOrder.getName_initials(),
+                        tmpOrder.getUnit_id(),
+                        tmpOrder.getUnit_id_description()
 
                 );
 

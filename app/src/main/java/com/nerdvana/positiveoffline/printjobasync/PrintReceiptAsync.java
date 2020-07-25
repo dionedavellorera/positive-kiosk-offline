@@ -2,11 +2,8 @@ package com.nerdvana.positiveoffline.printjobasync;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.Html;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.epson.epos2.Epos2Exception;
 import com.epson.epos2.printer.Printer;
@@ -16,7 +13,6 @@ import com.google.gson.reflect.TypeToken;
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
 import com.nerdvana.positiveoffline.GsonHelper;
-import com.nerdvana.positiveoffline.MainActivity;
 import com.nerdvana.positiveoffline.PrinterPresenter;
 import com.nerdvana.positiveoffline.SharedPreferenceManager;
 import com.nerdvana.positiveoffline.ThreadPoolManager;
@@ -37,15 +33,12 @@ import com.nerdvana.positiveoffline.printer.PrinterUtils;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
-import com.starmicronics.stario.StarPrinterStatus;
 import com.starmicronics.starioextension.StarIoExt;
 import com.sunmi.devicemanager.cons.Cons;
 import com.sunmi.devicemanager.device.Device;
 import com.sunmi.devicesdk.core.PrinterManager;
 import com.sunmi.peripheral.printer.SunmiPrinterService;
 
-import org.joda.time.DateTime;
-import org.joda.time.Minutes;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -461,12 +454,12 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
                                     Utils.roundedOffTwoDecimal(
                                             transactionCompleteDetails.transactions.getGross_sales()
                                     ) +
-                                    Utils.roundedOffTwoDecimal(
-                                            transactionCompleteDetails.transactions.getService_charge_value()
-                                    ) +
-                                    Utils.roundedOffTwoDecimal(
-                                            transactionCompleteDetails.transactions.getDiscount_amount()
-                                    )
+                                            Utils.roundedOffTwoDecimal(
+                                                    transactionCompleteDetails.transactions.getService_charge_value()
+                                            ) +
+                                            Utils.roundedOffTwoDecimal(
+                                                    transactionCompleteDetails.transactions.getDiscount_amount()
+                                            )
                             )),
                     40,
                     2,

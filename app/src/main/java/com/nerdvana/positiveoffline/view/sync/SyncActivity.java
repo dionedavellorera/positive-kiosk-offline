@@ -343,7 +343,7 @@ public class SyncActivity extends AppCompatActivity implements View.OnClickListe
         userViewModel.getUserResponseMutableData().observe(this, new Observer<FetchUserResponse>() {
             @Override
             public void onChanged(FetchUserResponse fetchUserResponse) {
-                new InserUserAsync(fetchUserResponse.getResultList(), SyncActivity.this, userViewModel).execute();
+                new InserUserAsync(fetchUserResponse.getResultList(), SyncActivity.this, userViewModel, SyncActivity.this).execute();
             }
         });
 

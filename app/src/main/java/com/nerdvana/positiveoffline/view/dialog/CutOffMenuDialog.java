@@ -484,20 +484,20 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                 endOfDay.setTotal_service_charge(total_service_charge);
                 endOfDay.setTotal_payout(total_payout);
                 endOfDay.setIs_sent_to_server(0);
-                endOfDay.setGross_sales(Utils.roundedOffTwoDecimal(gross_sales));
-                endOfDay.setNet_sales(Utils.roundedOffTwoDecimal(net_sales));
-                endOfDay.setVatable_sales(Utils.roundedOffTwoDecimal(vatable_sales));
-                endOfDay.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vat_exempt_sales));
-                endOfDay.setVat_amount(Utils.roundedOffTwoDecimal(vat_amount));
+                endOfDay.setGross_sales(Utils.roundedOffFourDecimal(gross_sales));
+                endOfDay.setNet_sales(Utils.roundedOffFourDecimal(net_sales));
+                endOfDay.setVatable_sales(Utils.roundedOffFourDecimal(vatable_sales));
+                endOfDay.setVat_exempt_sales(Utils.roundedOffFourDecimal(vat_exempt_sales));
+                endOfDay.setVat_amount(Utils.roundedOffFourDecimal(vat_amount));
                 endOfDay.setNumber_of_transactions(number_of_transaction);
-                endOfDay.setVoid_amount(Utils.roundedOffTwoDecimal(void_amount));
-                endOfDay.setTotal_cash_amount(Utils.roundedOffTwoDecimal(total_cash));
-                endOfDay.setTotal_cash_payments(Utils.roundedOffTwoDecimal(total_cash_payments));
-                endOfDay.setTotal_card_payments(Utils.roundedOffTwoDecimal(total_card_payments));
+                endOfDay.setVoid_amount(Utils.roundedOffFourDecimal(void_amount));
+                endOfDay.setTotal_cash_amount(Utils.roundedOffFourDecimal(total_cash));
+                endOfDay.setTotal_cash_payments(Utils.roundedOffFourDecimal(total_cash_payments));
+                endOfDay.setTotal_card_payments(Utils.roundedOffFourDecimal(total_card_payments));
 
-                endOfDay.setTotal_online_payments(Utils.roundedOffTwoDecimal(total_online_payments));
-                endOfDay.setTotal_ar_payments(Utils.roundedOffTwoDecimal(total_ar_payments));
-                endOfDay.setTotal_mobile_payments(Utils.roundedOffTwoDecimal(total_mobile_payments));
+                endOfDay.setTotal_online_payments(Utils.roundedOffFourDecimal(total_online_payments));
+                endOfDay.setTotal_ar_payments(Utils.roundedOffFourDecimal(total_ar_payments));
+                endOfDay.setTotal_mobile_payments(Utils.roundedOffFourDecimal(total_mobile_payments));
 
 
                 endOfDay.setTotal_change(total_change);
@@ -610,7 +610,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         endOrNo = transactionsList.get(transactionsList.size() - 1).getReceipt_number();
                         for (Transactions tr : transactionsList) {
                             if (tr.getIs_void()) {
-                                void_amount += tr.getNet_sales() + tr.getDiscount_amount();
+                                void_amount += tr.getGross_sales() + tr.getDiscount_amount();
                             } else {
                                 gross_sales += tr.getGross_sales();
                                 net_sales += tr.getNet_sales();
@@ -734,21 +734,21 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         cutOff.setTotal_service_charge(total_service_charge);
                         cutOff.setIs_sent_to_server(0);
                         cutOff.setTotal_payout(total_payout);
-                        cutOff.setTotal_change(Utils.roundedOffTwoDecimal(total_change));
-                        cutOff.setGross_sales(Utils.roundedOffTwoDecimal(gross_sales));
-                        cutOff.setNet_sales(Utils.roundedOffTwoDecimal(net_sales));
-                        cutOff.setVatable_sales(Utils.roundedOffTwoDecimal(vatable_sales));
-                        cutOff.setVat_exempt_sales(Utils.roundedOffTwoDecimal(vat_exempt_sales));
-                        cutOff.setVat_amount(Utils.roundedOffTwoDecimal(vat_amount));
+                        cutOff.setTotal_change(Utils.roundedOffFourDecimal(total_change));
+                        cutOff.setGross_sales(Utils.roundedOffFourDecimal(gross_sales));
+                        cutOff.setNet_sales(Utils.roundedOffFourDecimal(net_sales));
+                        cutOff.setVatable_sales(Utils.roundedOffFourDecimal(vatable_sales));
+                        cutOff.setVat_exempt_sales(Utils.roundedOffFourDecimal(vat_exempt_sales));
+                        cutOff.setVat_amount(Utils.roundedOffFourDecimal(vat_amount));
                         cutOff.setNumber_of_transactions(number_of_transaction);
-                        cutOff.setVoid_amount(Utils.roundedOffTwoDecimal(void_amount));
-                        cutOff.setTotal_cash_amount(Utils.roundedOffTwoDecimal(totalCash));
-                        cutOff.setTotal_cash_payments(Utils.roundedOffTwoDecimal(total_cash_payments));
-                        cutOff.setTotal_card_payments(Utils.roundedOffTwoDecimal(total_card_payments));
+                        cutOff.setVoid_amount(Utils.roundedOffFourDecimal(void_amount));
+                        cutOff.setTotal_cash_amount(Utils.roundedOffFourDecimal(totalCash));
+                        cutOff.setTotal_cash_payments(Utils.roundedOffFourDecimal(total_cash_payments));
+                        cutOff.setTotal_card_payments(Utils.roundedOffFourDecimal(total_card_payments));
 
-                        cutOff.setTotal_online_payments(Utils.roundedOffTwoDecimal(total_online_payments));
-                        cutOff.setTotal_ar_payments(Utils.roundedOffTwoDecimal(total_ar_payments));
-                        cutOff.setTotal_mobile_payments(Utils.roundedOffTwoDecimal(total_mobile_payments));
+                        cutOff.setTotal_online_payments(Utils.roundedOffFourDecimal(total_online_payments));
+                        cutOff.setTotal_ar_payments(Utils.roundedOffFourDecimal(total_ar_payments));
+                        cutOff.setTotal_mobile_payments(Utils.roundedOffFourDecimal(total_mobile_payments));
 
                         cutOff.setSeniorCount(seniorCount);
                         cutOff.setSeniorAmount(seniorAmount);

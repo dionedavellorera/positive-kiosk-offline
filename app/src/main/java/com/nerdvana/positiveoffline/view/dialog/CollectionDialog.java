@@ -6,11 +6,9 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -20,7 +18,6 @@ import com.nerdvana.positiveoffline.base.BaseDialog;
 import com.nerdvana.positiveoffline.entities.CashDenomination;
 import com.nerdvana.positiveoffline.model.SafeKeepDataModel;
 import com.nerdvana.positiveoffline.view.HidingEditText;
-import com.nerdvana.positiveoffline.viewmodel.CutOffViewModel;
 import com.nerdvana.positiveoffline.viewmodel.DataSyncViewModel;
 
 import java.util.ArrayList;
@@ -126,7 +123,7 @@ public abstract class CollectionDialog extends BaseDialog implements View.OnClic
                 for (SafeKeepDataModel skdm : safeKeepDataModelList) {
 
                     if (!TextUtils.isEmpty(skdm.getEditText().getText().toString())) {
-                        totalCash += Utils.roundedOffTwoDecimal(Double.valueOf(skdm.getValue()) * Integer.valueOf(skdm.getEditText().getText().toString()));
+                        totalCash += Utils.roundedOffFourDecimal(Double.valueOf(skdm.getValue()) * Integer.valueOf(skdm.getEditText().getText().toString()));
                     }
 
                 }
