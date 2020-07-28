@@ -131,7 +131,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         passwordDialog = new PasswordDialog(getContext(), "XREADING", userViewModel, transactionsViewModel) {
                             @Override
                             public void success(String username) {
-                                doXReadFunction();
+                                doXReadFunction(username);
                             }
                         };
                         passwordDialog.setOnCancelListener(new OnCancelListener() {
@@ -149,7 +149,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         passwordDialog.show();
                     }
                 } else {
-                    doXReadFunction();
+                    doXReadFunction("");
                 }
 
                 break;
@@ -160,7 +160,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         passwordDialog = new PasswordDialog(getContext(), "ZREADING", userViewModel, transactionsViewModel) {
                             @Override
                             public void success(String username) {
-                                doZReadFunction();
+                                doZReadFunction(username);
                             }
                         };
                         passwordDialog.setOnCancelListener(new OnCancelListener() {
@@ -178,7 +178,7 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         passwordDialog.show();
                     }
                 } else {
-                    doZReadFunction();
+                    doZReadFunction("");
                 }
 
 
@@ -380,8 +380,9 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
         }
     }
 
-    private void doZReadFunction() {
+    private void doZReadFunction(String username) {
         try {
+
             if (cutOffViewModel.getUnCutOffData().size() > 0) {
                 //PERFORM Z READING
                 long end_of_day_id = cutOffViewModel.insertData(new EndOfDay(
@@ -402,7 +403,9 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                         Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.MACHINE_ID)),
                         Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
                         0.00,
-                        0.00
+                        0.00,
+                        userViewModel.searchLoggedInUser().size() > 0 ? userViewModel.searchLoggedInUser().get(0).getName().toUpperCase() : "",
+                        userViewModel.searchUsername(username)!=null ? userViewModel.searchUsername(username).getName().toUpperCase() : ""
                 ));
 
                 for (PostedDiscounts postedDiscounts : cutOffViewModel.getZeroEndOfDay()) {
@@ -541,7 +544,10 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
 
     }
 
-    private void doXReadFunction() {
+    private void doXReadFunction(String username) {
+
+        Log.d("XREADUSEr", username);
+
         CollectionDialog collectionDialog = new CollectionDialog(getContext(), dataSyncViewModel) {
             @Override
             public void cutOffSuccess(Double totalCash) {
@@ -566,7 +572,9 @@ public class CutOffMenuDialog extends BaseDialog implements View.OnClickListener
                                 Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
                                 0.00,
                                 0.00,
-                                String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
+                                String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 ),
+                                userViewModel.searchLoggedInUser().size() > 0 ? userViewModel.searchLoggedInUser().get(0).getName().toUpperCase() : "",
+                                userViewModel.searchUsername(username)!=null ? userViewModel.searchUsername(username).getName().toUpperCase() : ""
                         ));
 
                         List<Transactions> transactionsList = transactionsViewModel.unCutOffTransactions(userViewModel.searchLoggedInUser().get(0).getUsername());

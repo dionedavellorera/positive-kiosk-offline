@@ -56,6 +56,8 @@ public class EndOfDay {
 
     private Double discount_amount = 0.00;
 
+    private String cashier_name = "";
+    private String admin_name = "";
     @Ignore
     public EndOfDay() {}
 
@@ -67,7 +69,10 @@ public class EndOfDay {
                     Double begSales, Double endSales,
                     int is_sent_to_server, int machine_id,
                     int branch_id, Double total_service_charge,
-                    double discount_amount) {
+                    double discount_amount, String cashier_name,
+                    String admin_name) {
+        this.admin_name = admin_name;
+        this.cashier_name = cashier_name;
         this.discount_amount = discount_amount;
         this.total_service_charge = total_service_charge;
         this.branch_id = branch_id;
@@ -86,6 +91,22 @@ public class EndOfDay {
         this.treg = treg;
         this.begOrNo = begOrNo;
         this.endOrNo = endOrNo;
+    }
+
+    public String getAdmin_name() {
+        return admin_name;
+    }
+
+    public void setAdmin_name(String admin_name) {
+        this.admin_name = admin_name;
+    }
+
+    public String getCashier_name() {
+        return cashier_name;
+    }
+
+    public void setCashier_name(String cashier_name) {
+        this.cashier_name = cashier_name;
     }
 
     public Double getDiscount_amount() {

@@ -1368,7 +1368,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                         Integer.valueOf(SharedPreferenceManager.getString(getContext(), AppConstants.BRANCH_ID)),
                                         0.00,
                                         0.00,
-                                        String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
+                                        String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 ),
+                                        userViewModel.searchLoggedInUser().size() > 0 ? userViewModel.searchLoggedInUser().get(0).getName().toUpperCase() : "",
+                                        ""
+
                                 );
                                 cutOff.setId(996699);
                                         /*

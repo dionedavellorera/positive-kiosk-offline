@@ -21,6 +21,9 @@ public class CutoffServerDataResponse {
 
 
     public class CutOff {
+        @SerializedName("discount_amount")
+        @Expose
+        private Double discount_amount;
         @SerializedName("shift_number")
         @Expose
         private String shiftNumber;
@@ -123,6 +126,15 @@ public class CutoffServerDataResponse {
         @SerializedName("deleted_at")
         @Expose
         private Object deletedAt;
+
+
+        public Double getDiscount_amount() {
+            return discount_amount;
+        }
+
+        public void setDiscount_amount(Double discount_amount) {
+            this.discount_amount = discount_amount;
+        }
 
         public String getShiftNumber() {
             return shiftNumber;

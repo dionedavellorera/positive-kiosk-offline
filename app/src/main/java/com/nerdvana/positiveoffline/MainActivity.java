@@ -682,6 +682,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 cutOff.setCard_redeemed_from_prev_ar(list.getCardRedeemedFromPrevAr());
 
                                 cutOff.setShift_number(list.getShiftNumber());
+                                cutOff.setDiscount_amount(list.getDiscount_amount());
                                 cutOffViewModel.insertData(cutOff);
                             }
                             BusProvider.getInstance().post(new ServerDataCompletionModel(true, "CUTOFF"));
@@ -748,6 +749,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
                                 endOfDay.setCash_redeemed_from_prev_ar(list.getCashRedeemedFromPrevAr());
                                 endOfDay.setCard_redeemed_from_prev_ar(list.getCardRedeemedFromPrevAr());
+                                endOfDay.setDiscount_amount(list.getDiscount_amount());
                                 cutOffViewModel.insertData(endOfDay);
                             }
                             BusProvider.getInstance().post(new ServerDataCompletionModel(true, "END OF DAY"));
@@ -2113,7 +2115,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void shiftUpdate(ShiftUpdateModel shiftUpdateModel) {
         try {
-            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 3.0.3");
+            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 3.0.4");
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {

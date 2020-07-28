@@ -133,4 +133,18 @@ public class UserRepository {
 
     }
 
+    public User searchUsername(String username) throws ExecutionException, InterruptedException {
+        Callable<User> callable = new Callable<User>() {
+            @Override
+            public User call() throws Exception {
+                return userDao.searchUsername(username);
+            }
+        };
+
+        Future<User> future = Executors.newSingleThreadExecutor().submit(callable);
+        return future.get();
+
+    }
+
+
 }

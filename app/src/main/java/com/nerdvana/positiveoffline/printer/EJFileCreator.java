@@ -176,6 +176,37 @@ public class EJFileCreator {
                 true);
 
         finalString += PrinterUtils.receiptString(
+                "PRINTED BY",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                cutOff.getCashier_name(),
+                "",
+                context,
+                true);
+        if (!TextUtils.isEmpty(cutOff.getAdmin_name())) {
+            finalString += PrinterUtils.receiptString(
+                    "APPROVED BY",
+                    "",
+                    context,
+                    true);
+
+            finalString += PrinterUtils.receiptString(
+                    cutOff.getAdmin_name(),
+                    "",
+                    context,
+                    true);
+        }
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
                 "THIS RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
@@ -499,6 +530,40 @@ public class EJFileCreator {
                 true);
 
         finalString += PrinterUtils.receiptString(
+                "PRINTED BY",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                endOfDay.getCashier_name(),
+                "",
+                context,
+                true);
+
+
+
+        if (!TextUtils.isEmpty(endOfDay.getAdmin_name())) {
+            finalString += PrinterUtils.receiptString(
+                    "APPROVED BY",
+                    "",
+                    context,
+                    true);
+            finalString += PrinterUtils.receiptString(
+                    endOfDay.getAdmin_name(),
+                    "",
+                    context,
+                    true);
+        }
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+
+        finalString += PrinterUtils.receiptString(
                 "THIS RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
@@ -579,7 +644,7 @@ public class EJFileCreator {
 //        }
         finalString += PrinterUtils.receiptString("OR NO", transactionCompleteDetails.transactions.getReceipt_number(), context, false);
         finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
-        finalString += PrinterUtils.receiptString("CASHIER", transactionCompleteDetails.transactions.getCashierName(), context, false);
+
         finalString += PrinterUtils.receiptString("", "", context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
         finalString += PrinterUtils.receiptString("QTY  DESCRIPTION          AMOUNT", "", context, true);
@@ -1102,6 +1167,26 @@ public class EJFileCreator {
                 true);
 
         finalString += PrinterUtils.receiptString(
+                "PRINTED BY",
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                transactionCompleteDetails.transactions.getCashierName(),
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+
+
+        finalString += PrinterUtils.receiptString(
                 "THIS RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
@@ -1610,7 +1695,7 @@ public class EJFileCreator {
 //        }
         finalString += PrinterUtils.receiptString("OR NO", transactionCompleteDetails.transactions.getReceipt_number(), context, false);
         finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
-        finalString += PrinterUtils.receiptString("CASHIER", transactionCompleteDetails.transactions.getCashierName(), context, false);
+//        finalString += PrinterUtils.receiptString("CASHIER", transactionCompleteDetails.transactions.getCashierName(), context, false);
         finalString += PrinterUtils.receiptString("", "", context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
         finalString += PrinterUtils.receiptString("QTY  DESCRIPTION          AMOUNT", "", context, true);
@@ -2131,6 +2216,19 @@ public class EJFileCreator {
                 "",
                 context,
                 true);
+
+        finalString += PrinterUtils.receiptString(
+                "PRINTED BY:" + transactionCompleteDetails.transactions.getCashierName(),
+                "",
+                context,
+                true);
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
 
         finalString += PrinterUtils.receiptString(
                 "THIS RECEIPT SHALL BE VALID FOR",

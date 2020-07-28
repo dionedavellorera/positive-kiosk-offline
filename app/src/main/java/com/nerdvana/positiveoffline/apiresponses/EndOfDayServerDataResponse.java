@@ -20,6 +20,9 @@ public class EndOfDayServerDataResponse {
     }
 
     public class EndOfDay {
+        @SerializedName("discount_amount")
+        @Expose
+        private Double discount_amount;
         @SerializedName("card_redeemed_from_prev_ar")
         @Expose
         private Double cardRedeemedFromPrevAr;
@@ -123,6 +126,13 @@ public class EndOfDayServerDataResponse {
         @Expose
         private Object deletedAt;
 
+        public Double getDiscount_amount() {
+            return discount_amount;
+        }
+
+        public void setDiscount_amount(Double discount_amount) {
+            this.discount_amount = discount_amount;
+        }
 
         public Double getCardRedeemedFromPrevAr() {
             return cardRedeemedFromPrevAr;

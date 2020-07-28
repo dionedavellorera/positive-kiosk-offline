@@ -49,6 +49,8 @@ public class CutOff {
     private Double discount_amount = 0.00;
 
     private String shift_number = "";
+    private String cashier_name = "";
+    private String admin_name = "";
     @Ignore
     public CutOff() {}
 
@@ -60,7 +62,10 @@ public class CutOff {
                   String begOrNo, String endOrNo,
                   int is_sent_to_server, int machine_id,
                   int branch_id, Double total_service_charge,
-                  Double discount_amount, String shift_number) {
+                  Double discount_amount, String shift_number,
+                  String cashier_name, String admin_name) {
+        this.admin_name = admin_name;
+        this.cashier_name = cashier_name;
         this.shift_number = shift_number;
         this.discount_amount = discount_amount;
         this.branch_id = branch_id;
@@ -79,6 +84,22 @@ public class CutOff {
         this.begOrNo = begOrNo;
         this.endOrNo = endOrNo;
         this.total_service_charge = total_service_charge;
+    }
+
+    public String getAdmin_name() {
+        return admin_name;
+    }
+
+    public void setAdmin_name(String admin_name) {
+        this.admin_name = admin_name;
+    }
+
+    public String getCashier_name() {
+        return cashier_name;
+    }
+
+    public void setCashier_name(String cashier_name) {
+        this.cashier_name = cashier_name;
     }
 
     public String getShift_number() {

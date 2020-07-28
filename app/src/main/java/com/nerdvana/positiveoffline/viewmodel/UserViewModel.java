@@ -45,6 +45,10 @@ public class UserViewModel extends AndroidViewModel {
         return mRepository.getUser(username);
     }
 
+    public User searchUsername(String username) throws ExecutionException, InterruptedException {
+        return mRepository.searchUsername(username);
+    }
+
     public void update(User user) {
         mRepository.update(user);
     }
