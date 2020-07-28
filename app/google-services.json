@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "954763676246",
+    "firebase_url": "https://positiveoffline-kiosk.firebaseio.com",
+    "project_id": "positiveoffline-kiosk",
+    "storage_bucket": "positiveoffline-kiosk.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:954763676246:android:5169e9ec757a98073b09f7",
+        "android_client_info": {
+          "package_name": "com.nerdvana.positiveoffline"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "954763676246-t5sgqsm4caik8fcnu1chge6q8ukamahf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.nerdvana.positiveoffline",
+            "certificate_hash": "fe4a6ee71528b3de80d727e70024219d8f28c72d"
+          }
+        },
+        {
+          "client_id": "954763676246-2t9gvut2eqj4vkqb6uhe3haat8b0cq0s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9Djs0MbGSGDfItfEmFzdHti6DYjmgVeI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "954763676246-2t9gvut2eqj4vkqb6uhe3haat8b0cq0s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
