@@ -168,73 +168,48 @@ public class DiscountViewModel extends AndroidViewModel {
         long last_inserted_id = 0;
         for (Orders orders : ordersList) {
             if (orders.getIs_discount_exempt() == 0) {
-                if (orders.getIs_editing()) {
-                    int count = 0; //2 for discounted counted
-                    double percentage = 0.00;
-                    String discName = "";
-                    int discId = 0;
-                    for (DiscountSettings disc : discountWithSettings.discountsList) {
-                        if (!TextUtils.isEmpty(disc.getProduct_id())) {
-                            if (disc.getProduct_id().equalsIgnoreCase("all")) {
-                                count+=1;
-                            } else if (Arrays.asList(disc.getProduct_id().split(",")).contains(String.valueOf(orders.getCore_id()))) {
-                                count+=1;
-                            }
-                        }
 
-                        if (!TextUtils.isEmpty(disc.getDepartment_id())) {
-                            if (disc.getDepartment_id().equalsIgnoreCase("all")) {
-                                count+=1;
-                            } else if (Arrays.asList(disc.getDepartment_id().split(",")).contains(String.valueOf(orders.getDepartmentId()))) {
-                                count+=1;
-                            }
+                int count = 0; //2 for discounted counted
+                double percentage = 0.00;
+                String discName = "";
+                int discId = 0;
+                for (DiscountSettings disc : discountWithSettings.discountsList) {
+                    if (!TextUtils.isEmpty(disc.getProduct_id())) {
+                        if (disc.getProduct_id().equalsIgnoreCase("all")) {
+                            count+=1;
+                        } else if (Arrays.asList(disc.getProduct_id().split(",")).contains(String.valueOf(orders.getCore_id()))) {
+                            count+=1;
                         }
-
-                        percentage = disc.getPercentage();
-                        discName = disc.getDiscount_name();
-                        discId = discountWithSettings.discounts.getCore_id();
                     }
-                    if (count == 2) {
-                        try {
-                            if (last_inserted_id == 0) {
+
+                    if (!TextUtils.isEmpty(disc.getDepartment_id())) {
+                        if (disc.getDepartment_id().equalsIgnoreCase("all")) {
+                            count+=1;
+                        } else if (Arrays.asList(disc.getDepartment_id().split(",")).contains(String.valueOf(orders.getDepartmentId()))) {
+                            count+=1;
+                        }
+                    }
+
+                    percentage = disc.getPercentage();
+                    discName = disc.getDiscount_name();
+                    discId = discountWithSettings.discounts.getCore_id();
+                }
+                if (count == 2) {
+                    try {
+                        if (last_inserted_id == 0) {
 
 
 
-                                PostedDiscounts postedDiscounts = new PostedDiscounts(
-                                        Integer.valueOf(transactionId),
-                                        discId,
-                                        discName,
-                                        false,
-                                        specialDiscountInfo.getCard_number(),
-                                        specialDiscountInfo.getName(),
-                                        specialDiscountInfo.getAddress(),
-                                        true,
-                                        percentage,
-                                        0,
-                                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
-                                        Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
-                                        Utils.getDateTimeToday(),
-                                        SharedPreferenceManager
-                                                .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
-                                                .equalsIgnoreCase("to")
-                                                ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
-                                                : 0,
-                                        orders.getQty()
-
-                                );
-
-                                last_inserted_id = insertPostedDiscount(postedDiscounts);
-                            }
-                            List<OrderDiscounts> orderDiscountsList = new ArrayList<>();
-                            orderDiscountsList.add(new OrderDiscounts(
-                                    orders.getCore_id(),
+                            PostedDiscounts postedDiscounts = new PostedDiscounts(
+                                    Integer.valueOf(transactionId),
+                                    discId,
+                                    discName,
+                                    false,
+                                    specialDiscountInfo.getCard_number(),
+                                    specialDiscountInfo.getName(),
+                                    specialDiscountInfo.getAddress(),
                                     true,
                                     percentage,
-                                    Integer.valueOf(transactionId),
-                                    orders.getId(),
-                                    discName,
-                                    last_inserted_id,
-                                    false,
                                     0,
                                     Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
                                     Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
@@ -244,16 +219,45 @@ public class DiscountViewModel extends AndroidViewModel {
                                             .equalsIgnoreCase("to")
                                             ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
                                             : 0,
-                                    discountWithSettings.discounts.getIs_special()));
-                            insertOrderDiscount(orderDiscountsList);
-                        } catch (ExecutionException e) {
-                            e.printStackTrace();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                                    orders.getQty()
 
+                            );
+
+                            last_inserted_id = insertPostedDiscount(postedDiscounts);
+                        }
+                        List<OrderDiscounts> orderDiscountsList = new ArrayList<>();
+                        orderDiscountsList.add(new OrderDiscounts(
+                                orders.getCore_id(),
+                                true,
+                                percentage,
+                                Integer.valueOf(transactionId),
+                                orders.getId(),
+                                discName,
+                                last_inserted_id,
+                                false,
+                                0,
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID)),
+                                Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.BRANCH_ID)),
+                                Utils.getDateTimeToday(),
+                                SharedPreferenceManager
+                                        .getString(null, AppConstants.SELECTED_SYSTEM_MODE)
+                                        .equalsIgnoreCase("to")
+                                        ? Integer.valueOf(SharedPreferenceManager.getString(null, AppConstants.MACHINE_ID))
+                                        : 0,
+                                discountWithSettings.discounts.getIs_special()));
+                        insertOrderDiscount(orderDiscountsList);
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
+
                 }
+
+
+//                if (orders.getIs_editing()) {
+//
+//                }
 
             }
 

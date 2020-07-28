@@ -60,7 +60,7 @@ public class ButtonsAsync extends AsyncTask<ButtonsModel, Void, List<ButtonsMode
 
         buttonsModelList.add(new ButtonsModel(997,"LOGOUT", "",13, 0));
 //        buttonsModelList.add(new ButtonsModel(110,"TEST PRINT", "",13, 0));
-        buttonsModelList.add(new ButtonsModel(122,"DISCOUNT EXEMPT", "",2, 0));
+//        buttonsModelList.add(new ButtonsModel(122,"DISCOUNT EXEMPT", "",2, 0)); // return after fixing the bug
 //        buttonsModelList.add(new ButtonsModel(124,"INTRANSIT", "",2, 0));
 
         buttonsModelList.add(new ButtonsModel(108,"CLEAR TRANSACTION", "",1, 0));

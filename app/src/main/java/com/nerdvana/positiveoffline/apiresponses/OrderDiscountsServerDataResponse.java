@@ -21,6 +21,9 @@ public class OrderDiscountsServerDataResponse {
 
 
     public class OrderDiscount {
+        @SerializedName("is_special")
+        @Expose
+        private int isSpecial;
         @SerializedName("to_id")
         @Expose
         private Integer toId;
@@ -75,6 +78,15 @@ public class OrderDiscountsServerDataResponse {
         @SerializedName("deleted_at")
         @Expose
         private Object deletedAt;
+
+
+        public int getIsSpecial() {
+            return isSpecial;
+        }
+
+        public void setIsSpecial(int isSpecial) {
+            this.isSpecial = isSpecial;
+        }
 
         public Integer getMyId() {
             return myId;

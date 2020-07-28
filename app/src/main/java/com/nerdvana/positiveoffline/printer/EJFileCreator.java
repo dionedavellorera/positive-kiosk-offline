@@ -3,6 +3,7 @@ package com.nerdvana.positiveoffline.printer;
 import android.content.Context;
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.nerdvana.positiveoffline.AppConstants;
 import com.nerdvana.positiveoffline.BusProvider;
@@ -80,6 +81,8 @@ public class EJFileCreator {
         finalString += PrinterUtils.receiptString("DESCRIPTION               VALUE", "", context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
 
+
+
         finalString += PrinterUtils.receiptString("GROSS SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getGross_sales() + cutOff.getDiscount_amount()))), context, false);
         finalString += PrinterUtils.receiptString("NET SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getNet_sales()))), context, false);
         finalString += PrinterUtils.receiptString("VATABLE SALES", PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(cutOff.getVatable_sales()))), context, false);
@@ -131,6 +134,11 @@ public class EJFileCreator {
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
                 "ACCRED NO:" + SharedPreferenceManager.getString(context, AppConstants.ACCRED_NO),
                 "",
                 context,
@@ -168,7 +176,7 @@ public class EJFileCreator {
                 true);
 
         finalString += PrinterUtils.receiptString(
-                "THIS INVOICE/RECEIPT SHALL BE VALID FOR",
+                "THIS RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
                 true);
@@ -449,6 +457,11 @@ public class EJFileCreator {
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
                 "ACCRED NO:" + SharedPreferenceManager.getString(context, AppConstants.ACCRED_NO),
                 "",
                 context,
@@ -486,7 +499,7 @@ public class EJFileCreator {
                 true);
 
         finalString += PrinterUtils.receiptString(
-                "THIS INVOICE/RECEIPT SHALL BE VALID FOR",
+                "THIS RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
                 true);
@@ -524,6 +537,7 @@ public class EJFileCreator {
 
         if (transactionCompleteDetails.transactions.getHas_special() == 1) {
 
+
             if (printModel.getType().equalsIgnoreCase("PRINT_RECEIPT")) {
                 finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(STORE COPY)", "", context, true);
                 BusProvider.getInstance().post(new PrintModel("PRINT_RECEIPT_SPEC", GsonHelper.getGson().toJson(transactionCompleteDetails)));
@@ -531,6 +545,7 @@ public class EJFileCreator {
                 finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(STORE COPY)\nREPRINT", "", context, true);
                 BusProvider.getInstance().post(new PrintModel("REPRINT_RECEIPT_SPEC", GsonHelper.getGson().toJson(transactionCompleteDetails)));
             }
+
             if (printModel.getType().equalsIgnoreCase("PRINT_RECEIPT_SPEC")) {
                 finalString += PrinterUtils.receiptString("OFFICIAL RECEIPT(CUSTOMER COPY)", "", context, true);
             } else if (printModel.getType().equalsIgnoreCase("REPRINT_RECEIPT_SPEC")) {
@@ -559,11 +574,12 @@ public class EJFileCreator {
 
 
         finalString += PrinterUtils.receiptString("", "", context, true);
-        if (!TextUtils.isEmpty(transactionCompleteDetails.transactions.getTo_control_number())) {
-            finalString += PrinterUtils.receiptString("TO CTRL NO", transactionCompleteDetails.transactions.getTo_control_number(), context, false);
-        }
+//        if (!TextUtils.isEmpty(transactionCompleteDetails.transactions.getTo_control_number())) {
+//            finalString += PrinterUtils.receiptString("TO CTRL NO", transactionCompleteDetails.transactions.getTo_control_number(), context, false);
+//        }
         finalString += PrinterUtils.receiptString("OR NO", transactionCompleteDetails.transactions.getReceipt_number(), context, false);
         finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
+        finalString += PrinterUtils.receiptString("CASHIER", transactionCompleteDetails.transactions.getCashierName(), context, false);
         finalString += PrinterUtils.receiptString("", "", context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
         finalString += PrinterUtils.receiptString("QTY  DESCRIPTION          AMOUNT", "", context, true);
@@ -605,6 +621,7 @@ public class EJFileCreator {
                         context, false);
 
 
+
 //                if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
 //                    finalString += PrinterUtils.receiptString(
 //                            myString,
@@ -618,8 +635,9 @@ public class EJFileCreator {
 //                }
 
                 if (orders.getQty() > 1) {
-                    finalString += PrinterUtils.receiptString("("+String.valueOf(orders.getOriginal_amount()) + ")", "", context, false);
+                    finalString += PrinterUtils.receiptString("("+String.valueOf(Utils.roundedOffFourDecimal(orders.getAmount())) + ")", "", context, false);
                 }
+
 
 //                if (orders.getDiscountAmount() > 0) {
 //                     finalString += PrinterUtils.receiptString("LESS", "-" +PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getDiscountAmount())), context, false);
@@ -753,15 +771,50 @@ public class EJFileCreator {
                 context,
                 false);
 
-        finalString += PrinterUtils.receiptString(
-                "SUB TOTAL",
-PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(                transactionCompleteDetails.transactions.getGross_sales()
-        +
-        transactionCompleteDetails.transactions.getService_charge_value()
-        +
-        transactionCompleteDetails.transactions.getDiscount_amount()))),
-                context,
-                false);
+
+        if (transactionCompleteDetails.transactions.getHas_special() == 1) {
+            finalString += PrinterUtils.receiptString(
+                    "SUB TOTAL",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(
+                            Utils.roundedOffTwoDecimal(
+                                    ((transactionCompleteDetails.transactions.getGross_sales() + transactionCompleteDetails.transactions.getDiscount_amount()) * 1.12) +
+                            transactionCompleteDetails.transactions.getService_charge_value()))),
+                    context,
+                    false);
+        } else {
+            finalString += PrinterUtils.receiptString(
+                    "SUB TOTAL",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(                transactionCompleteDetails.transactions.getGross_sales()
+                            +
+                            transactionCompleteDetails.transactions.getService_charge_value()
+                            +
+                            transactionCompleteDetails.transactions.getDiscount_amount()))),
+                    context,
+                    false);
+        }
+
+
+
+//        if (transactionCompleteDetails.transactions.getHas_special() == 0) {
+//            finalString += PrinterUtils.receiptString(
+//                    "SUB TOTAL",
+//                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(                transactionCompleteDetails.transactions.getGross_sales()
+//                            +
+//                            transactionCompleteDetails.transactions.getService_charge_value()
+//                            +
+//                            transactionCompleteDetails.transactions.getDiscount_amount()))),
+//                    context,
+//                    false);
+//        } else {
+//            finalString += PrinterUtils.receiptString(
+//                    "SUB TOTAL",
+//                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(                transactionCompleteDetails.transactions.getGross_sales()
+//                            +
+//                            transactionCompleteDetails.transactions.getService_charge_value()))),
+//                    context,
+//                    false);
+//        }
+
 //                PrinterUtils.returnWithTwoDecimal(
 //                        String.valueOf(
 //                                Utils.roundedOffTwoDecimal(
@@ -1000,6 +1053,15 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
                 "",
                 context,
                 true);
+
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+
         finalString += PrinterUtils.receiptString(
                 "ACCRED NO:" + SharedPreferenceManager.getString(context, AppConstants.ACCRED_NO),
                 "",
@@ -1031,6 +1093,8 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
                 "",
                 context,
                 true);
+
+
         finalString += PrinterUtils.receiptString(
                 "",
                 "",
@@ -1038,7 +1102,7 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
                 true);
 
         finalString += PrinterUtils.receiptString(
-                "THIS INVOICE/RECEIPT SHALL BE VALID FOR",
+                "THIS RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
                 true);
@@ -1292,6 +1356,11 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
                 "ACCRED NO:" + SharedPreferenceManager.getString(context, AppConstants.ACCRED_NO),
                 "",
                 context,
@@ -1329,7 +1398,7 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
                 true);
 
         finalString += PrinterUtils.receiptString(
-                "THIS INVOICE/RECEIPT SHALL BE VALID FOR",
+                "THIS RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
                 true);
@@ -1536,11 +1605,12 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
         }
 
         finalString += PrinterUtils.receiptString("", "", context, true);
-        if (!TextUtils.isEmpty(transactionCompleteDetails.transactions.getTo_control_number())) {
-            finalString += PrinterUtils.receiptString("TO CTRL NO", transactionCompleteDetails.transactions.getTo_control_number(), context, false);
-        }
+//        if (!TextUtils.isEmpty(transactionCompleteDetails.transactions.getTo_control_number())) {
+//            finalString += PrinterUtils.receiptString("TO CTRL NO", transactionCompleteDetails.transactions.getTo_control_number(), context, false);
+//        }
         finalString += PrinterUtils.receiptString("OR NO", transactionCompleteDetails.transactions.getReceipt_number(), context, false);
         finalString += PrinterUtils.receiptString("DATE", transactionCompleteDetails.transactions.getTreg(), context, false);
+        finalString += PrinterUtils.receiptString("CASHIER", transactionCompleteDetails.transactions.getCashierName(), context, false);
         finalString += PrinterUtils.receiptString("", "", context, true);
         finalString += PrinterUtils.receiptString(new String(new char[Integer.valueOf(SharedPreferenceManager.getString(context, AppConstants.MAX_COLUMN_COUNT))]).replace("\0", "-"), "", context, true);
         finalString += PrinterUtils.receiptString("QTY  DESCRIPTION          AMOUNT", "", context, true);
@@ -1578,8 +1648,9 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
 
                 finalString += PrinterUtils.receiptString(
                         myString,
-                        PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getOriginal_amount() * orders.getQty())),
+                        PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(orders.getOriginal_amount() * orders.getQty()))),
                         context, false);
+
 
 
 //                if (orders.getProduct_group_id() != 0 || orders.getProduct_alacart_id() != 0) {
@@ -1595,8 +1666,9 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
 //                }
 
                 if (orders.getQty() > 1) {
-                    finalString += PrinterUtils.receiptString("("+String.valueOf(Utils.roundedOffTwoDecimal(orders.getOriginal_amount())) + ")", "", context, false);
+                    finalString += PrinterUtils.receiptString("("+String.valueOf(Utils.roundedOffFourDecimal(orders.getAmount())) + ")", "", context, false);
                 }
+
 
 //                if (orders.getDiscountAmount() > 0) {
 //                     finalString += PrinterUtils.receiptString("LESS", "-" +PrinterUtils.returnWithTwoDecimal(String.valueOf(orders.getDiscountAmount())), context, false);
@@ -1686,6 +1758,18 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
                 context,
                 false);
 
+//        finalString += PrinterUtils.receiptString(
+//                "VATABLE SALES",
+//                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVatable_sales()))),
+//                context,
+//                false);
+//
+//        finalString += PrinterUtils.receiptString(
+//                "VAT AMOUNT",
+//                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_amount()))),
+//                context,
+//                false);
+
         finalString += PrinterUtils.receiptString(
                 "VAT-EXEMPT SALES",
                 PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getVat_exempt_sales()))),
@@ -1700,7 +1784,7 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
         if (transactionCompleteDetails.transactions.getService_charge_value() > 0) {
             finalString += PrinterUtils.receiptString(
                     "SERVICE CHARGE",
-                    PrinterUtils.returnWithTwoDecimal(String.valueOf(transactionCompleteDetails.transactions.getService_charge_value())),
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getService_charge_value()))),
                     context,
                     false);
         } else {
@@ -1718,30 +1802,69 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
                 context,
                 false);
 
-        finalString += PrinterUtils.receiptString(
-                "SUB TOTAL",
-                PrinterUtils.returnWithTwoDecimal(
-                        String.valueOf(
-                                Utils.roundedOffTwoDecimal(
-                                        transactionCompleteDetails.transactions.getGross_sales()
-                                ) +
-                                        Utils.roundedOffTwoDecimal(
-                                                transactionCompleteDetails.transactions.getService_charge_value()
-                                        ) +
-                                        Utils.roundedOffTwoDecimal(
-                                                transactionCompleteDetails.transactions.getDiscount_amount()
-                                        )
-                        )),
-                context,
-                false);
+
+        if (transactionCompleteDetails.transactions.getHas_special() == 1) {
+            finalString += PrinterUtils.receiptString(
+                    "SUB TOTAL",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(
+                            Utils.roundedOffTwoDecimal(
+                                    ((transactionCompleteDetails.transactions.getGross_sales() + transactionCompleteDetails.transactions.getDiscount_amount()) * 1.12) +
+                                            transactionCompleteDetails.transactions.getService_charge_value()))),
+                    context,
+                    false);
+        } else {
+            finalString += PrinterUtils.receiptString(
+                    "SUB TOTAL",
+                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(                transactionCompleteDetails.transactions.getGross_sales()
+                            +
+                            transactionCompleteDetails.transactions.getService_charge_value()
+                            +
+                            transactionCompleteDetails.transactions.getDiscount_amount()))),
+                    context,
+                    false);
+        }
+
+
+
+//        if (transactionCompleteDetails.transactions.getHas_special() == 0) {
+//            finalString += PrinterUtils.receiptString(
+//                    "SUB TOTAL",
+//                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(                transactionCompleteDetails.transactions.getGross_sales()
+//                            +
+//                            transactionCompleteDetails.transactions.getService_charge_value()
+//                            +
+//                            transactionCompleteDetails.transactions.getDiscount_amount()))),
+//                    context,
+//                    false);
+//        } else {
+//            finalString += PrinterUtils.receiptString(
+//                    "SUB TOTAL",
+//                    PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(                transactionCompleteDetails.transactions.getGross_sales()
+//                            +
+//                            transactionCompleteDetails.transactions.getService_charge_value()))),
+//                    context,
+//                    false);
+//        }
+
+//                PrinterUtils.returnWithTwoDecimal(
+//                        String.valueOf(
+//                                Utils.roundedOffTwoDecimal(
+//                                        transactionCompleteDetails.transactions.getGross_sales()
+//                                ) +
+//                                        Utils.roundedOffTwoDecimal(
+//                                                transactionCompleteDetails.transactions.getService_charge_value()
+//                                        ) +
+//                                        Utils.roundedOffTwoDecimal(
+//                                                transactionCompleteDetails.transactions.getDiscount_amount()
+//                                        )
+//                        )),
+//                context,
+//                false);
 
         finalString += PrinterUtils.receiptString(
                 "AMOUNT DUE",
-                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(amountDue - transactionCompleteDetails.transactions.getDiscount_amount()))
-                        +
-                        Utils.roundedOffTwoDecimal(
-                                transactionCompleteDetails.transactions.getService_charge_value()
-                        )),
+//                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(amountDue - transactionCompleteDetails.transactions.getDiscount_amount() + transactionCompleteDetails.transactions.getService_charge_value()))),
+                PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(transactionCompleteDetails.transactions.getNet_sales()))),
                 context,
                 false);
 
@@ -1961,6 +2084,15 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
                 "",
                 context,
                 true);
+
+
+        finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+
+
         finalString += PrinterUtils.receiptString(
                 "ACCRED NO:" + SharedPreferenceManager.getString(context, AppConstants.ACCRED_NO),
                 "",
@@ -1992,6 +2124,8 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
                 "",
                 context,
                 true);
+
+
         finalString += PrinterUtils.receiptString(
                 "",
                 "",
@@ -1999,7 +2133,7 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
                 true);
 
         finalString += PrinterUtils.receiptString(
-                "THIS INVOICE/RECEIPT SHALL BE VALID FOR",
+                "THIS RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
                 true);
@@ -2347,6 +2481,11 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
                 context,
                 true);
         finalString += PrinterUtils.receiptString(
+                "",
+                "",
+                context,
+                true);
+        finalString += PrinterUtils.receiptString(
                 "ACCRED NO:" + SharedPreferenceManager.getString(context, AppConstants.ACCRED_NO),
                 "",
                 context,
@@ -2384,7 +2523,7 @@ PrinterUtils.returnWithTwoDecimal(String.valueOf(Utils.roundedOffTwoDecimal(    
                 true);
 
         finalString += PrinterUtils.receiptString(
-                "THIS INVOICE/RECEIPT SHALL BE VALID FOR",
+                "THIS RECEIPT SHALL BE VALID FOR",
                 "",
                 context,
                 true);

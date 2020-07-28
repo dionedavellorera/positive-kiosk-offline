@@ -217,6 +217,7 @@ public class OrdersActivity extends AppCompatActivity implements SwipeRefreshLay
                     tr.setTo_transaction_id(list.getTransactions().getId());
                     tr.setIs_temp(1);
                     tr.setTo_control_number(list.getTransactions().getControlNumber());
+                    tr.setShift_number(list.getTransactions().getShiftNumber());
                     Log.d("TMPTRTRACING", "BEFORE SAVING");
                     long transId = transactionsViewModel.insertTransactionWaitData(tr);
                     Log.d("TMPTRTRACING", "SAVED - TRID" + String.valueOf(transId));

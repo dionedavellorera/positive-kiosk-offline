@@ -760,7 +760,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                     transactions.getTo_id(),
                     transactions.getIs_temp(),
                     transactions.getTo_control_number(),
-                    transactions.getShift_number()
+                    transactions.getShift_number(),
+                    transactions.getCashierName()
             );
             tr.setRoom_id(transactions.getRoom_id());
             tr.setRoom_number(transactions.getRoom_number());
@@ -937,6 +938,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                         for (StPaymentsModel model : list) {
                                             synchronized (model) {
                                                 try {
+
+                                                    List<User> currentUser = userViewModel.searchLoggedInUser();
+
+
                                                     Transactions tr = new Transactions(
                                                             generatedControlNumber(),
                                                             getUser().getUsername(),
@@ -954,7 +959,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                                     .equalsIgnoreCase("to")
                                                                     ? 1
                                                                     : 0,
-                                                            String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
+                                                            String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 ),
+                                                            currentUser.size() > 0 ? currentUser.get(0).getName().toUpperCase() : ""
+
                                                     );
                                                     tr.setIs_shared(0);
                                                     tr.setIs_completed(true);
@@ -2437,44 +2444,78 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
 
                 if (transactionsViewModel.orderList(transactionId).size() > 0) {
 
-                    if (getEditingOrderList().size() > 0) {
-                        if (discountMenuDialog == null) {
-                            boolean hasItemToDiscount = false;
-                            for (Orders ord : transactionsViewModel.orderList(transactionId)) {
-                                if (ord.getIs_discount_exempt() == 0) {
-                                    hasItemToDiscount = true;
-                                    break;
-                                }
+                    if (discountMenuDialog == null) {
+                        boolean hasItemToDiscount = false;
+                        for (Orders ord : transactionsViewModel.orderList(transactionId)) {
+                            if (ord.getIs_discount_exempt() == 0) {
+                                hasItemToDiscount = true;
+                                break;
                             }
-                            if (hasItemToDiscount) {
-                                discountMenuDialog = new DiscountMenuDialog(getActivity(), discountViewModel,
-                                        transactionsViewModel, transactionId);
-                                discountMenuDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                    @Override
-                                    public void onDismiss(DialogInterface dialogInterface) {
-                                        discountMenuDialog = null;
-                                    }
-                                });
-
-                                discountMenuDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                                    @Override
-                                    public void onCancel(DialogInterface dialogInterface) {
-                                        discountMenuDialog = null;
-                                    }
-                                });
-                                discountMenuDialog.show();
-                            } else {
-                                Helper.showDialogMessage(getActivity(),
-                                        getContext().getString(R.string.no_item_to_discount_disc_exempt),
-                                        getContext().getString(R.string.header_message));
-                            }
-
                         }
-                    } else {
-                        Helper.showDialogMessage(getActivity(),
-                                getContext().getString(R.string.no_item_to_discount),
-                                getContext().getString(R.string.header_message));
+                        if (hasItemToDiscount) {
+                            discountMenuDialog = new DiscountMenuDialog(getActivity(), discountViewModel,
+                                    transactionsViewModel, transactionId);
+                            discountMenuDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+                                    discountMenuDialog = null;
+                                }
+                            });
+
+                            discountMenuDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                @Override
+                                public void onCancel(DialogInterface dialogInterface) {
+                                    discountMenuDialog = null;
+                                }
+                            });
+                            discountMenuDialog.show();
+                        } else {
+                            Helper.showDialogMessage(getActivity(),
+                                    getContext().getString(R.string.no_item_to_discount_disc_exempt),
+                                    getContext().getString(R.string.header_message));
+                        }
+
                     }
+
+
+//                    if (getEditingOrderList().size() > 0) {
+//                        if (discountMenuDialog == null) {
+//                            boolean hasItemToDiscount = false;
+//                            for (Orders ord : transactionsViewModel.orderList(transactionId)) {
+//                                if (ord.getIs_discount_exempt() == 0) {
+//                                    hasItemToDiscount = true;
+//                                    break;
+//                                }
+//                            }
+//                            if (hasItemToDiscount) {
+//                                discountMenuDialog = new DiscountMenuDialog(getActivity(), discountViewModel,
+//                                        transactionsViewModel, transactionId);
+//                                discountMenuDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+//                                    @Override
+//                                    public void onDismiss(DialogInterface dialogInterface) {
+//                                        discountMenuDialog = null;
+//                                    }
+//                                });
+//
+//                                discountMenuDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+//                                    @Override
+//                                    public void onCancel(DialogInterface dialogInterface) {
+//                                        discountMenuDialog = null;
+//                                    }
+//                                });
+//                                discountMenuDialog.show();
+//                            } else {
+//                                Helper.showDialogMessage(getActivity(),
+//                                        getContext().getString(R.string.no_item_to_discount_disc_exempt),
+//                                        getContext().getString(R.string.header_message));
+//                            }
+//
+//                        }
+//                    } else {
+//                        Helper.showDialogMessage(getActivity(),
+//                                getContext().getString(R.string.no_item_to_discount),
+//                                getContext().getString(R.string.header_message));
+//                    }
 
 
 
@@ -2693,6 +2734,10 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                     List<Transactions> tr = new ArrayList<>();
 
                                     try {
+
+                                        List<User> currentUser = userViewModel.searchLoggedInUser();
+
+
                                         Transactions trs = new Transactions(
                                                 controlNumber,
                                                 getUser().getUsername(),
@@ -2710,7 +2755,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                         .equalsIgnoreCase("to")
                                                         ? 1
                                                         : 0,
-                                                String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
+                                                String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 ),
+                                                currentUser.size() > 0 ? currentUser.get(0).getName().toUpperCase() : ""
                                         );
                                         trs.setTransaction_type("DINEIN");
                                         trs.setRoom_number(selectedTable.getRoom_name());
@@ -2800,7 +2846,7 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                         } catch (InterruptedException e) {
                                             e.printStackTrace();
                                         }
-
+                                        List<User> currentUser = userViewModel.searchLoggedInUser();
 
                                         List<Transactions> tr = new ArrayList<>();
 
@@ -2821,7 +2867,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                         .equalsIgnoreCase("to")
                                                         ? 1
                                                         : 0,
-                                                String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
+                                                String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 ),
+                                                currentUser.size() > 0 ? currentUser.get(0).getName().toUpperCase() : ""
+
                                         ));
 
                                         transactionsViewModel.insert(tr);
@@ -2931,6 +2979,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                     }
 
 
+                                                    List<User> currentUser = userViewModel.searchLoggedInUser();
+
+
                                                     List<Transactions> tr = new ArrayList<>();
                                                     Transactions myTrans = new Transactions(
                                                             controlNumber,
@@ -2949,7 +3000,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                                     .equalsIgnoreCase("to")
                                                                     ? 1
                                                                     : 0,
-                                                            String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
+                                                            String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 ),
+                                                            currentUser.size() > 0 ? currentUser.get(0).getName().toUpperCase() : ""
                                                     );
                                                     myTrans.setTransaction_type("TAKEOUT");
                                                     tr.add(myTrans);
@@ -2988,6 +3040,11 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                     insertSelectedOrder();
                                 } else {
                                     try {
+
+                                        List<User> currentUser = userViewModel.searchLoggedInUser();
+
+
+
                                         if (transactionsList().size() > 0) {
                                             insertSelectedOrder();
                                         } else {
@@ -3027,7 +3084,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                                             .equalsIgnoreCase("to")
                                                             ? 1
                                                             : 0,
-                                                    String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
+                                                    String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 ),
+                                                    currentUser.size() > 0 ? currentUser.get(0).getName().toUpperCase() : ""
                                             );
                                             myTrans.setTransaction_type("TAKEOUT");
                                             tr.add(myTrans);
@@ -3088,6 +3146,9 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                             e.printStackTrace();
                         }
 
+                        List<User> currentUser = userViewModel.searchLoggedInUser();
+
+
                         List<Transactions> tr = new ArrayList<>();
                         Transactions myTrans = new Transactions(
                                 controlNumber,
@@ -3106,7 +3167,8 @@ public class LeftFrameFragment extends Fragment implements OrdersContract, View.
                                         .equalsIgnoreCase("to")
                                         ? 1
                                         : 0,
-                                String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 )
+                                String.valueOf(cutOffViewModel.getUnCutOffData().size() + 1 ),
+                                currentUser.size() > 0 ? currentUser.get(0).getName().toUpperCase() : ""
                         );
                         myTrans.setTransaction_type("TAKEOUT");
                         tr.add(myTrans);

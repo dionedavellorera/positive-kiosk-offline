@@ -20,7 +20,12 @@ public class TransactionsServerDataResponse {
     }
 
     public class Transaction {
-
+        @SerializedName("shift_number")
+        @Expose
+        private String shiftNumber;
+        @SerializedName("to_control_number")
+        @Expose
+        private String to_control_number;
         @SerializedName("my_id")
         @Expose
         private Integer myId;
@@ -182,6 +187,23 @@ public class TransactionsServerDataResponse {
         @SerializedName("is_temp")
         @Expose
         private Integer isTemp;
+
+
+        public String getShiftNumber() {
+            return shiftNumber;
+        }
+
+        public void setShiftNumber(String shiftNumber) {
+            this.shiftNumber = shiftNumber;
+        }
+
+        public String getTo_control_number() {
+            return to_control_number;
+        }
+
+        public void setTo_control_number(String to_control_number) {
+            this.to_control_number = to_control_number;
+        }
 
         public Integer getToTransactionId() {
             return toTransactionId;

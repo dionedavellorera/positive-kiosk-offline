@@ -164,6 +164,10 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
             if (forVoid) {
                 progressDialog.setMessage("VOIDING TRANSACTION ...");
                 progressDialog.show();
+
+                List<User> currentUser = userViewModel.searchLoggedInUser();
+
+
                 //FOR VOID
                 Transactions reference = transactionsViewModel.loadedTransactionListViaControlNumber(transactionWithOrders.transactions.getControl_number()).get(0);
                 final Transactions transactions = new Transactions(
@@ -204,8 +208,10 @@ public class TransactionDialog extends BaseDialog implements TransactionsContrac
                         reference.getTo_id(),
                         reference.getIs_temp(),
                         reference.getTo_control_number(),
-                        reference.getShift_number()
+                        reference.getShift_number(),
+                        currentUser.size() > 0 ? currentUser.get(0).getName().toUpperCase() : ""
                 );
+                transactions.setHas_special(reference.getHas_special());
                 transactions.setRoom_id(reference.getRoom_id());
                 transactions.setRoom_number(reference.getRoom_number());
                 transactions.setMachine_id(reference.getMachine_id());

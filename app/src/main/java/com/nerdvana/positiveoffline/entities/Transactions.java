@@ -78,13 +78,15 @@ public class Transactions {
     private int is_temp = 0;
     private String to_control_number = "";
     private String shift_number = "";
+    private String cashierName = "";
 
     public Transactions(@NonNull String control_number,
                         String user_id, String treg,
                         int is_sent_to_server,
                         int machine_id, int branch_id,
                         int to_id, int is_temp,
-                        String shift_number) {
+                        String shift_number, String cashierName) {
+        this.cashierName = cashierName;
         this.shift_number = shift_number;
         this.is_temp = is_temp;
         this.to_id = to_id;
@@ -118,7 +120,9 @@ public class Transactions {
                         Boolean is_backed_out, String is_backed_out_by, String is_backed_out_at,
                         String delivery_to, String delivery_address,
                         int to_id, int is_temp,
-                        String to_control_number, String shift_number) {
+                        String to_control_number, String shift_number,
+                        String cashierName) {
+        this.cashierName = cashierName;
         this.shift_number = shift_number;
         this.to_control_number = to_control_number;
         this.is_temp = is_temp;
@@ -157,6 +161,14 @@ public class Transactions {
         this.vat_amount = vat_amount;
         this.discount_amount = discountAmount;
         this.change = change;
+    }
+
+    public String getCashierName() {
+        return cashierName;
+    }
+
+    public void setCashierName(String cashierName) {
+        this.cashierName = cashierName;
     }
 
     public String getShift_number() {

@@ -321,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 orderDiscounts.setTreg(list.getTreg());
 
                                 orderDiscounts.setTo_id(list.getToId());
-
+                                orderDiscounts.setIs_special(list.getIsSpecial());
                                 orderDiscountsList.add(orderDiscounts);
                             }
 
@@ -333,13 +333,13 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                     }
 
                 } catch (Exception e) {
-
+                    BusProvider.getInstance().post(new ServerDataCompletionModel(true, "ORDER DISCOUNTS"));
                 }
             }
 
             @Override
             public void onFailure(Call<OrderDiscountsServerDataResponse> call, Throwable t) {
-
+                BusProvider.getInstance().post(new ServerDataCompletionModel(true, "ORDER DISCOUNTS"));
             }
         });
     }
@@ -389,7 +389,9 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 orders.setSerial_number(list.getSerialNumber());
                                 orders.setIs_fixed_asset(list.getIsFixedAsset());
                                 orders.setTo_id(list.getToId());
-
+                                orders.setName_initials(list.getName_initials());
+                                orders.setUnit_id(Integer.valueOf(list.getUnitId()));
+                                orders.setUnit_id_description(list.getUnitIdDescription());
                                 orderList.add(orders);
                             }
 
@@ -401,13 +403,13 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                     }
 
                 } catch (Exception e) {
-
+                    BusProvider.getInstance().post(new ServerDataCompletionModel(true, "ORDERS"));
                 }
             }
 
             @Override
             public void onFailure(Call<OrdersServerDataResponse> call, Throwable t) {
-
+                BusProvider.getInstance().post(new ServerDataCompletionModel(true, "ORDERS"));
             }
         });
 
@@ -448,6 +450,8 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 payments.setIs_redeemed_for(list.getIsRedeemedFor());
                                 payments.setLink_payment_id(list.getLinkPaymentId());
                                 payments.setIs_from_other_shift(list.getIsFromOtherShift());
+
+                                payments.setChange(list.getChange());
                                 paymentsList.add(payments);
 
 
@@ -461,13 +465,13 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                     }
 
                 } catch (Exception e) {
-
+                    BusProvider.getInstance().post(new ServerDataCompletionModel(true, "PAYMENTS"));
                 }
             }
 
             @Override
             public void onFailure(Call<PaymentsServerDataResponse> call, Throwable t) {
-
+                BusProvider.getInstance().post(new ServerDataCompletionModel(true, "PAYMENTS"));
             }
         });
 
@@ -505,13 +509,13 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                     }
 
                 } catch (Exception e) {
-
+                    BusProvider.getInstance().post(new ServerDataCompletionModel(true, "OR DETAILS"));
                 }
             }
 
             @Override
             public void onFailure(Call<OrDetailsServerDataResponse> call, Throwable t) {
-
+                BusProvider.getInstance().post(new ServerDataCompletionModel(true, "OR DETAILS"));
             }
         });
     }
@@ -601,6 +605,8 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 tr.setTo_transaction_id(list.getToTransactionId());
                                 tr.setIs_temp(list.getIsTemp());
 
+                                tr.setTo_control_number(list.getTo_control_number());
+                                tr.setShift_number(list.getShiftNumber());
 
                                 transactionsViewModel.insertTransactionWaitData(tr);
 
@@ -608,6 +614,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                             BusProvider.getInstance().post(new ServerDataCompletionModel(true, "TRANSACTIONS"));
                         }
                     } catch (Exception e) {
+                        BusProvider.getInstance().post(new ServerDataCompletionModel(true, "TRANSACTIONS"));
                         Log.d("ERRORDATA-TRASN", e.getMessage());
                     }
 
@@ -618,7 +625,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
             @Override
             public void onFailure(Call<TransactionsServerDataResponse> call, Throwable t) {
-
+                BusProvider.getInstance().post(new ServerDataCompletionModel(true, "TRANSACTIONS"));
             }
         });
     }
@@ -674,12 +681,14 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 cutOff.setCash_redeemed_from_prev_ar(list.getCashRedeemedFromPrevAr());
                                 cutOff.setCard_redeemed_from_prev_ar(list.getCardRedeemedFromPrevAr());
 
+                                cutOff.setShift_number(list.getShiftNumber());
                                 cutOffViewModel.insertData(cutOff);
                             }
                             BusProvider.getInstance().post(new ServerDataCompletionModel(true, "CUTOFF"));
                         }
                     } catch (Exception e) {
                         Log.d("ERRORDATA-CUTOFF", e.getMessage());
+                        BusProvider.getInstance().post(new ServerDataCompletionModel(true, "CUTOFF"));
                     }
 
                 } else {
@@ -689,7 +698,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
             @Override
             public void onFailure(Call<CutoffServerDataResponse> call, Throwable t) {
-
+                BusProvider.getInstance().post(new ServerDataCompletionModel(true, "CUTOFF"));
             }
         });
     }
@@ -744,6 +753,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                             BusProvider.getInstance().post(new ServerDataCompletionModel(true, "END OF DAY"));
                         }
                     } catch (Exception e) {
+                        BusProvider.getInstance().post(new ServerDataCompletionModel(true, "END OF DAY"));
                         Log.d("ERRORDATA-EOD", e.getMessage());
                     }
 
@@ -754,7 +764,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
             @Override
             public void onFailure(Call<EndOfDayServerDataResponse> call, Throwable t) {
-
+                BusProvider.getInstance().post(new ServerDataCompletionModel(true, "END OF DAY"));
             }
         });
     }
@@ -797,12 +807,14 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                                 postedDiscounts.setTreg(list.getTreg());
                                 postedDiscounts.setTo_id(list.getToId());
 
+                                postedDiscounts.setQty(list.getQty());
+
                                 discountViewModel.insertPostedDiscount(postedDiscounts);
                             }
                             BusProvider.getInstance().post(new ServerDataCompletionModel(true, "POSTING DISCOUNT"));
                         }
                     } catch (Exception e) {
-
+                        BusProvider.getInstance().post(new ServerDataCompletionModel(true, "POSTING DISCOUNT"));
                     }
 
                 } else {
@@ -812,7 +824,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
             @Override
             public void onFailure(Call<PostingDiscountServerDataResponse> call, Throwable t) {
-
+                BusProvider.getInstance().post(new ServerDataCompletionModel(true, "POSTING DISCOUNT"));
             }
         });
     }
@@ -843,7 +855,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                             BusProvider.getInstance().post(new ServerDataCompletionModel(true, "SERVICE CHARGE"));
                         }
                     } catch (Exception e) {
-
+                        BusProvider.getInstance().post(new ServerDataCompletionModel(true, "SERVICE CHARGE"));
                     }
 
                 } else {
@@ -853,7 +865,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
             @Override
             public void onFailure(Call<ServiceChargeServerDataResponse> call, Throwable t) {
-
+                BusProvider.getInstance().post(new ServerDataCompletionModel(true, "SERVICE CHARGE"));
             }
         });
     }
@@ -891,7 +903,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                             BusProvider.getInstance().post(new ServerDataCompletionModel(true, "SERIAL NUMBER"));
                         }
                     } catch (Exception e) {
-
+                        BusProvider.getInstance().post(new ServerDataCompletionModel(true, "SERIAL NUMBER"));
                     }
 
                 } else {
@@ -901,7 +913,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
             @Override
             public void onFailure(Call<SerialNumbersServerDataResponse> call, Throwable t) {
-
+                BusProvider.getInstance().post(new ServerDataCompletionModel(true, "SERIAL NUMBER"));
             }
         });
 
@@ -939,7 +951,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
                             BusProvider.getInstance().post(new ServerDataCompletionModel(true, "PAYOUT"));
                         }
                     } catch (Exception e) {
-
+                        BusProvider.getInstance().post(new ServerDataCompletionModel(true, "PAYOUT"));
                     }
 
                 } else {
@@ -949,7 +961,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
 
             @Override
             public void onFailure(Call<PayoutServerDataResponse> call, Throwable t) {
-
+                BusProvider.getInstance().post(new ServerDataCompletionModel(true, "PAYOUT"));
             }
         });
     }
@@ -2101,7 +2113,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
     @Subscribe
     public void shiftUpdate(ShiftUpdateModel shiftUpdateModel) {
         try {
-            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 3.0.0");
+            shift.setText("SHIFT " + (cutOffViewModel.getUnCutOffData().size() + 1) + " - VER 3.0.3");
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -2169,6 +2181,7 @@ public class MainActivity extends AppCompatActivity implements AsyncFinishCallBa
         totalSyncCount += 1;
 
         Log.d("TOTALSYNCCOUNT", String.valueOf(totalSyncCount));
+        Log.d("TOTALSYNCCOUNT", String.valueOf(totalSyncRequired));
 
         datafromServerProgressBar.setProgress(totalSyncCount);
 

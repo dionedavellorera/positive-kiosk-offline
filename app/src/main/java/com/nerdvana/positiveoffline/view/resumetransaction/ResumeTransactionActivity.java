@@ -197,7 +197,8 @@ public class ResumeTransactionActivity extends AppCompatActivity implements Tran
                 transactions.getTo_id(),
                 transactions.getIs_temp(),
                 transactions.getTo_control_number(),
-                transactions.getShift_number()
+                transactions.getShift_number(),
+                transactions.getCashierName()
         );
         tr.setRoom_id(transactions.getRoom_id());
         tr.setRoom_number(transactions.getRoom_number());

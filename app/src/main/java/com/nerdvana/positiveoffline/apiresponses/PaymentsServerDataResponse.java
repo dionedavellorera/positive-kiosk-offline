@@ -20,6 +20,9 @@ public class PaymentsServerDataResponse {
     }
 
     public class Payment {
+        @SerializedName("change")
+        @Expose
+        private double change;
         @SerializedName("is_redeemed")
         @Expose
         private Integer isRedeemed;
@@ -86,6 +89,14 @@ public class PaymentsServerDataResponse {
         @SerializedName("deleted_at")
         @Expose
         private Object deletedAt;
+
+        public double getChange() {
+            return change;
+        }
+
+        public void setChange(double change) {
+            this.change = change;
+        }
 
         public Integer getIsRedeemed() {
             return isRedeemed;

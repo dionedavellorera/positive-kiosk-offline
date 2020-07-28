@@ -1019,7 +1019,16 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
 
                             }
 
+
                             Transactions tmp = transactionsViewModel.loadedTransactionList(transactionId).get(0);
+
+                            Log.d("WEKWEK", String.valueOf(tmp.getGross_sales()));
+                            Log.d("WEKWEK", String.valueOf(tmp.getDiscount_amount()));
+
+
+                            List<User> currentUser = userViewModel.searchLoggedInUser();
+
+
                             Transactions transactions = new Transactions(
                                     tmp.getId(),
                                     tmp.getControl_number(),
@@ -1035,11 +1044,11 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                     tmp.getTrans_name(),
                                     tmp.getTreg(),
                                     receiptNumber,
-                                    tmp.getGross_sales(),
+                                    tmp.getHas_special() == 0 ? Utils.roundedOffTwoDecimal(tmp.getGross_sales()) : tmp.getGross_sales() - tmp.getDiscount_amount(),
                                     amountDue,
-                                    tmp.getHas_special() == 0 ? amountDue / 1.12 : tmp.getVatable_sales(),
-                                    tmp.getVat_exempt_sales(),
-                                    tmp.getHas_special() == 0 ? Utils.roundedOffTwoDecimal((amountDue / 1.12) * .12) : tmp.getVat_amount(),
+                                    tmp.getHas_special() == 0 ? amountDue / 1.12 : ((tmp.getGross_sales() * 1.12) - tmp.getGross_sales()) / 1.12,
+                                    Utils.roundedOffTwoDecimal(tmp.getVat_exempt_sales()),
+                                    tmp.getHas_special() == 0 ? Utils.roundedOffTwoDecimal((amountDue / 1.12) * .12) : (((tmp.getGross_sales() * 1.12) - tmp.getGross_sales()) / 1.12) * .12 ,
                                     tmp.getDiscount_amount(),
                                     change,
                                     tmp.getVoid_at(),
@@ -1058,8 +1067,12 @@ public abstract class PaymentDialog extends BaseDialog implements PaymentTypeCon
                                     tmp.getTo_id(),
                                     tmp.getIs_temp(),
                                     tmp.getTo_control_number(),
-                                    tmp.getShift_number()
+                                    tmp.getShift_number(),
+                                    currentUser.size() > 0 ? currentUser.get(0).getName().toUpperCase() : ""
                             );
+
+                            Log.d("MYGROSSALES-iinner", String.valueOf(tmp.getGross_sales()));
+
 
                             transactions.setIs_shared(tmp.getIs_shared());
                             transactions.setTransaction_type(tmp.getTransaction_type());

@@ -197,22 +197,23 @@ public class TransactionsViewModel extends AndroidViewModel {
 
                         Double remainingAmount = 0.00;
                         Double finalAmount = 0.00;
+                        Double finalAmountSpec = 0.00;
                         Double totalDiscountAmount = 0.00; ;
 
 
-                        remainingAmount = owd.orders.getOriginal_amount();
-                        finalAmount = owd.orders.getOriginal_amount();
-                        totalDiscountAmount = 0.00;
+//                        remainingAmount = owd.orders.getOriginal_amount();
+//                        finalAmount = owd.orders.getOriginal_amount();
+//                        totalDiscountAmount = 0.00;
 
-//                        if (hasSpecial == 1) {
-//                            remainingAmount = Utils.roundedOffFourDecimal(owd.orders.getOriginal_amount() / 1.12);
-//                            finalAmount = Utils.roundedOffFourDecimal(owd.orders.getOriginal_amount() / 1.12);
-//                            totalDiscountAmount = 0.00;
-//                        } else {
-//                            remainingAmount = Utils.roundedOffFourDecimal(owd.orders.getOriginal_amount());
-//                            finalAmount = Utils.roundedOffFourDecimal(owd.orders.getOriginal_amount());
-//                            totalDiscountAmount = 0.00;
-//                        }
+                        if (hasSpecial == 1) {
+                            remainingAmount = owd.orders.getOriginal_amount() / 1.12;
+                            finalAmount = owd.orders.getOriginal_amount() / 1.12;
+                            totalDiscountAmount = 0.00;
+                        } else {
+                            remainingAmount = owd.orders.getOriginal_amount();
+                            finalAmount = owd.orders.getOriginal_amount();
+                            totalDiscountAmount = 0.00;
+                        }
 
                         //region apply discounting
 
@@ -276,12 +277,8 @@ public class TransactionsViewModel extends AndroidViewModel {
                         }
 
                         //endregion
-
-                        Log.d("ITEMAAA-0", String.format("%s-%s", String.valueOf(finalAmount), owd.orders.getName_initials()));
-                        Log.d("ITEMAAA-1", String.format("%s-%s", String.valueOf(discountAmount), owd.orders.getName_initials()));
+                        finalAmountSpec = finalAmount;
                         finalAmount = finalAmount - totalDiscountAmount;
-                        Log.d("ITEMAAA-2", String.format("%s-%s", String.valueOf(finalAmount), owd.orders.getName_initials()));
-                        Log.d("ITEMAAA-3", String.format("%s-%s", String.valueOf(owd.orders.getOriginal_amount()), owd.orders.getName_initials()));
 
                         Orders ord = new Orders(
                                 owd.orders.getTransaction_id(),
@@ -291,10 +288,9 @@ public class TransactionsViewModel extends AndroidViewModel {
                                 owd.orders.getOriginal_amount(),
                                 owd.orders.getName(),
                                 owd.orders.getDepartmentId(),
-                                hasSpecial == 1 ? (finalAmount - (finalAmount / 1.12)) * owd.orders.getQty() : ((finalAmount/1.12) * .12) * owd.orders.getQty(),
-//                                hasSpecial == 1 ? 0.00 : ((Utils.roundedOffFourDecimal(finalAmount)) * owd.orders.getQty()) / 1.12,
+                                hasSpecial == 1 ? 0.00 : ((finalAmount/1.12) * .12) * owd.orders.getQty(),
                                 hasSpecial == 1 ? 0.00 : ((finalAmount * owd.orders.getQty()) / 1.12),
-                                hasSpecial == 1 ? (finalAmount / 1.12) * owd.orders.getQty() : 0.00,
+                                hasSpecial == 1 ? ((finalAmountSpec * owd.orders.getQty())) : 0.00,
                                 totalDiscountAmount * owd.orders.getQty(),
                                 owd.orders.getDepartmentName(),
                                 owd.orders.getCategoryName(),
@@ -319,7 +315,17 @@ public class TransactionsViewModel extends AndroidViewModel {
                         ord.setId(owd.orders.getId());
                         updateOrder(ord);
 
-                        grossSales += ord.getVatAmount() + ord.getVatable() + ord.getVatExempt();
+                        if (owd.transactions.getHas_special() == 1) {
+                            grossSales += (ord.getVatAmount() + ord.getVatable() + ord.getVatExempt()) - owd.transactions.getDiscount_amount() ;
+                            Log.d("MYGROSSALES", String.valueOf(grossSales));
+                        } else {
+                            Log.d("MYGROSSALES", String.valueOf(grossSales));
+
+                            grossSales += ord.getVatAmount() + ord.getVatable() + ord.getVatExempt();
+                        }
+
+//                        grossSales += (ord.getVatAmount() + ord.getVatable() + ord.getVatExempt()) ;
+
                         netSales += ((ord.getVatable() + ord.getVatExempt()) - ord.getDiscountAmount());
                         vatableSales += ord.getVatable();
                         vatExemptSales += ord.getVatExempt();

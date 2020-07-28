@@ -20,6 +20,12 @@ public class OrdersServerDataResponse {
     }
 
     public class Order {
+        @SerializedName("unit_id")
+        @Expose
+        private String unitId;
+        @SerializedName("unit_id_description")
+        @Expose
+        private String unitIdDescription;
         @SerializedName("name_initials")
         @Expose
         private String name_initials;
@@ -128,6 +134,22 @@ public class OrdersServerDataResponse {
         @SerializedName("deleted_at")
         @Expose
         private Object deletedAt;
+
+        public String getUnitId() {
+            return unitId;
+        }
+
+        public void setUnitId(String unitId) {
+            this.unitId = unitId;
+        }
+
+        public String getUnitIdDescription() {
+            return unitIdDescription;
+        }
+
+        public void setUnitIdDescription(String unitIdDescription) {
+            this.unitIdDescription = unitIdDescription;
+        }
 
         public String getName_initials() {
             return name_initials;

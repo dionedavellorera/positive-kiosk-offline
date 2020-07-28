@@ -21,7 +21,9 @@ public class CutoffServerDataResponse {
 
 
     public class CutOff {
-
+        @SerializedName("shift_number")
+        @Expose
+        private String shiftNumber;
         @SerializedName("my_id")
         @Expose
         private Integer myId;
@@ -121,6 +123,14 @@ public class CutoffServerDataResponse {
         @SerializedName("deleted_at")
         @Expose
         private Object deletedAt;
+
+        public String getShiftNumber() {
+            return shiftNumber;
+        }
+
+        public void setShiftNumber(String shiftNumber) {
+            this.shiftNumber = shiftNumber;
+        }
 
         public Double getCardRedeemedFromPrevAr() {
             return cardRedeemedFromPrevAr;

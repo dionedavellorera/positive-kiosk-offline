@@ -209,15 +209,15 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
 
             addPrinterSpace(1, printer);
 
-            if (!TextUtils.isEmpty(transactionCompleteDetails.transactions.getTo_control_number())) {
-                addTextToPrinter(printer, twoColumns(
-                        "TO CTRL NO",
-                        transactionCompleteDetails.transactions.getTo_control_number(),
-                        40,
-                        2,
-                        context)
-                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
-            }
+//            if (!TextUtils.isEmpty(transactionCompleteDetails.transactions.getTo_control_number())) {
+//                addTextToPrinter(printer, twoColumns(
+//                        "TO CTRL NO",
+//                        transactionCompleteDetails.transactions.getTo_control_number(),
+//                        40,
+//                        2,
+//                        context)
+//                        ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+//            }
 
             addTextToPrinter(printer, twoColumns(
                     "OR NO",
@@ -229,6 +229,13 @@ public class PrintReceiptAsync extends AsyncTask<Void, Void, Void> {
             addTextToPrinter(printer, twoColumns(
                     "DATE",
                     transactionCompleteDetails.transactions.getTreg(),
+                    40,
+                    2,
+                    context)
+                    ,Printer.FALSE, Printer.FALSE, Printer.ALIGN_LEFT, 1,1,1);
+            addTextToPrinter(printer, twoColumns(
+                    "CASHIER",
+                    transactionCompleteDetails.transactions.getCashierName(),
                     40,
                     2,
                     context)
